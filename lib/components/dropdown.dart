@@ -47,7 +47,7 @@ class LanguageDropdown extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(16),
-      borderSide: BorderSide.none, // Dış çerçeveyi kaldırdık
+      borderSide: BorderSide(color: colorScheme.outline),
     );
 
     // Eğer gelen değer listede yoksa (Auto-Detect gibi), onu geçici olarak listeye ekliyoruz
@@ -61,15 +61,15 @@ class LanguageDropdown extends StatelessWidget {
     final String? effectiveValue = isPlaceholder ? null : value;
 
     return Theme(
-      data: Theme.of(
-        context,
-      ).copyWith(splashColor: colorScheme.inversePrimary.withOpacity(0.2)),
+      data: Theme.of(context).copyWith(
+        splashColor: colorScheme.inversePrimary.withValues(alpha: 0.2),
+      ),
       child: DropdownButtonFormField<String>(
         value: effectiveValue,
         hint: isPlaceholder
             ? Center(
                 child: Text(
-                  '—',
+                  '—  ',
                   style: TextStyle(
                     color: colorScheme.inversePrimary,
                     fontSize: 15,
@@ -94,7 +94,7 @@ class LanguageDropdown extends StatelessWidget {
           border: border,
           enabledBorder: border,
           focusedBorder: border,
-          suffixIcon: !isLoading && showIcon
+          prefixIcon: !isLoading && showIcon
               ? Icon(
                   Icons.language,
                   color: colorScheme.inversePrimary,

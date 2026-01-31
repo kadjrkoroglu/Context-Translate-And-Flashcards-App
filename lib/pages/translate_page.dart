@@ -102,188 +102,198 @@ class _TranslatePageState extends State<TranslatePage> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0), // Ferah düzen
-        child: Column(
-          children: [
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 200,
-              child: Stack(
-                children: [
-                  TextField(
-                    controller: _textController,
-                    expands: true,
-                    maxLines: null,
-                    minLines: null,
-                    textAlignVertical: TextAlignVertical.top,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Theme.of(context).colorScheme.primary,
-                      enabledBorder: const OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(24)),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: const OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(24)),
-                        borderSide: BorderSide.none,
-                      ),
-                      hintText: 'Enter text',
-                      hintStyle: TextStyle(
-                        color: Theme.of(context).colorScheme.tertiary,
-                      ),
-                      contentPadding: const EdgeInsets.all(20),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        if (value.isEmpty) {
-                          _outputController.clear();
-                        }
-                      });
-                    },
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0), // Ferah düzen
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 200,
+            child: Stack(
+              children: [
+                TextField(
+                  controller: _textController,
+                  expands: true,
+                  maxLines: null,
+                  minLines: null,
+                  textAlignVertical: TextAlignVertical.top,
+                  style: TextStyle(
+                    fontSize: 26,
+                    color: Theme.of(context).colorScheme.inversePrimary,
                   ),
-                  if (_textController.text.isNotEmpty)
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.clear,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.inversePrimary.withOpacity(0.7),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.primary,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(Radius.circular(24)),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(Radius.circular(24)),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                    hintText: 'Enter text',
+                    hintStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.tertiary,
+                    ),
+                    contentPadding: const EdgeInsets.all(20),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      if (value.isEmpty) {
+                        _outputController.clear();
+                      }
+                    });
+                  },
+                ),
+                if (_textController.text.isNotEmpty)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.clear,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.inversePrimary.withValues(alpha: 0.7),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _textController.clear();
+                          _outputController.clear();
+                        });
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 55,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: ElevatedButton(
+                    onPressed: !_speechEnabled || _isLoading
+                        ? null
+                        : () {
+                            if (_speechToText.isListening) {
+                              _stopListening();
+                            } else {
+                              _startListening();
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(
+                        context,
+                      ).colorScheme.inversePrimary,
+                      padding: EdgeInsets.zero,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(
+                          color: Theme.of(context).colorScheme.outline,
                         ),
-                        onPressed: () {
+                      ),
+                    ),
+                    child: Icon(
+                      _speechToText.isListening ? Icons.stop : Icons.mic_none,
+                      size: 26,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
+                  child: Stack(
+                    children: [
+                      LanguageDropdown(
+                        value: _selectedLanguage,
+                        onChanged: (value) {
                           setState(() {
-                            _textController.clear();
-                            _outputController.clear();
+                            _selectedLanguage = value!;
                           });
                         },
                       ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 55,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: ElevatedButton(
-                      onPressed: !_speechEnabled || _isLoading
-                          ? null
-                          : () {
-                              if (_speechToText.isListening) {
-                                _stopListening();
-                              } else {
-                                _startListening();
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Theme.of(
-                          context,
-                        ).colorScheme.inversePrimary,
-                        padding: EdgeInsets.zero,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: Icon(
-                        _speechToText.isListening ? Icons.stop : Icons.mic_none,
-                        size: 26,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 2,
-                    child: Stack(
-                      children: [
-                        LanguageDropdown(
-                          value: _selectedLanguage,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedLanguage = value!;
-                            });
-                          },
-                        ),
-                        if (_speechToText.isListening)
-                          Positioned.fill(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primary,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.mic,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.inversePrimary,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Text(
-                                    'Listening...',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                      if (_speechToText.isListening)
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary,
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 1,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _handleTranslate,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Theme.of(
-                          context,
-                        ).colorScheme.inversePrimary,
-                        padding: EdgeInsets.zero,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: _isLoading
-                          ? Center(
-                              child: SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.mic,
                                   color: Theme.of(
                                     context,
                                   ).colorScheme.inversePrimary,
-                                  strokeWidth: 2,
+                                  size: 20,
                                 ),
-                              ),
-                            )
-                          : const Icon(Icons.translate, size: 26),
-                    ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Listening...',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 1,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _handleTranslate,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(
+                        context,
+                      ).colorScheme.inversePrimary,
+                      padding: EdgeInsets.zero,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(
+                          color: Theme.of(context).colorScheme.outline,
+                        ),
+                      ),
+                    ),
+                    child: _isLoading
+                        ? Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.inversePrimary,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          )
+                        : const Icon(Icons.translate, size: 26),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

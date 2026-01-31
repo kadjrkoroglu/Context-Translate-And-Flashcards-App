@@ -55,9 +55,7 @@ class _MainPageState extends State<MainPage> {
                   color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outline.withOpacity(0.2),
+                    color: Theme.of(context).colorScheme.surfaceContainer,
                   ),
                 ),
                 child: Stack(
@@ -82,9 +80,8 @@ class _MainPageState extends State<MainPage> {
                                 borderRadius: BorderRadius.circular(18),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary.withOpacity(0.2),
+                                    color: Theme.of(context).colorScheme.primary
+                                        .withValues(alpha: 0.2),
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
                                   ),
@@ -112,7 +109,9 @@ class _MainPageState extends State<MainPage> {
               height: 290,
               child: PageView(
                 controller: _pageController,
-                physics: const PageScrollPhysics(),
+                onPageChanged: (index) {
+                  _outputController.clear();
+                },
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),

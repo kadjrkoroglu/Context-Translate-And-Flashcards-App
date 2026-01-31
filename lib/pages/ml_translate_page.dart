@@ -108,6 +108,8 @@ class _MLTranslatePageState extends State<MLTranslatePage> {
         }
         await modelManager.downloadModel(bcpCode);
       } catch (e) {
+        // Hata durumunda sessizce devam et veya logla
+        debugPrint('Download error: $e');
       } finally {
         if (mounted) {
           setState(() => _downloadingLanguage = null);
@@ -160,7 +162,7 @@ class _MLTranslatePageState extends State<MLTranslatePage> {
       );
 
       final String? response = await _onDeviceTranslator?.translateText(
-        originalText,
+        correctedText, // Orijinal metin yerine düzeltilmiş halini çeviriyoruz
       );
       setState(() {
         _outputController.text = response ?? '';
@@ -205,6 +207,7 @@ class _MLTranslatePageState extends State<MLTranslatePage> {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
               borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Theme.of(context).colorScheme.outline),
             ),
             child: Stack(
               children: [
@@ -222,6 +225,7 @@ class _MLTranslatePageState extends State<MLTranslatePage> {
                         textAlignVertical: TextAlignVertical.top,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.inversePrimary,
+                          fontSize: 26,
                         ),
                         decoration: InputDecoration(
                           hintText: 'Enter text',
@@ -242,9 +246,8 @@ class _MLTranslatePageState extends State<MLTranslatePage> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Material(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.inversePrimary.withOpacity(0.08),
+                            color: Theme.of(context).colorScheme.inversePrimary
+                                .withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(12),
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
@@ -277,7 +280,7 @@ class _MLTranslatePageState extends State<MLTranslatePage> {
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .inversePrimary
-                                                .withOpacity(0.7),
+                                                .withValues(alpha: 0.7),
                                             fontSize: 13,
                                           ),
                                           children: [
@@ -311,7 +314,7 @@ class _MLTranslatePageState extends State<MLTranslatePage> {
                         Icons.clear,
                         color: Theme.of(
                           context,
-                        ).colorScheme.inversePrimary.withOpacity(0.7),
+                        ).colorScheme.inversePrimary.withValues(alpha: 0.7),
                       ),
                       onPressed: () {
                         setState(() {
@@ -353,6 +356,9 @@ class _MLTranslatePageState extends State<MLTranslatePage> {
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
                 ),
               ),
               child: Icon(
@@ -394,7 +400,7 @@ class _MLTranslatePageState extends State<MLTranslatePage> {
                       Icons.swap_horiz,
                       color: Theme.of(
                         context,
-                      ).colorScheme.inversePrimary.withOpacity(0.6),
+                      ).colorScheme.inversePrimary.withValues(alpha: 0.6),
                     ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),

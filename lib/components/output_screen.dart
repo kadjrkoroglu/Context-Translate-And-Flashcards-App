@@ -12,6 +12,12 @@ class OutputScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Border stilini bir kere tanımlıyoruz
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(24),
+      borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+    );
+
     return SizedBox(
       height: 200,
       child: TextField(
@@ -21,15 +27,16 @@ class OutputScreen extends StatelessWidget {
         maxLines: null,
         minLines: null,
         textAlignVertical: TextAlignVertical.top,
+        style: TextStyle(
+          fontSize: 26,
+          color: Theme.of(context).colorScheme.inversePrimary,
+        ),
         decoration: InputDecoration(
           filled: true,
           fillColor: Theme.of(context).colorScheme.primary,
-          enabledBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(24)),
-          ),
-          focusedBorder: const OutlineInputBorder(
-            borderRadius: BorderRadius.all(Radius.circular(24)),
-          ),
+          border: border,
+          enabledBorder: border,
+          focusedBorder: border,
           hintText: hintText,
           hintStyle: TextStyle(color: Theme.of(context).colorScheme.tertiary),
           contentPadding: const EdgeInsets.all(20),
