@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:translate_app/theme/theme.dart';
 
 class ThemeProvider with ChangeNotifier {
-  ThemeData _themeData = darkTheme;
+  // Başlangıçta sistem temasını takip etmesi için ThemeMode.system kullanıyoruz
+  ThemeMode _themeMode = ThemeMode.system;
 
-  ThemeData get themeData => _themeData;
+  ThemeMode get themeMode => _themeMode;
 
-  set themeData(ThemeData themeData) {
-    _themeData = themeData;
+  // Temayı manuel değiştirmek istersen diye bu metodları tutuyoruz
+  bool get isDarkMode => _themeMode == ThemeMode.dark;
+
+  void toggleTheme(bool isOn) {
+    _themeMode = isOn ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
   }
 
-  void toggleTheme() {
-    _themeData = _themeData == lightTheme ? darkTheme : lightTheme;
+  void useSystemTheme() {
+    _themeMode = ThemeMode.system;
     notifyListeners();
   }
 }

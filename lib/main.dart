@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:provider/provider.dart';
-import 'package:translate_app/pages/translate_page.dart';
+import 'package:translate_app/pages/main_page.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:translate_app/theme/theme_provider.dart';
+import 'package:translate_app/theme/theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,10 +28,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: Provider.of<ThemeProvider>(context).themeData,
-      home: TranslatePage(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          home: const MainPage(),
+          theme: lightTheme, // lib/theme/theme.dart içinden geliyor
+          darkTheme: darkTheme, // lib/theme/theme.dart içinden geliyor
+          themeMode:
+              themeProvider.themeMode, // Sistem ayarını buradan takip eder
+        );
+      },
     );
   }
 }
