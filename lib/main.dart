@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:provider/provider.dart';
-import 'package:translate_app/pages/main_page.dart';
+import 'package:translate_app/presentation/pages/main_page.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:translate_app/theme/theme_provider.dart';
 import 'package:translate_app/theme/theme.dart';
+import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,8 +19,13 @@ void main() async {
 
   Gemini.init(apiKey: apiKey);
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => ThemeProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => MainViewModel()),
+        ChangeNotifierProvider(create: (_) => GeminiTranslateViewModel()),
+        ChangeNotifierProvider(create: (_) => MLTranslateViewModel()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -33,10 +41,9 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           home: const MainPage(),
-          theme: lightTheme, // lib/theme/theme.dart içinden geliyor
-          darkTheme: darkTheme, // lib/theme/theme.dart içinden geliyor
-          themeMode:
-              themeProvider.themeMode, // Sistem ayarını buradan takip eder
+          theme: lightTheme,
+          darkTheme: darkTheme,
+          themeMode: themeProvider.themeMode,
         );
       },
     );

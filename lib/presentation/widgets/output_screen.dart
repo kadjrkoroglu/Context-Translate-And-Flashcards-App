@@ -12,7 +12,7 @@ class OutputScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Border stilini bir kere tanımlıyoruz
+    // Define border style once
     final border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(24),
       borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),

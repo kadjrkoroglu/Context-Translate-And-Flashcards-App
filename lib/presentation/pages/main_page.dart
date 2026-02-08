@@ -1,28 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:translate_app/pages/ml_translate_page.dart';
-import 'package:translate_app/pages/translate_page.dart';
-import 'package:translate_app/components/output_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:translate_app/presentation/pages/ml_translate_page.dart';
+import 'package:translate_app/presentation/pages/translate_page.dart';
+import 'package:translate_app/presentation/widgets/output_screen.dart';
+import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
 
-class MainPage extends StatefulWidget {
+class MainPage extends StatelessWidget {
   const MainPage({super.key});
 
   @override
-  State<MainPage> createState() => _MainPageState();
-}
-
-class _MainPageState extends State<MainPage> {
-  final PageController _pageController = PageController();
-  final TextEditingController _outputController = TextEditingController();
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<MainViewModel>(context);
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -61,11 +51,11 @@ class _MainPageState extends State<MainPage> {
                 child: Stack(
                   children: [
                     AnimatedBuilder(
-                      animation: _pageController,
+                      animation: viewModel.pageController,
                       builder: (context, child) {
                         double offset = 0;
-                        if (_pageController.hasClients) {
-                          offset = _pageController.page ?? 0;
+                        if (viewModel.pageController.hasClients) {
+                          offset = viewModel.pageController.page ?? 0;
                         }
                         return Align(
                           alignment: Alignment(offset * 2 - 1, 0),
@@ -94,8 +84,8 @@ class _MainPageState extends State<MainPage> {
                     ),
                     Row(
                       children: [
-                        _buildToggleButton('Basic', 0),
-                        _buildToggleButton('AI', 1),
+                        _buildToggleButton(context, viewModel, 'Basic', 0),
+                        _buildToggleButton(context, viewModel, 'AI', 1),
                       ],
                     ),
                   ],
@@ -103,23 +93,27 @@ class _MainPageState extends State<MainPage> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
 
             SizedBox(
               height: 290,
               child: PageView(
-                controller: _pageController,
+                controller: viewModel.pageController,
                 onPageChanged: (index) {
-                  _outputController.clear();
+                  viewModel.clearOutput();
                 },
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: MLTranslatePage(outputController: _outputController),
+                    child: MLTranslatePage(
+                      outputController: viewModel.outputController,
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: TranslatePage(outputController: _outputController),
+                    child: TranslatePage(
+                      outputController: viewModel.outputController,
+                    ),
                   ),
                 ],
               ),
@@ -131,7 +125,7 @@ class _MainPageState extends State<MainPage> {
               padding: const EdgeInsets.symmetric(horizontal: 25.0),
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 25.0),
-                child: OutputScreen(controller: _outputController),
+                child: OutputScreen(controller: viewModel.outputController),
               ),
             ),
           ],
@@ -140,22 +134,25 @@ class _MainPageState extends State<MainPage> {
     );
   }
 
-  Widget _buildToggleButton(String label, int index) {
+  Widget _buildToggleButton(
+    BuildContext context,
+    MainViewModel viewModel,
+    String label,
+    int index,
+  ) {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          _pageController.animateToPage(
-            index,
-            duration: const Duration(milliseconds: 400),
-            curve: Curves.easeOutCubic,
-          );
+          viewModel.animateToPage(index);
         },
         behavior: HitTestBehavior.translucent,
         child: AnimatedBuilder(
-          animation: _pageController,
+          animation: viewModel.pageController,
           builder: (context, child) {
             double page = 0;
-            if (_pageController.hasClients) page = _pageController.page ?? 0;
+            if (viewModel.pageController.hasClients) {
+              page = viewModel.pageController.page ?? 0;
+            }
             double selectionFactor = (index == 0) ? (1 - page) : page;
             selectionFactor = selectionFactor.clamp(0, 1);
             return Center(

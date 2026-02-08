@@ -50,13 +50,9 @@ class LanguageDropdown extends StatelessWidget {
       borderSide: BorderSide(color: colorScheme.outline),
     );
 
-    // Eğer gelen değer listede yoksa (Auto-Detect gibi), onu geçici olarak listeye ekliyoruz
-    // Bu sayede "Assertion Error" hatası kalkıyor.
     final currentItems = items ?? languages;
     final List<String> dropdownItems = List.from(currentItems);
 
-    // Eğer değer '-' ise bunu 'hint' olarak kullanacağız, 'value' null olacak.
-    // Böylece listede gözükmeyecek ama ekranda tire görünecek.
     final bool isPlaceholder = value == '-';
     final String? effectiveValue = isPlaceholder ? null : value;
 
@@ -65,7 +61,7 @@ class LanguageDropdown extends StatelessWidget {
         splashColor: colorScheme.inversePrimary.withValues(alpha: 0.2),
       ),
       child: DropdownButtonFormField<String>(
-        value: effectiveValue,
+        initialValue: effectiveValue,
         hint: isPlaceholder
             ? Center(
                 child: Text(
@@ -81,8 +77,7 @@ class LanguageDropdown extends StatelessWidget {
         isExpanded: true,
         iconEnabledColor: colorScheme.inversePrimary,
         borderRadius: BorderRadius.circular(16),
-        dropdownColor:
-            colorScheme.primary, // Dropdown açıldığında arka plan rengi
+        dropdownColor: colorScheme.primary,
         decoration: InputDecoration(
           filled: true,
           fillColor: colorScheme.primary,
