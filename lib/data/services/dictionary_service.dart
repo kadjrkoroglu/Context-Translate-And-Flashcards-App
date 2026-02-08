@@ -10,8 +10,6 @@ class DictionaryService {
 
   final Map<String, Set<String>> _loadedDictionaries = {};
 
-  // Sözlük dosyalarının indirileceği temel URL (Örnek olarak yaygın bir GitHub kaynağı veya benzeri)
-  // Not: Bu URL'ler gerçek ve stabil olmalıdır.
   final Map<String, String> _dictionaryUrls = {
     'tr':
         'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/tr/tr_full.txt',
@@ -41,7 +39,7 @@ class DictionaryService {
       final directory = await getApplicationDocumentsDirectory();
       final file = File('${directory.path}/dict_$langCode.txt');
 
-      // Sadece kelimeleri alıp (frekans sayılarını atarak) kaydediyoruz
+      // Extract words, removing frequencies
       final lines = response.body.split('\n');
       final words = lines
           .map((line) => line.split(' ')[0].toLowerCase().trim())
@@ -51,7 +49,7 @@ class DictionaryService {
 
       await file.writeAsString(words);
     } else {
-      throw Exception('Sözlük indirilemedi');
+      throw Exception('Failed to download dictionary');
     }
   }
 
@@ -83,10 +81,10 @@ class DictionaryService {
     if (dict.contains(word) || word.length < 3) return word;
 
     String bestMatch = word;
-    int minDistance = 3; // Maksimum 2 karakter farka kadar izin veriyoruz
+    int minDistance = 3; // Allow up to 2 character difference
 
     for (var dictWord in dict) {
-      // Performans için sadece benzer uzunluktaki kelimelere bakıyoruz
+      // Optimization: look for words with similar length
       if ((dictWord.length - word.length).abs() > 2) continue;
 
       int distance = _levenshtein(word, dictWord);
@@ -94,7 +92,7 @@ class DictionaryService {
         minDistance = distance;
         bestMatch = dictWord;
       }
-      if (minDistance == 1) break; // 1 fark bulduysak yeterli
+      if (minDistance == 1) break;
     }
 
     return bestMatch;
