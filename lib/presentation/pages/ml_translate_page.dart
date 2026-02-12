@@ -147,83 +147,71 @@ class MLTranslatePage extends StatelessWidget {
   ) {
     return SizedBox(
       height: 55,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Stack(
         children: [
-          Expanded(
-            flex: 2,
-            child: ElevatedButton(
-              onPressed: !viewModel.speechEnabled || viewModel.isLoading
-                  ? null
-                  : () {
-                      if (viewModel.isListening) {
-                        viewModel.stopListening();
-                      } else {
-                        viewModel.startListening(outputController);
-                      }
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.inversePrimary,
-                padding: EdgeInsets.zero,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
+          Row(
+            children: [
+              Expanded(
+                child: LanguageDropdown(
+                  value: viewModel.sourceLanguage,
+                  isLoading:
+                      viewModel.downloadingLanguage == viewModel.sourceLanguage,
+                  onChanged: (v) =>
+                      viewModel.setSourceLanguage(v!, outputController),
+                  showIcon: false,
+                ),
+              ),
+              SizedBox(
+                width: 48,
+                child: IconButton(
+                  onPressed: () => viewModel.swapLanguages(outputController),
+                  icon: Icon(
+                    Icons.swap_horiz,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.inversePrimary.withValues(alpha: 0.6),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: LanguageDropdown(
+                  value: viewModel.targetLanguage,
+                  isLoading:
+                      viewModel.downloadingLanguage == viewModel.targetLanguage,
+                  onChanged: (v) =>
+                      viewModel.setTargetLanguage(v!, outputController),
+                  showIcon: false,
+                ),
+              ),
+            ],
+          ),
+          if (viewModel.isListening)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
                   borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
                 ),
-              ),
-              child: Icon(
-                viewModel.isListening ? Icons.stop : Icons.mic_none,
-                size: 26,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            flex: 7,
-            child: Row(
-              children: [
-                Expanded(
-                  child: LanguageDropdown(
-                    value: viewModel.sourceLanguage,
-                    isLoading:
-                        viewModel.downloadingLanguage ==
-                        viewModel.sourceLanguage,
-                    onChanged: (v) =>
-                        viewModel.setSourceLanguage(v!, outputController),
-                    showIcon: false,
-                  ),
-                ),
-                SizedBox(
-                  width: 40,
-                  child: IconButton(
-                    onPressed: () => viewModel.swapLanguages(outputController),
-                    icon: Icon(
-                      Icons.swap_horiz,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.inversePrimary.withValues(alpha: 0.6),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.mic,
+                      color: Theme.of(context).colorScheme.inversePrimary,
+                      size: 20,
                     ),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Listening...',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
                 ),
-                Expanded(
-                  child: LanguageDropdown(
-                    value: viewModel.targetLanguage,
-                    isLoading:
-                        viewModel.downloadingLanguage ==
-                        viewModel.targetLanguage,
-                    onChanged: (v) =>
-                        viewModel.setTargetLanguage(v!, outputController),
-                    showIcon: false,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
         ],
       ),
     );

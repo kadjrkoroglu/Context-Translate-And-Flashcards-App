@@ -134,22 +134,7 @@ class MainPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 25.0),
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 120.0),
-                child: AnimatedBuilder(
-                  animation: viewModel.pageController,
-                  builder: (context, child) {
-                    double page = 0;
-                    if (viewModel.pageController.hasClients) {
-                      page = viewModel.pageController.page ?? 0;
-                    }
-
-                    double dynamicFontSize = 26 - (page * 8);
-
-                    return OutputScreen(
-                      controller: viewModel.outputController,
-                      fontSize: dynamicFontSize,
-                    );
-                  },
-                ),
+                child: OutputScreen(controller: viewModel.outputController),
               ),
             ),
           ],

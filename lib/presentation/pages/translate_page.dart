@@ -84,42 +84,6 @@ class TranslatePage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
-                  flex: 1,
-                  child: ElevatedButton(
-                    onPressed: !viewModel.speechEnabled || viewModel.isLoading
-                        ? null
-                        : () {
-                            if (viewModel.isListening) {
-                              viewModel.stopListening();
-                            } else {
-                              viewModel.startListening(
-                                (_) => viewModel.translate(outputController),
-                              );
-                            }
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(
-                        context,
-                      ).colorScheme.inversePrimary,
-                      padding: EdgeInsets.zero,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
-                      ),
-                    ),
-                    child: Icon(
-                      viewModel.isListening ? Icons.stop : Icons.mic_none,
-                      size: 26,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 2,
                   child: Stack(
                     children: [
                       LanguageDropdown(
@@ -162,7 +126,6 @@ class TranslatePage extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  flex: 1,
                   child: ElevatedButton(
                     onPressed: viewModel.isLoading
                         ? null

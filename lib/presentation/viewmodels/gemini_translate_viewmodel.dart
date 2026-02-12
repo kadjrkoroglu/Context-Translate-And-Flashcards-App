@@ -29,7 +29,16 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   }
 
   Future<void> _initSpeech() async {
-    _speechEnabled = await _speechToText.initialize();
+    _speechEnabled = await _speechToText.initialize(
+      onStatus: (status) {
+        if (status == 'done' || status == 'notListening') {
+          notifyListeners();
+        }
+      },
+      onError: (error) {
+        notifyListeners();
+      },
+    );
     notifyListeners();
   }
 
