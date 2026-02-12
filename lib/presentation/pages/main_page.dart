@@ -3,8 +3,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/pages/ml_translate_page.dart';
 import 'package:translate_app/presentation/pages/translate_page.dart';
+import 'package:translate_app/presentation/pages/history_page.dart';
+import 'package:translate_app/presentation/pages/favorites_page.dart';
+import 'package:translate_app/presentation/pages/profile_page.dart';
+import 'package:translate_app/presentation/pages/cards_page.dart';
 import 'package:translate_app/presentation/widgets/output_screen.dart';
 import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
@@ -12,9 +18,12 @@ class MainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<MainViewModel>(context);
+    final mlViewModel = Provider.of<MLTranslateViewModel>(context);
+    final geminiViewModel = Provider.of<GeminiTranslateViewModel>(context);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
+      extendBody: true,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
         centerTitle: true,
@@ -124,9 +133,125 @@ class MainPage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 25.0),
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 25.0),
-                child: OutputScreen(controller: viewModel.outputController),
+                padding: const EdgeInsets.only(bottom: 120.0),
+                child: AnimatedBuilder(
+                  animation: viewModel.pageController,
+                  builder: (context, child) {
+                    double page = 0;
+                    if (viewModel.pageController.hasClients) {
+                      page = viewModel.pageController.page ?? 0;
+                    }
+
+                    double dynamicFontSize = 26 - (page * 8);
+
+                    return OutputScreen(
+                      controller: viewModel.outputController,
+                      fontSize: dynamicFontSize,
+                    );
+                  },
+                ),
               ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: SizedBox(
+        width: 80,
+        height: 80,
+        child: FloatingActionButton(
+          onPressed: () {
+            final isMLPage = (viewModel.pageController.page ?? 0) < 0.5;
+            if (isMLPage) {
+              if (mlViewModel.isListening) {
+                mlViewModel.stopListening();
+              } else {
+                mlViewModel.startListening(viewModel.outputController);
+              }
+            } else {
+              if (geminiViewModel.isListening) {
+                geminiViewModel.stopListening();
+              } else {
+                geminiViewModel.startListening(
+                  (_) => geminiViewModel.translate(viewModel.outputController),
+                );
+              }
+            }
+          },
+          elevation: 2,
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          shape: const CircleBorder(),
+          child: Icon(
+            Icons.mic,
+            color: Theme.of(context).colorScheme.surface,
+            size: 40,
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        height: 50,
+        color: Theme.of(context).colorScheme.primary,
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 10,
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            IconButton(
+              icon: Icon(
+                Icons.history,
+                color: Theme.of(context).colorScheme.inversePrimary,
+                size: 28,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HistoryPage()),
+                );
+              },
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.favorite_border,
+                color: Theme.of(context).colorScheme.inversePrimary,
+                size: 28,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FavoritesPage(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 48), // Space for the FAB
+            IconButton(
+              icon: Icon(
+                Icons.quiz_outlined,
+                color: Theme.of(context).colorScheme.inversePrimary,
+                size: 28,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CardsPage()),
+                );
+              },
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.person_outline,
+                color: Theme.of(context).colorScheme.inversePrimary,
+                size: 28,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfilePage()),
+                );
+              },
             ),
           ],
         ),
