@@ -24,6 +24,7 @@ class MainPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       extendBody: true,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.surface,
         centerTitle: true,
@@ -175,7 +176,7 @@ class MainPage extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         padding: const EdgeInsets.symmetric(horizontal: 10),
-        height: 50,
+        height: 70,
         color: Theme.of(context).colorScheme.primary,
         shape: const CircularNotchedRectangle(),
         notchMargin: 10,
