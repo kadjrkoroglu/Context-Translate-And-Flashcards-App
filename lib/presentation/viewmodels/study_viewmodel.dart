@@ -39,19 +39,52 @@ class StudyViewModel extends ChangeNotifier {
       final now = DateTime.now();
       final allCards = deck.cards.toList();
 
-      _dueCards = allCards.where((card) {
-        if (card.nextReviewDate == null) return true;
-        return card.nextReviewDate!.isBefore(now) ||
-            card.nextReviewDate!.isAtSameMomentAs(now);
-      }).toList();
+      int todayNewStudied = 0;
+      int todayReviewsStudied = 0;
 
-      // Sort: new cards first, then by nextReviewDate
-      _dueCards.sort((a, b) {
-        if (a.nextReviewDate == null && b.nextReviewDate == null) return 0;
-        if (a.nextReviewDate == null) return -1;
-        if (b.nextReviewDate == null) return 1;
-        return a.nextReviewDate!.compareTo(b.nextReviewDate!);
-      });
+      for (var card in allCards) {
+        if (card.lastStudiedDate != null &&
+            card.lastStudiedDate!.year == now.year &&
+            card.lastStudiedDate!.month == now.month &&
+            card.lastStudiedDate!.day == now.day) {
+          if (card.repetitions == 0) {
+            todayNewStudied++;
+          } else {
+            todayReviewsStudied++;
+          }
+        }
+      }
+
+      int allowedNew = (deck.newCardsLimit - todayNewStudied).clamp(
+        0,
+        deck.newCardsLimit,
+      );
+      int allowedReviews = (deck.reviewsLimit - todayReviewsStudied).clamp(
+        0,
+        deck.reviewsLimit,
+      );
+
+      List<CardItem> pendingNew = [];
+      List<CardItem> pendingReviews = [];
+
+      for (var card in allCards) {
+        // Include new cards and cards due for review within deck limits
+        if (card.nextReviewDate == null) {
+          pendingNew.add(card);
+        } else if (card.nextReviewDate!.isBefore(now) ||
+            card.nextReviewDate!.isAtSameMomentAs(now)) {
+          pendingReviews.add(card);
+        }
+      }
+
+      pendingReviews.sort(
+        (a, b) => a.nextReviewDate!.compareTo(b.nextReviewDate!),
+      );
+
+      _dueCards = [
+        ...pendingNew.take(allowedNew),
+        ...pendingReviews.take(allowedReviews),
+      ];
 
       if (_dueCards.isEmpty) {
         _isFinished = true;

@@ -105,4 +105,13 @@ class DecksViewModel extends ChangeNotifier {
       'easy': easyCount,
     };
   }
+
+  Future<void> updateDeckLimits(
+    int deckId,
+    int newCardsLimit,
+    int reviewsLimit,
+  ) async {
+    await _storageService.updateDeckLimits(deckId, newCardsLimit, reviewsLimit);
+    await loadDecks();
+  }
 }

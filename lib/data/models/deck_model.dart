@@ -10,6 +10,9 @@ class DeckItem {
   late String name;
   late DateTime createdAt;
 
+  int newCardsLimit = 20;
+  int reviewsLimit = 200;
+
   final cards = IsarLinks<CardItem>();
 
   int? orderIndex;

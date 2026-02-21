@@ -1,44 +1,96 @@
+import 'dart:math';
 import '../models/card_model.dart';
 
 enum StudyRating { again, hard, good, easy }
 
 class SRSService {
   static CardItem calculateNextReview(CardItem card, StudyRating rating) {
-    int level = card.level;
     DateTime now = DateTime.now();
     DateTime nextReview;
 
-    switch (rating) {
-      case StudyRating.again:
-        level = 0;
-        nextReview = now;
-        break;
-      case StudyRating.hard:
-        level = (level - 1).clamp(0, 10);
-        nextReview = now.add(const Duration(days: 1));
-        break;
-      case StudyRating.good:
-        level = (level + 1).clamp(0, 10);
-        nextReview = now.add(Duration(days: _getIntervalForLevel(level)));
-        break;
-      case StudyRating.easy:
-        level = (level + 2).clamp(0, 10);
-        nextReview = now.add(Duration(days: _getIntervalForLevel(level) * 2));
-        break;
+    if (card.repetitions == 0) {
+      // New cards
+      switch (rating) {
+        case StudyRating.again:
+          card.interval = 0;
+          card.repetitions = 0;
+          break;
+        case StudyRating.hard:
+          card.interval = 1;
+          card.repetitions = 1;
+          break;
+        case StudyRating.good:
+          card.interval = 1;
+          card.repetitions = 1;
+          break;
+        case StudyRating.easy:
+          card.interval = 4;
+          card.repetitions = 1;
+          card.easeFactor = 2.5;
+          break;
+      }
+    } else {
+      // Learned cards
+      if (rating == StudyRating.again) {
+        card.repetitions = 0;
+        card.interval = 1;
+      } else {
+        int q = 0;
+        switch (rating) {
+          case StudyRating.again:
+            break; // Handled above
+          case StudyRating.hard:
+            q = 3;
+            break;
+          case StudyRating.good:
+            q = 4;
+            break;
+          case StudyRating.easy:
+            q = 5;
+            break;
+        }
+
+        // Ease Factor (EF) Update
+        card.easeFactor =
+            card.easeFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
+        if (card.easeFactor < 1.3) {
+          card.easeFactor = 1.3;
+        }
+
+        // Interval Calculation
+        if (card.repetitions == 1) {
+          card.interval = 6;
+        } else {
+          card.interval = (card.interval * card.easeFactor).round();
+        }
+        card.repetitions += 1;
+      }
     }
 
-    card.level = level;
+    // Fuzz calculation (+/- 5%) to avoid clumping
+    int fuzzedInterval = card.interval;
+    if (fuzzedInterval > 0) {
+      final fuzzDays = (fuzzedInterval * 0.05).round();
+      if (fuzzDays > 0) {
+        final random = Random();
+        // random number between -fuzzDays and +fuzzDays
+        final modifier = random.nextInt(fuzzDays * 2 + 1) - fuzzDays;
+        fuzzedInterval += modifier;
+      }
+    }
+
+    if (fuzzedInterval == 0 && rating == StudyRating.again) {
+      nextReview = now; // Immediate review (same day)
+    } else {
+      nextReview = now.add(Duration(days: fuzzedInterval));
+    }
+
+    card.isNewCard = false; // Mark as not new
+    card.lastStudiedDate = now;
     card.nextReviewDate = nextReview;
     card.lastRatingIndex = rating.index;
-    return card;
-  }
 
-  static int _getIntervalForLevel(int level) {
-    final intervals = [1, 3, 7, 14, 30, 60, 90, 180, 365, 730, 1460];
-    if (level < intervals.length) {
-      return intervals[level];
-    }
-    return intervals.last;
+    return card;
   }
 
   static String getRatingLabel(StudyRating rating) {

@@ -150,6 +150,15 @@ class DecksPage extends StatelessWidget {
                 );
               },
             ),
+            _buildOptionItem(
+              context,
+              icon: Icons.settings_outlined,
+              title: 'Deck Settings',
+              onTap: () {
+                Navigator.pop(context);
+                _showDeckSettingsDialog(context, deck, viewModel);
+              },
+            ),
             const Divider(),
             _buildOptionItem(
               context,
@@ -298,6 +307,99 @@ class DecksPage extends StatelessWidget {
     );
   }
 
+  void _showDeckSettingsDialog(
+    BuildContext context,
+    dynamic deck,
+    DecksViewModel viewModel,
+  ) {
+    final newLimitController = TextEditingController(
+      text: deck.newCardsLimit.toString(),
+    );
+    final reviewLimitController = TextEditingController(
+      text: deck.reviewsLimit.toString(),
+    );
+    final colorScheme = Theme.of(context).colorScheme;
+    final inversePrimary = colorScheme.inversePrimary;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: colorScheme.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(
+          'Deck Settings',
+          style: TextStyle(color: inversePrimary, fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: newLimitController,
+              keyboardType: TextInputType.number,
+              style: TextStyle(color: inversePrimary),
+              decoration: InputDecoration(
+                labelText: 'Daily New Cards Limit',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                labelStyle: TextStyle(
+                  color: inversePrimary.withValues(alpha: 0.7),
+                ),
+                filled: true,
+                fillColor: colorScheme.primary.withValues(alpha: 0.5),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: reviewLimitController,
+              keyboardType: TextInputType.number,
+              style: TextStyle(color: inversePrimary),
+              decoration: InputDecoration(
+                labelText: 'Daily Reviews Limit',
+                floatingLabelBehavior: FloatingLabelBehavior.always,
+                labelStyle: TextStyle(
+                  color: inversePrimary.withValues(alpha: 0.7),
+                ),
+                filled: true,
+                fillColor: colorScheme.primary.withValues(alpha: 0.5),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel', style: TextStyle(color: inversePrimary)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newLimit = int.tryParse(newLimitController.text) ?? 20;
+              final reviewLimit =
+                  int.tryParse(reviewLimitController.text) ?? 200;
+
+              await viewModel.updateDeckLimits(deck.id, newLimit, reviewLimit);
+              if (context.mounted) Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: inversePrimary,
+              foregroundColor: colorScheme.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showAddCardDialog(
     BuildContext context,
     dynamic deck,
@@ -407,18 +509,19 @@ class DecksPage extends StatelessWidget {
     );
   }
 
-  Widget _countBadge(int count, Color bgColor, Color textColor) {
+  Widget _countBadge(int count, Color color, Color textColor) {
     if (count == 0) return const SizedBox.shrink();
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(6),
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color, width: 1.5),
       ),
       child: Text(
         '$count',
         style: TextStyle(
-          color: textColor,
+          color: color,
           fontSize: 11,
           fontWeight: FontWeight.bold,
         ),

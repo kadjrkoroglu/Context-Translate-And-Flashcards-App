@@ -10,15 +10,12 @@ class LocalStorageService {
 
   Future<void> init() async {
     final dir = await getApplicationDocumentsDirectory();
-    isar = await Isar.open(
-      [
-        FavoriteWordSchema,
-        HistoryItemSchema,
-        CardItemSchema,
-        DeckItemSchema,
-      ], // Register all schemas
-      directory: dir.path,
-    );
+    isar = await Isar.open([
+      FavoriteWordSchema,
+      HistoryItemSchema,
+      CardItemSchema,
+      DeckItemSchema,
+    ], directory: dir.path);
   }
 
   Future<void> addFavorite(FavoriteWord favorite) async {
@@ -44,7 +41,7 @@ class LocalStorageService {
   }
 
   Future<List<HistoryItem>> getAllHistory() async {
-    // Return history sorted by newest first
+    // Sorted by newest first
     return await isar.historyItems.where().sortByCreatedAtDesc().findAll();
   }
 
@@ -71,17 +68,18 @@ class LocalStorageService {
   }
 
   Future<void> deleteDeck(int id) async {
-    await isar.writeTxn(() async {
-      final deck = await isar.deckItems.get(id);
-      if (deck != null) {
-        // Delete all cards in the deck too
-        final cardsToDelete = deck.cards.toList();
+    final deck = await isar.deckItems.get(id);
+    if (deck != null) {
+      // Implicit read transaction outside the writeTxn
+      final cardsToDelete = deck.cards.toList();
+
+      await isar.writeTxn(() async {
         for (final card in cardsToDelete) {
           await isar.cardItems.delete(card.id);
         }
         await isar.deckItems.delete(id);
-      }
-    });
+      });
+    }
   }
 
   Future<void> addCardToDeck(int deckId, CardItem card) async {
@@ -104,6 +102,21 @@ class LocalStorageService {
   Future<void> updateCard(CardItem card) async {
     await isar.writeTxn(() async {
       await isar.cardItems.put(card);
+    });
+  }
+
+  Future<void> updateDeckLimits(
+    int deckId,
+    int newCardsLimit,
+    int reviewsLimit,
+  ) async {
+    await isar.writeTxn(() async {
+      final deck = await isar.deckItems.get(deckId);
+      if (deck != null) {
+        deck.newCardsLimit = newCardsLimit;
+        deck.reviewsLimit = reviewsLimit;
+        await isar.deckItems.put(deck);
+      }
     });
   }
 }

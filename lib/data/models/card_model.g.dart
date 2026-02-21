@@ -22,23 +22,48 @@ const CardItemSchema = CollectionSchema(
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
-    r'level': PropertySchema(
+    r'easeFactor': PropertySchema(
       id: 1,
-      name: r'level',
+      name: r'easeFactor',
+      type: IsarType.double,
+    ),
+    r'interval': PropertySchema(
+      id: 2,
+      name: r'interval',
       type: IsarType.long,
     ),
+    r'isNewCard': PropertySchema(
+      id: 3,
+      name: r'isNewCard',
+      type: IsarType.bool,
+    ),
+    r'lastRatingIndex': PropertySchema(
+      id: 4,
+      name: r'lastRatingIndex',
+      type: IsarType.long,
+    ),
+    r'lastStudiedDate': PropertySchema(
+      id: 5,
+      name: r'lastStudiedDate',
+      type: IsarType.dateTime,
+    ),
     r'nextReviewDate': PropertySchema(
-      id: 2,
+      id: 6,
       name: r'nextReviewDate',
       type: IsarType.dateTime,
     ),
+    r'repetitions': PropertySchema(
+      id: 7,
+      name: r'repetitions',
+      type: IsarType.long,
+    ),
     r'translation': PropertySchema(
-      id: 3,
+      id: 8,
       name: r'translation',
       type: IsarType.string,
     ),
     r'word': PropertySchema(
-      id: 4,
+      id: 9,
       name: r'word',
       type: IsarType.string,
     )
@@ -75,10 +100,15 @@ void _cardItemSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeDateTime(offsets[0], object.createdAt);
-  writer.writeLong(offsets[1], object.level);
-  writer.writeDateTime(offsets[2], object.nextReviewDate);
-  writer.writeString(offsets[3], object.translation);
-  writer.writeString(offsets[4], object.word);
+  writer.writeDouble(offsets[1], object.easeFactor);
+  writer.writeLong(offsets[2], object.interval);
+  writer.writeBool(offsets[3], object.isNewCard);
+  writer.writeLong(offsets[4], object.lastRatingIndex);
+  writer.writeDateTime(offsets[5], object.lastStudiedDate);
+  writer.writeDateTime(offsets[6], object.nextReviewDate);
+  writer.writeLong(offsets[7], object.repetitions);
+  writer.writeString(offsets[8], object.translation);
+  writer.writeString(offsets[9], object.word);
 }
 
 CardItem _cardItemDeserialize(
@@ -89,11 +119,16 @@ CardItem _cardItemDeserialize(
 ) {
   final object = CardItem();
   object.createdAt = reader.readDateTime(offsets[0]);
+  object.easeFactor = reader.readDouble(offsets[1]);
   object.id = id;
-  object.level = reader.readLong(offsets[1]);
-  object.nextReviewDate = reader.readDateTimeOrNull(offsets[2]);
-  object.translation = reader.readString(offsets[3]);
-  object.word = reader.readString(offsets[4]);
+  object.interval = reader.readLong(offsets[2]);
+  object.isNewCard = reader.readBool(offsets[3]);
+  object.lastRatingIndex = reader.readLongOrNull(offsets[4]);
+  object.lastStudiedDate = reader.readDateTimeOrNull(offsets[5]);
+  object.nextReviewDate = reader.readDateTimeOrNull(offsets[6]);
+  object.repetitions = reader.readLong(offsets[7]);
+  object.translation = reader.readString(offsets[8]);
+  object.word = reader.readString(offsets[9]);
   return object;
 }
 
@@ -107,12 +142,22 @@ P _cardItemDeserializeProp<P>(
     case 0:
       return (reader.readDateTime(offset)) as P;
     case 1:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 2:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 3:
-      return (reader.readString(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 4:
+      return (reader.readLongOrNull(offset)) as P;
+    case 5:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 6:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 7:
+      return (reader.readLong(offset)) as P;
+    case 8:
+      return (reader.readString(offset)) as P;
+    case 9:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -261,6 +306,68 @@ extension CardItemQueryFilter
     });
   }
 
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> easeFactorEqualTo(
+    double value, {
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'easeFactor',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> easeFactorGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'easeFactor',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> easeFactorLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'easeFactor',
+        value: value,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> easeFactorBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'easeFactor',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        epsilon: epsilon,
+      ));
+    });
+  }
+
   QueryBuilder<CardItem, CardItem, QAfterFilterCondition> idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -313,43 +420,43 @@ extension CardItemQueryFilter
     });
   }
 
-  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> levelEqualTo(
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> intervalEqualTo(
       int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'level',
+        property: r'interval',
         value: value,
       ));
     });
   }
 
-  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> levelGreaterThan(
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> intervalGreaterThan(
     int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'level',
+        property: r'interval',
         value: value,
       ));
     });
   }
 
-  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> levelLessThan(
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> intervalLessThan(
     int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'level',
+        property: r'interval',
         value: value,
       ));
     });
   }
 
-  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> levelBetween(
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> intervalBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -357,7 +464,165 @@ extension CardItemQueryFilter
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'level',
+        property: r'interval',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> isNewCardEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isNewCard',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      lastRatingIndexIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'lastRatingIndex',
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      lastRatingIndexIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'lastRatingIndex',
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      lastRatingIndexEqualTo(int? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'lastRatingIndex',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      lastRatingIndexGreaterThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'lastRatingIndex',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      lastRatingIndexLessThan(
+    int? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'lastRatingIndex',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      lastRatingIndexBetween(
+    int? lower,
+    int? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'lastRatingIndex',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      lastStudiedDateIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'lastStudiedDate',
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      lastStudiedDateIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'lastStudiedDate',
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      lastStudiedDateEqualTo(DateTime? value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'lastStudiedDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      lastStudiedDateGreaterThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'lastStudiedDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      lastStudiedDateLessThan(
+    DateTime? value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'lastStudiedDate',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      lastStudiedDateBetween(
+    DateTime? lower,
+    DateTime? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'lastStudiedDate',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -431,6 +696,60 @@ extension CardItemQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'nextReviewDate',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> repetitionsEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'repetitions',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      repetitionsGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'repetitions',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> repetitionsLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'repetitions',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> repetitionsBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'repetitions',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -721,15 +1040,63 @@ extension CardItemQuerySortBy on QueryBuilder<CardItem, CardItem, QSortBy> {
     });
   }
 
-  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByLevel() {
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByEaseFactor() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'level', Sort.asc);
+      return query.addSortBy(r'easeFactor', Sort.asc);
     });
   }
 
-  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByLevelDesc() {
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByEaseFactorDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'level', Sort.desc);
+      return query.addSortBy(r'easeFactor', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByInterval() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'interval', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByIntervalDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'interval', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByIsNewCard() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isNewCard', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByIsNewCardDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isNewCard', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByLastRatingIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastRatingIndex', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByLastRatingIndexDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastRatingIndex', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByLastStudiedDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastStudiedDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByLastStudiedDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastStudiedDate', Sort.desc);
     });
   }
 
@@ -742,6 +1109,18 @@ extension CardItemQuerySortBy on QueryBuilder<CardItem, CardItem, QSortBy> {
   QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByNextReviewDateDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'nextReviewDate', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByRepetitions() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'repetitions', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByRepetitionsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'repetitions', Sort.desc);
     });
   }
 
@@ -784,6 +1163,18 @@ extension CardItemQuerySortThenBy
     });
   }
 
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByEaseFactor() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'easeFactor', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByEaseFactorDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'easeFactor', Sort.desc);
+    });
+  }
+
   QueryBuilder<CardItem, CardItem, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -796,15 +1187,51 @@ extension CardItemQuerySortThenBy
     });
   }
 
-  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByLevel() {
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByInterval() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'level', Sort.asc);
+      return query.addSortBy(r'interval', Sort.asc);
     });
   }
 
-  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByLevelDesc() {
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByIntervalDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'level', Sort.desc);
+      return query.addSortBy(r'interval', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByIsNewCard() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isNewCard', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByIsNewCardDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isNewCard', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByLastRatingIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastRatingIndex', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByLastRatingIndexDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastRatingIndex', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByLastStudiedDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastStudiedDate', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByLastStudiedDateDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastStudiedDate', Sort.desc);
     });
   }
 
@@ -817,6 +1244,18 @@ extension CardItemQuerySortThenBy
   QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByNextReviewDateDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'nextReviewDate', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByRepetitions() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'repetitions', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByRepetitionsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'repetitions', Sort.desc);
     });
   }
 
@@ -853,15 +1292,45 @@ extension CardItemQueryWhereDistinct
     });
   }
 
-  QueryBuilder<CardItem, CardItem, QDistinct> distinctByLevel() {
+  QueryBuilder<CardItem, CardItem, QDistinct> distinctByEaseFactor() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'level');
+      return query.addDistinctBy(r'easeFactor');
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QDistinct> distinctByInterval() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'interval');
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QDistinct> distinctByIsNewCard() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isNewCard');
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QDistinct> distinctByLastRatingIndex() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'lastRatingIndex');
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QDistinct> distinctByLastStudiedDate() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'lastStudiedDate');
     });
   }
 
   QueryBuilder<CardItem, CardItem, QDistinct> distinctByNextReviewDate() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'nextReviewDate');
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QDistinct> distinctByRepetitions() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'repetitions');
     });
   }
 
@@ -894,15 +1363,46 @@ extension CardItemQueryProperty
     });
   }
 
-  QueryBuilder<CardItem, int, QQueryOperations> levelProperty() {
+  QueryBuilder<CardItem, double, QQueryOperations> easeFactorProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'level');
+      return query.addPropertyName(r'easeFactor');
+    });
+  }
+
+  QueryBuilder<CardItem, int, QQueryOperations> intervalProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'interval');
+    });
+  }
+
+  QueryBuilder<CardItem, bool, QQueryOperations> isNewCardProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isNewCard');
+    });
+  }
+
+  QueryBuilder<CardItem, int?, QQueryOperations> lastRatingIndexProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'lastRatingIndex');
+    });
+  }
+
+  QueryBuilder<CardItem, DateTime?, QQueryOperations>
+      lastStudiedDateProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'lastStudiedDate');
     });
   }
 
   QueryBuilder<CardItem, DateTime?, QQueryOperations> nextReviewDateProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'nextReviewDate');
+    });
+  }
+
+  QueryBuilder<CardItem, int, QQueryOperations> repetitionsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'repetitions');
     });
   }
 

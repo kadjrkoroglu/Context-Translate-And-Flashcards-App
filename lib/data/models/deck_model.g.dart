@@ -27,9 +27,19 @@ const DeckItemSchema = CollectionSchema(
       name: r'name',
       type: IsarType.string,
     ),
-    r'orderIndex': PropertySchema(
+    r'newCardsLimit': PropertySchema(
       id: 2,
+      name: r'newCardsLimit',
+      type: IsarType.long,
+    ),
+    r'orderIndex': PropertySchema(
+      id: 3,
       name: r'orderIndex',
+      type: IsarType.long,
+    ),
+    r'reviewsLimit': PropertySchema(
+      id: 4,
+      name: r'reviewsLimit',
       type: IsarType.long,
     )
   },
@@ -72,7 +82,9 @@ void _deckItemSerialize(
 ) {
   writer.writeDateTime(offsets[0], object.createdAt);
   writer.writeString(offsets[1], object.name);
-  writer.writeLong(offsets[2], object.orderIndex);
+  writer.writeLong(offsets[2], object.newCardsLimit);
+  writer.writeLong(offsets[3], object.orderIndex);
+  writer.writeLong(offsets[4], object.reviewsLimit);
 }
 
 DeckItem _deckItemDeserialize(
@@ -85,7 +97,9 @@ DeckItem _deckItemDeserialize(
   object.createdAt = reader.readDateTime(offsets[0]);
   object.id = id;
   object.name = reader.readString(offsets[1]);
-  object.orderIndex = reader.readLongOrNull(offsets[2]);
+  object.newCardsLimit = reader.readLong(offsets[2]);
+  object.orderIndex = reader.readLongOrNull(offsets[3]);
+  object.reviewsLimit = reader.readLong(offsets[4]);
   return object;
 }
 
@@ -101,7 +115,11 @@ P _deckItemDeserializeProp<P>(
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
+      return (reader.readLong(offset)) as P;
+    case 3:
       return (reader.readLongOrNull(offset)) as P;
+    case 4:
+      return (reader.readLong(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -432,6 +450,60 @@ extension DeckItemQueryFilter
     });
   }
 
+  QueryBuilder<DeckItem, DeckItem, QAfterFilterCondition> newCardsLimitEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'newCardsLimit',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DeckItem, DeckItem, QAfterFilterCondition>
+      newCardsLimitGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'newCardsLimit',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DeckItem, DeckItem, QAfterFilterCondition> newCardsLimitLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'newCardsLimit',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DeckItem, DeckItem, QAfterFilterCondition> newCardsLimitBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'newCardsLimit',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
   QueryBuilder<DeckItem, DeckItem, QAfterFilterCondition> orderIndexIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -494,6 +566,60 @@ extension DeckItemQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'orderIndex',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<DeckItem, DeckItem, QAfterFilterCondition> reviewsLimitEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'reviewsLimit',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DeckItem, DeckItem, QAfterFilterCondition>
+      reviewsLimitGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'reviewsLimit',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DeckItem, DeckItem, QAfterFilterCondition> reviewsLimitLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'reviewsLimit',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<DeckItem, DeckItem, QAfterFilterCondition> reviewsLimitBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'reviewsLimit',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -591,6 +717,18 @@ extension DeckItemQuerySortBy on QueryBuilder<DeckItem, DeckItem, QSortBy> {
     });
   }
 
+  QueryBuilder<DeckItem, DeckItem, QAfterSortBy> sortByNewCardsLimit() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'newCardsLimit', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DeckItem, DeckItem, QAfterSortBy> sortByNewCardsLimitDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'newCardsLimit', Sort.desc);
+    });
+  }
+
   QueryBuilder<DeckItem, DeckItem, QAfterSortBy> sortByOrderIndex() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'orderIndex', Sort.asc);
@@ -600,6 +738,18 @@ extension DeckItemQuerySortBy on QueryBuilder<DeckItem, DeckItem, QSortBy> {
   QueryBuilder<DeckItem, DeckItem, QAfterSortBy> sortByOrderIndexDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'orderIndex', Sort.desc);
+    });
+  }
+
+  QueryBuilder<DeckItem, DeckItem, QAfterSortBy> sortByReviewsLimit() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'reviewsLimit', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DeckItem, DeckItem, QAfterSortBy> sortByReviewsLimitDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'reviewsLimit', Sort.desc);
     });
   }
 }
@@ -642,6 +792,18 @@ extension DeckItemQuerySortThenBy
     });
   }
 
+  QueryBuilder<DeckItem, DeckItem, QAfterSortBy> thenByNewCardsLimit() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'newCardsLimit', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DeckItem, DeckItem, QAfterSortBy> thenByNewCardsLimitDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'newCardsLimit', Sort.desc);
+    });
+  }
+
   QueryBuilder<DeckItem, DeckItem, QAfterSortBy> thenByOrderIndex() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'orderIndex', Sort.asc);
@@ -651,6 +813,18 @@ extension DeckItemQuerySortThenBy
   QueryBuilder<DeckItem, DeckItem, QAfterSortBy> thenByOrderIndexDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'orderIndex', Sort.desc);
+    });
+  }
+
+  QueryBuilder<DeckItem, DeckItem, QAfterSortBy> thenByReviewsLimit() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'reviewsLimit', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DeckItem, DeckItem, QAfterSortBy> thenByReviewsLimitDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'reviewsLimit', Sort.desc);
     });
   }
 }
@@ -670,9 +844,21 @@ extension DeckItemQueryWhereDistinct
     });
   }
 
+  QueryBuilder<DeckItem, DeckItem, QDistinct> distinctByNewCardsLimit() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'newCardsLimit');
+    });
+  }
+
   QueryBuilder<DeckItem, DeckItem, QDistinct> distinctByOrderIndex() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'orderIndex');
+    });
+  }
+
+  QueryBuilder<DeckItem, DeckItem, QDistinct> distinctByReviewsLimit() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'reviewsLimit');
     });
   }
 }
@@ -697,9 +883,21 @@ extension DeckItemQueryProperty
     });
   }
 
+  QueryBuilder<DeckItem, int, QQueryOperations> newCardsLimitProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'newCardsLimit');
+    });
+  }
+
   QueryBuilder<DeckItem, int?, QQueryOperations> orderIndexProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'orderIndex');
+    });
+  }
+
+  QueryBuilder<DeckItem, int, QQueryOperations> reviewsLimitProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'reviewsLimit');
     });
   }
 }

@@ -12,7 +12,13 @@ class CardItem {
 
   // For "study" logic
   DateTime? nextReviewDate;
-  int level = 0; // For Spaced Repetition (SRS)
+  // SM-2 Algorithm parameters
+  double easeFactor = 2.5;
+  int interval = 0; // In days
+  int repetitions = 0;
+  bool isNewCard = true;
+  DateTime? lastStudiedDate;
+
   int?
   lastRatingIndex; // For tracking last rating (0=again, 1=hard, 2=good, 3=easy)
 }
