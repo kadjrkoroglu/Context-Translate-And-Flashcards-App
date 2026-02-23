@@ -59,7 +59,8 @@ class DecksViewModel extends ChangeNotifier {
     final now = DateTime.now();
     return deck.cards.where((card) {
       if (card.nextReviewDate == null) return true;
-      return card.nextReviewDate!.isBefore(now);
+      return card.nextReviewDate!.isBefore(now) ||
+          card.nextReviewDate!.isAtSameMomentAs(now);
     }).length;
   }
 
@@ -76,7 +77,8 @@ class DecksViewModel extends ChangeNotifier {
       if (card.nextReviewDate == null) {
         // Newly added cards
         newCount++;
-      } else if (card.nextReviewDate!.isBefore(now)) {
+      } else if (card.nextReviewDate!.isBefore(now) ||
+          card.nextReviewDate!.isAtSameMomentAs(now)) {
         // Due for review - check by last rating
         switch (card.lastRatingIndex) {
           case 0:

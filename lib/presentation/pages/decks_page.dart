@@ -538,7 +538,7 @@ class _CountBadges extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (counts['new']! > 0) _badge(counts['new']!, Colors.grey.shade400),
+        if (counts['new']! > 0) _badge(counts['new']!, Colors.white),
         const SizedBox(width: 4),
         if (counts['again']! > 0) _badge(counts['again']!, Colors.redAccent),
         const SizedBox(width: 4),
@@ -555,9 +555,9 @@ class _CountBadges extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.transparent,
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.5), width: 1.5),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
       ),
       child: Text(
         '$count',

@@ -8,27 +8,36 @@ class StudyViewModel extends ChangeNotifier {
   final LocalStorageService _storageService;
   final DeckItem deck;
 
-  List<CardItem> _dueCards = [];
-  int _currentIndex = 0;
+  // Dynamic queue - rebuilt after each rating
+  List<CardItem> _queue = [];
+  // Track cards we've already completed (not Again) for progress
+  int _completedCount = 0;
+  int _totalSessionCards = 0;
+
   bool _isAnswerVisible = false;
   bool _isFinished = false;
   bool _isLoading = true;
+
+  // Deck limits tracked for the session
+  int _allowedNew = 0;
+  int _allowedReviews = 0;
+
+  // Track IDs of cards already studied in this session (to enforce limits)
+  final Set<int> _sessionNewCardIds = {};
+  final Set<int> _sessionReviewCardIds = {};
 
   StudyViewModel(this._storageService, this.deck) {
     _initializeStudySession();
   }
 
-  List<CardItem> get dueCards => _dueCards;
-  CardItem? get currentCard =>
-      _dueCards.isNotEmpty && _currentIndex < _dueCards.length
-      ? _dueCards[_currentIndex]
-      : null;
-  int get currentIndex => _currentIndex;
+  List<CardItem> get dueCards => _queue;
+  CardItem? get currentCard => _queue.isNotEmpty ? _queue.first : null;
+  int get currentIndex => _completedCount;
   bool get isAnswerVisible => _isAnswerVisible;
   bool get isFinished => _isFinished;
   bool get isLoading => _isLoading;
   double get progress =>
-      _dueCards.isEmpty ? 1.0 : (_currentIndex + 1) / _dueCards.length;
+      _totalSessionCards == 0 ? 1.0 : _completedCount / _totalSessionCards;
 
   Future<void> _initializeStudySession() async {
     _isLoading = true;
@@ -55,38 +64,21 @@ class StudyViewModel extends ChangeNotifier {
         }
       }
 
-      int allowedNew = (deck.newCardsLimit - todayNewStudied).clamp(
+      _allowedNew = (deck.newCardsLimit - todayNewStudied).clamp(
         0,
         deck.newCardsLimit,
       );
-      int allowedReviews = (deck.reviewsLimit - todayReviewsStudied).clamp(
+      _allowedReviews = (deck.reviewsLimit - todayReviewsStudied).clamp(
         0,
         deck.reviewsLimit,
       );
 
-      List<CardItem> pendingNew = [];
-      List<CardItem> pendingReviews = [];
+      // Build initial queue
+      _rebuildQueue();
 
-      for (var card in allCards) {
-        // Include new cards and cards due for review within deck limits
-        if (card.nextReviewDate == null) {
-          pendingNew.add(card);
-        } else if (card.nextReviewDate!.isBefore(now) ||
-            card.nextReviewDate!.isAtSameMomentAs(now)) {
-          pendingReviews.add(card);
-        }
-      }
+      _totalSessionCards = _queue.length;
 
-      pendingReviews.sort(
-        (a, b) => a.nextReviewDate!.compareTo(b.nextReviewDate!),
-      );
-
-      _dueCards = [
-        ...pendingNew.take(allowedNew),
-        ...pendingReviews.take(allowedReviews),
-      ];
-
-      if (_dueCards.isEmpty) {
+      if (_queue.isEmpty) {
         _isFinished = true;
       }
     } catch (e) {
@@ -98,6 +90,69 @@ class StudyViewModel extends ChangeNotifier {
     }
   }
 
+  /// Rebuilds the study queue dynamically with priority:
+  /// 1. Unlearned New Cards
+  /// 2. "Again" cards whose cooldown has expired (interleaved)
+  /// 3. Old Reviews (due cards)
+  void _rebuildQueue() {
+    final now = DateTime.now();
+    final allCards = deck.cards.toList();
+
+    List<CardItem> newCards = [];
+    List<CardItem> againCards =
+        []; // Learning-phase: Again with expired cooldown
+    List<CardItem> reviewCards = [];
+
+    for (var card in allCards) {
+      if (card.nextReviewDate == null) {
+        // Brand new, never studied card
+        if (_sessionNewCardIds.length < _allowedNew ||
+            _sessionNewCardIds.contains(card.id)) {
+          newCards.add(card);
+        }
+      } else if (card.nextReviewDate!.isBefore(now) ||
+          card.nextReviewDate!.isAtSameMomentAs(now)) {
+        // Card is due - distinguish Again (learning) from regular reviews
+        if (card.repetitions == 0 &&
+            card.lastRatingIndex == 0 &&
+            !card.isNewCard) {
+          // This is an "Again" card in learning phase (rep reset to 0, rated Again)
+          againCards.add(card);
+        } else {
+          if (_sessionReviewCardIds.length < _allowedReviews ||
+              _sessionReviewCardIds.contains(card.id)) {
+            reviewCards.add(card);
+          }
+        }
+      }
+    }
+
+    // Sort reviews by urgency (oldest due first)
+    reviewCards.sort((a, b) => a.nextReviewDate!.compareTo(b.nextReviewDate!));
+
+    // Build interleaved queue:
+    // Pattern: New, New, Again, New, New, Again, ... then remaining Reviews
+    _queue = [];
+    int newIdx = 0;
+    int againIdx = 0;
+
+    // Interleave: every 2 new cards, insert 1 again card
+    while (newIdx < newCards.length || againIdx < againCards.length) {
+      // Add up to 2 new cards
+      for (int i = 0; i < 2 && newIdx < newCards.length; i++, newIdx++) {
+        _queue.add(newCards[newIdx]);
+      }
+      // Insert 1 again card if available
+      if (againIdx < againCards.length) {
+        _queue.add(againCards[againIdx]);
+        againIdx++;
+      }
+    }
+
+    // Append remaining review cards at the end
+    _queue.addAll(reviewCards);
+  }
+
   void showAnswer() {
     _isAnswerVisible = true;
     notifyListeners();
@@ -106,13 +161,36 @@ class StudyViewModel extends ChangeNotifier {
   Future<void> rateCard(StudyRating rating) async {
     if (currentCard == null) return;
 
-    final updatedCard = SRSService.calculateNextReview(currentCard!, rating);
+    final card = currentCard!;
+
+    // Track which cards we've seen in this session
+    if (card.isNewCard || card.nextReviewDate == null) {
+      _sessionNewCardIds.add(card.id);
+    } else if (card.repetitions > 0) {
+      _sessionReviewCardIds.add(card.id);
+    }
+
+    // Apply SRS algorithm
+    final updatedCard = SRSService.calculateNextReview(card, rating);
     await _storageService.updateCard(updatedCard);
 
     _isAnswerVisible = false;
-    _currentIndex++;
 
-    if (_currentIndex >= _dueCards.length) {
+    // Only count as "completed" if NOT Again (Again cards will come back)
+    if (rating != StudyRating.again) {
+      _completedCount++;
+    }
+
+    // Reload cards from storage and rebuild queue dynamically
+    await deck.cards.load();
+    _rebuildQueue();
+
+    // Update total to account for again cards that re-enter the queue
+    if (_totalSessionCards < _completedCount + _queue.length) {
+      _totalSessionCards = _completedCount + _queue.length;
+    }
+
+    if (_queue.isEmpty) {
       _isFinished = true;
     }
 

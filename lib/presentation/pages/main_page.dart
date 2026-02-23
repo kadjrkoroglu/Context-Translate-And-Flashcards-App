@@ -232,7 +232,7 @@ class MainPage extends StatelessWidget {
     return BottomAppBar(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       height: 85,
-      color: Colors.white.withValues(alpha: 0.1), // Hafif saydam beyaz
+      color: Colors.white.withValues(alpha: 0.1), // Slightly transparent white
       elevation: 0,
       shape: const CircularNotchedRectangle(),
       notchMargin: 12,
