@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:ui';
 import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
@@ -19,10 +20,9 @@ class OutputScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<MainViewModel>(context);
-    final colorScheme = Theme.of(context).colorScheme;
 
     return SizedBox(
-      height: 200,
+      height: 210,
       child: AnimatedBuilder(
         animation: Listenable.merge([viewModel.pageController, controller]),
         builder: (context, _) {
@@ -31,49 +31,55 @@ class OutputScreen extends StatelessWidget {
               : 0.0;
           final fontSize = 26 - (page * 8);
 
-          return Stack(
-            children: [
-              _buildTranslationField(colorScheme, fontSize),
-              if (controller.text.isNotEmpty)
-                _buildActionButtons(context, viewModel, colorScheme),
-            ],
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    _buildTranslationField(fontSize),
+                    if (controller.text.isNotEmpty)
+                      _buildActionButtons(context, viewModel),
+                  ],
+                ),
+              ),
+            ),
           );
         },
       ),
     );
   }
 
-  Widget _buildTranslationField(ColorScheme cs, double fontSize) {
-    final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(24),
-      borderSide: BorderSide(color: cs.outline),
-    );
-
+  Widget _buildTranslationField(double fontSize) {
     return TextField(
       controller: controller,
       readOnly: true,
       expands: true,
       maxLines: null,
       textAlignVertical: TextAlignVertical.top,
-      style: TextStyle(fontSize: fontSize, color: cs.inversePrimary),
+      style: TextStyle(
+        fontSize: fontSize,
+        color: Colors.white,
+        fontWeight: FontWeight.w500,
+      ),
       decoration: InputDecoration(
-        filled: true,
-        fillColor: cs.primary,
-        border: border,
-        enabledBorder: border,
-        focusedBorder: border,
         hintText: hintText,
-        hintStyle: TextStyle(color: cs.tertiary),
+        hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
         contentPadding: const EdgeInsets.all(20),
+        border: InputBorder.none,
       ),
     );
   }
 
-  Widget _buildActionButtons(
-    BuildContext context,
-    MainViewModel mainVM,
-    ColorScheme cs,
-  ) {
+  Widget _buildActionButtons(BuildContext context, MainViewModel mainVM) {
     return Positioned(
       bottom: 8,
       right: 8,
@@ -90,15 +96,10 @@ class OutputScreen extends StatelessWidget {
 class _DeckAddButton extends StatelessWidget {
   final MainViewModel mainVM;
   final String translation;
-
   const _DeckAddButton({required this.mainVM, required this.translation});
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(
-      context,
-    ).colorScheme.inversePrimary.withValues(alpha: 0.7);
-
     return IconButton(
       onPressed: () {
         final word = mainVM.isMLPage
@@ -112,7 +113,10 @@ class _DeckAddButton extends StatelessWidget {
               ).textController.text;
         DeckSelectorSheet.show(context, word, translation);
       },
-      icon: Icon(Icons.library_add_outlined, color: color),
+      icon: Icon(
+        Icons.library_add_rounded,
+        color: Colors.white.withValues(alpha: 0.7),
+      ),
     );
   }
 }
@@ -120,7 +124,6 @@ class _DeckAddButton extends StatelessWidget {
 class _FavoriteButton extends StatelessWidget {
   final MainViewModel mainVM;
   final String translation;
-
   const _FavoriteButton({required this.mainVM, required this.translation});
 
   @override
@@ -132,14 +135,10 @@ class _FavoriteButton extends StatelessWidget {
           context,
           listen: false,
         );
-
         final word = mainVM.isMLPage
             ? mlVM.textController.text
             : geminiVM.textController.text;
         final isFav = favVM.isFavorite(word);
-        final color = Theme.of(
-          context,
-        ).colorScheme.inversePrimary.withValues(alpha: 0.7);
 
         return IconButton(
           onPressed: () {
@@ -149,8 +148,10 @@ class _FavoriteButton extends StatelessWidget {
             }
           },
           icon: Icon(
-            isFav ? Icons.favorite : Icons.favorite_border,
-            color: isFav ? Colors.red : color,
+            isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+            color: isFav
+                ? Colors.redAccent
+                : Colors.white.withValues(alpha: 0.7),
           ),
         );
       },

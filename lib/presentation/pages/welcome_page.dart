@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:translate_app/presentation/pages/login_page.dart';
 import 'package:translate_app/presentation/pages/main_page.dart';
+import 'package:translate_app/presentation/widgets/app_background.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -9,19 +10,7 @@ class WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color.fromARGB(255, 137, 151, 157),
-              Color.fromARGB(255, 30, 30, 30),
-            ],
-          ),
-        ),
+      body: AppBackground(
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -32,7 +21,7 @@ class WelcomePage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 const Spacer(flex: 2),
-                // Logo / Icon Area (Glassmorphic)
+                // Logo
                 Stack(
                   alignment: Alignment.center,
                   children: [
@@ -88,7 +77,7 @@ class WelcomePage extends StatelessWidget {
                   ],
                 ),
                 const Spacer(flex: 3),
-                // Heading
+
                 const Text(
                   'Don\'t waste time, add and study!',
                   textAlign: TextAlign.center,
@@ -100,7 +89,7 @@ class WelcomePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Description
+
                 Text(
                   'Translate and create flashcards quickly. Master new languages with smart spaced-repetition.',
                   textAlign: TextAlign.center,
@@ -111,7 +100,7 @@ class WelcomePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 48),
-                // Buttons
+
                 ClipRRect(
                   borderRadius: BorderRadius.circular(28),
                   child: BackdropFilter(

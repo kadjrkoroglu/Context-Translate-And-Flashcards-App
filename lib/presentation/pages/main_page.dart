@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'dart:ui';
 import 'package:translate_app/presentation/pages/ml_translate_page.dart';
 import 'package:translate_app/presentation/pages/gemini_translate_page.dart';
 import 'package:translate_app/presentation/pages/history_page.dart';
@@ -8,6 +9,7 @@ import 'package:translate_app/presentation/pages/favorites_page.dart';
 import 'package:translate_app/presentation/pages/profile_page.dart';
 import 'package:translate_app/presentation/pages/decks_page.dart';
 import 'package:translate_app/presentation/widgets/output_screen.dart';
+import 'package:translate_app/presentation/widgets/app_background.dart';
 import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
@@ -21,214 +23,115 @@ class MainPage extends StatelessWidget {
     final mlViewModel = Provider.of<MLTranslateViewModel>(context);
     final geminiViewModel = Provider.of<GeminiTranslateViewModel>(context);
 
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final surfaceColor = colorScheme.surface;
-    final inversePrimary = colorScheme.inversePrimary;
+    const Color inversePrimary = Colors.white; // Modern white for dark mode
 
     return Scaffold(
-      backgroundColor: surfaceColor,
+      backgroundColor: Colors.transparent, // Transparent for gradient
       extendBody: true,
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        backgroundColor: surfaceColor,
-        centerTitle: true,
-        toolbarHeight: 100,
-        elevation: 0,
-        title: Padding(
-          padding: const EdgeInsets.only(top: 20.0),
-          child: Text(
-            'Context Translate',
-            style: GoogleFonts.caveat(
-              color: inversePrimary,
-              fontSize: 40,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
-        child: Column(
-          children: [
-            Center(
-              child: Container(
-                height: 30,
-                width: 120,
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: surfaceColor,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: colorScheme.surfaceContainer),
-                ),
-                child: Stack(
-                  children: [
-                    AnimatedBuilder(
-                      animation: viewModel.pageController,
-                      builder: (context, child) {
-                        double offset = 0;
-                        if (viewModel.pageController.hasClients) {
-                          offset = viewModel.pageController.page ?? 0;
-                        }
-                        return Align(
-                          alignment: Alignment(offset * 2 - 1, 0),
-                          child: FractionallySizedBox(
-                            widthFactor: 0.5,
-                            child: Container(
-                              margin: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                color: inversePrimary,
-                                borderRadius: BorderRadius.circular(18),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: colorScheme.primary.withValues(
-                                      alpha: 0.2,
-                                    ),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+      body: AppBackground(
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 20.0, bottom: 10),
+                child: Center(
+                  child: Text(
+                    'Context Translate',
+                    style: GoogleFonts.caveat(
+                      color: inversePrimary,
+                      fontSize: 44,
+                      fontWeight: FontWeight.bold,
                     ),
-                    Row(
-                      children: [
-                        _buildToggleButton(context, viewModel, 'Basic', 0),
-                        _buildToggleButton(context, viewModel, 'AI', 1),
-                      ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              _buildPageSelector(context, viewModel, inversePrimary),
+              const SizedBox(height: 20),
+              SizedBox(
+                height: 295,
+                child: PageView(
+                  controller: viewModel.pageController,
+                  onPageChanged: (index) => viewModel.clearOutput(),
+                  children: [
+                    MLTranslatePage(
+                      outputController: viewModel.outputController,
+                    ),
+                    GeminiTranslatePage(
+                      outputController: viewModel.outputController,
                     ),
                   ],
                 ),
               ),
-            ),
-
-            const SizedBox(height: 10),
-
-            SizedBox(
-              height: 290,
-              child: PageView(
-                controller: viewModel.pageController,
-                onPageChanged: (index) {
-                  viewModel.clearOutput();
-                },
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: MLTranslatePage(
-                      outputController: viewModel.outputController,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: GeminiTranslatePage(
-                      outputController: viewModel.outputController,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25.0),
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  bottom: 40.0,
-                ), // Reduced from 120
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: OutputScreen(controller: viewModel.outputController),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-      floatingActionButton: SizedBox(
-        width: 80,
-        height: 80,
-        child: FloatingActionButton(
-          onPressed: () {
-            final isMLPage = (viewModel.pageController.page ?? 0) < 0.5;
-            if (isMLPage) {
-              if (mlViewModel.isListening) {
-                mlViewModel.stopListening();
-              } else {
-                mlViewModel.startListening(viewModel.outputController);
-              }
-            } else {
-              if (geminiViewModel.isListening) {
-                geminiViewModel.stopListening();
-              } else {
-                geminiViewModel.startListening(
-                  (_) => geminiViewModel.translate(viewModel.outputController),
-                );
-              }
-            }
-          },
-          elevation: 2,
-          backgroundColor: inversePrimary,
-          shape: const CircleBorder(),
-          child: Icon(Icons.mic, color: surfaceColor, size: 40),
-        ),
+      floatingActionButton: _buildGlassMicrophoneButton(
+        viewModel,
+        mlViewModel,
+        geminiViewModel,
+        inversePrimary,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        height: 70,
-        color: colorScheme.primary,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 10,
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            IconButton(
-              icon: Icon(Icons.history, color: inversePrimary, size: 28),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const HistoryPage()),
-                );
-              },
-            ),
-            IconButton(
-              icon: Icon(
-                Icons.favorite_border,
-                color: inversePrimary,
-                size: 28,
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const FavoritesPage(),
+      bottomNavigationBar: _buildBottomNavBar(context, inversePrimary),
+    );
+  }
+
+  Widget _buildPageSelector(
+    BuildContext context,
+    MainViewModel viewModel,
+    Color inversePrimary,
+  ) {
+    return Container(
+      height: 36,
+      width: 140,
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Stack(
+        children: [
+          AnimatedBuilder(
+            animation: viewModel.pageController,
+            builder: (context, child) {
+              double offset = 0;
+              if (viewModel.pageController.hasClients) {
+                offset = viewModel.pageController.page ?? 0;
+              }
+              return Align(
+                alignment: Alignment(offset * 2 - 1, 0),
+                child: FractionallySizedBox(
+                  widthFactor: 0.5,
+                  child: Container(
+                    margin: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.2),
+                      ),
+                    ),
                   ),
-                );
-              },
-            ),
-            const SizedBox(width: 48),
-            IconButton(
-              icon: Icon(Icons.quiz_outlined, color: inversePrimary, size: 28),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DecksPage()),
-                );
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.person_outline, color: inversePrimary, size: 28),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ProfilePage()),
-                );
-              },
-            ),
-          ],
-        ),
+                ),
+              );
+            },
+          ),
+          Row(
+            children: [
+              _buildToggleButton(context, viewModel, 'Basic', 0),
+              _buildToggleButton(context, viewModel, 'AI', 1),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -239,32 +142,27 @@ class MainPage extends StatelessWidget {
     String label,
     int index,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Expanded(
       child: GestureDetector(
-        onTap: () {
-          viewModel.animateToPage(index);
-        },
+        onTap: () => viewModel.animateToPage(index),
         behavior: HitTestBehavior.translucent,
         child: AnimatedBuilder(
           animation: viewModel.pageController,
           builder: (context, child) {
             double page = 0;
-            if (viewModel.pageController.hasClients) {
+            if (viewModel.pageController.hasClients)
               page = viewModel.pageController.page ?? 0;
-            }
             double selectionFactor = (index == 0) ? (1 - page) : page;
             selectionFactor = selectionFactor.clamp(0, 1);
             return Center(
               child: Text(
                 label,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.bold,
                   color: Color.lerp(
-                    colorScheme.onSurface,
-                    colorScheme.onPrimary,
+                    Colors.white.withValues(alpha: 0.5),
+                    Colors.white,
                     selectionFactor,
                   ),
                 ),
@@ -273,6 +171,89 @@ class MainPage extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildGlassMicrophoneButton(
+    MainViewModel viewModel,
+    MLTranslateViewModel mlVM,
+    GeminiTranslateViewModel gVM,
+    Color inversePrimary,
+  ) {
+    return Container(
+      width: 76,
+      height: 76,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          colors: [Color(0xFF89979D), Color.fromARGB(255, 94, 106, 121)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            final isMLPage = (viewModel.pageController.page ?? 0) < 0.5;
+            if (isMLPage) {
+              mlVM.isListening
+                  ? mlVM.stopListening()
+                  : mlVM.startListening(viewModel.outputController);
+            } else {
+              gVM.isListening
+                  ? gVM.stopListening()
+                  : gVM.startListening(
+                      (_) => gVM.translate(viewModel.outputController),
+                    );
+            }
+          },
+          customBorder: const CircleBorder(),
+          child: Icon(
+            Icons.mic_rounded,
+            color: mlVM.isListening || gVM.isListening
+                ? Colors.redAccent
+                : Colors.white,
+            size: 36,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomNavBar(BuildContext context, Color ip) {
+    return BottomAppBar(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      height: 85,
+      color: Colors.white.withValues(alpha: 0.1), // Hafif saydam beyaz
+      elevation: 0,
+      shape: const CircularNotchedRectangle(),
+      notchMargin: 12,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _navIcon(context, Icons.history_rounded, const HistoryPage()),
+          _navIcon(context, Icons.favorite_rounded, const FavoritesPage()),
+          const SizedBox(width: 50),
+          _navIcon(context, Icons.quiz_rounded, const DecksPage()),
+          _navIcon(context, Icons.person_rounded, const ProfilePage()),
+        ],
+      ),
+    );
+  }
+
+  Widget _navIcon(BuildContext context, IconData icon, Widget page) {
+    return IconButton(
+      icon: Icon(icon, color: Colors.white.withValues(alpha: 0.7), size: 28),
+      onPressed: () =>
+          Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
     );
   }
 }

@@ -1,65 +1,110 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:ui';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/pages/deck_detail_page.dart';
 import 'package:translate_app/presentation/pages/study_page.dart';
 import 'package:translate_app/presentation/viewmodels/study_viewmodel.dart';
 import 'package:translate_app/data/services/local_storage_service.dart';
+import 'package:translate_app/presentation/widgets/app_background.dart';
 
 class DecksPage extends StatelessWidget {
   const DecksPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final ip = colorScheme.inversePrimary;
+    const Color ip = Colors.white;
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: const Text('Decks'),
-        centerTitle: true,
+    return AppBackground(
+      child: Scaffold(
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: ip,
-      ),
-      body: Consumer<DecksViewModel>(
-        builder: (context, vm, _) {
-          if (vm.isLoading)
-            return const Center(child: CircularProgressIndicator());
-          if (vm.decks.isEmpty) return _buildEmptyState(ip);
-
-          return ListView.builder(
-            itemCount: vm.decks.length,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            itemBuilder: (context, index) =>
-                _DeckCard(deck: vm.decks[index], index: index, vm: vm),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddDeckDialog(context),
-        backgroundColor: ip,
-        label: const Text('New Deck'),
-        icon: const Icon(Icons.add),
+        body: Consumer<DecksViewModel>(
+          builder: (context, vm, _) {
+            return CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                SliverAppBar(
+                  pinned: true,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  centerTitle: true,
+                  title: const Text(
+                    'Decks',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  foregroundColor: ip,
+                  flexibleSpace: ClipRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.1),
+                          border: Border(
+                            bottom: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                if (vm.isLoading)
+                  const SliverFillRemaining(
+                    child: Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    ),
+                  )
+                else if (vm.decks.isEmpty)
+                  SliverFillRemaining(child: _buildEmptyState(context, ip))
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => _DeckCard(
+                          deck: vm.decks[index],
+                          index: index,
+                          vm: vm,
+                        ),
+                        childCount: vm.decks.length,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => _showAddDeckDialog(context),
+          backgroundColor: Colors.white.withValues(alpha: 0.15),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+          ),
+          label: const Text(
+            'New Deck',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          icon: const Icon(Icons.add_rounded),
+        ),
       ),
     );
   }
 
-  Widget _buildEmptyState(Color ip) {
+  Widget _buildEmptyState(BuildContext context, Color ip) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.style_outlined,
-            size: 64,
-            color: ip.withValues(alpha: 0.2),
-          ),
+          Icon(Icons.style_rounded, size: 64, color: ip.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           Text(
             'Create your first deck to start learning!',
-            style: TextStyle(color: ip.withValues(alpha: 0.5)),
+            style: TextStyle(color: ip.withValues(alpha: 0.5), fontSize: 16),
           ),
         ],
       ),
@@ -68,58 +113,63 @@ class DecksPage extends StatelessWidget {
 
   void _showAddDeckDialog(BuildContext context) {
     final controller = TextEditingController();
-    final cs = Theme.of(context).colorScheme;
-    final ip = cs.inversePrimary;
-
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: cs.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(
-          'New Deck',
-          style: TextStyle(color: ip, fontWeight: FontWeight.bold),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          style: TextStyle(color: ip),
-          decoration: InputDecoration(
-            labelText: 'Deck Name',
-            floatingLabelBehavior: FloatingLabelBehavior.always,
-            labelStyle: TextStyle(color: ip.withValues(alpha: 0.7)),
-            filled: true,
-            fillColor: cs.primary.withValues(alpha: 0.5),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: TextStyle(color: ip)),
+          title: const Text(
+            'New Deck',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
-          ElevatedButton(
-            onPressed: () async {
-              if (controller.text.isNotEmpty) {
-                await context.read<DecksViewModel>().addDeck(
-                  controller.text.trim(),
-                );
-                if (context.mounted) Navigator.pop(ctx);
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ip,
-              foregroundColor: cs.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              labelText: 'Deck Name',
+              labelStyle: const TextStyle(color: Colors.white54),
+              filled: true,
+              fillColor: Colors.white.withValues(alpha: 0.05),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
               ),
             ),
-            child: const Text('Create'),
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white54),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (controller.text.isNotEmpty) {
+                  await context.read<DecksViewModel>().addDeck(
+                    controller.text.trim(),
+                  );
+                  if (context.mounted) Navigator.pop(ctx);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Create'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -129,94 +179,132 @@ class _DeckCard extends StatelessWidget {
   final dynamic deck;
   final int index;
   final DecksViewModel vm;
-
   const _DeckCard({required this.deck, required this.index, required this.vm});
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final ip = cs.inversePrimary;
-
-    return Card(
-      color: cs.primary,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: cs.outline.withValues(alpha: 0.3)),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          backgroundColor: ip.withValues(alpha: 0.1),
-          child: Text(
-            '${deck.orderIndex ?? (index + 1)}.',
-            style: TextStyle(color: ip, fontWeight: FontWeight.bold),
-          ),
-        ),
-        title: Text(
-          deck.name,
-          style: TextStyle(
-            color: ip,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        trailing: _CountBadges(counts: vm.getCardCountsByStatus(deck), ip: ip),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ChangeNotifierProvider(
-                create: (ctx) =>
-                    StudyViewModel(ctx.read<LocalStorageService>(), deck),
-                child: const StudyPage(),
-              ),
+    const Color ip = Colors.white;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
-          ).then((_) => vm.loadDecks());
-        },
-        onLongPress: () => _showDeckOptions(context),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 12,
+              ),
+              leading: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    '${deck.orderIndex ?? (index + 1)}',
+                    style: const TextStyle(
+                      color: ip,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              title: Text(
+                deck.name,
+                style: const TextStyle(
+                  color: ip,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              trailing: _CountBadges(
+                counts: vm.getCardCountsByStatus(deck),
+                ip: ip,
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ChangeNotifierProvider(
+                      create: (ctx) =>
+                          StudyViewModel(ctx.read<LocalStorageService>(), deck),
+                      child: const StudyPage(),
+                    ),
+                  ),
+                ).then((_) => vm.loadDecks());
+              },
+              onLongPress: () => _showDeckOptions(context),
+            ),
+          ),
+        ),
       ),
     );
   }
 
   void _showDeckOptions(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final ip = cs.inversePrimary;
-
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: cs.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(
-          deck.name,
-          textAlign: TextAlign.center,
-          style: TextStyle(color: ip, fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _optionItem(ctx, Icons.add_circle_outline, 'Add Card', () {
-              Navigator.pop(ctx);
-              _showAddCardDialog(context);
-            }),
-            _optionItem(ctx, Icons.style_outlined, 'Browse Cards', () {
-              Navigator.pop(ctx);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => DeckDetailPage(deck: deck)),
-              );
-            }),
-            _optionItem(ctx, Icons.settings_outlined, 'Deck Settings', () {
-              Navigator.pop(ctx);
-              _showDeckSettingsDialog(context);
-            }),
-            const Divider(),
-            _optionItem(ctx, Icons.delete_outline, 'Delete Deck', () {
-              Navigator.pop(ctx);
-              _showDeleteConfirm(context);
-            }, color: Colors.red),
-          ],
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          title: Text(
+            deck.name,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _optionItem(
+                ctx,
+                Icons.add_circle_outline_rounded,
+                'Add Card',
+                () {
+                  Navigator.pop(ctx);
+                  _showAddCardDialog(context);
+                },
+              ),
+              _optionItem(ctx, Icons.style_outlined, 'Browse Cards', () {
+                Navigator.pop(ctx);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => DeckDetailPage(deck: deck)),
+                );
+              }),
+              _optionItem(ctx, Icons.settings_outlined, 'Deck Settings', () {
+                Navigator.pop(ctx);
+                _showDeckSettingsDialog(context);
+              }),
+              const Divider(color: Colors.white12, height: 24),
+              _optionItem(
+                ctx,
+                Icons.delete_outline_rounded,
+                'Delete Deck',
+                () {
+                  Navigator.pop(ctx);
+                  _showDeleteConfirm(context);
+                },
+                color: Colors.redAccent,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -229,37 +317,61 @@ class _DeckCard extends StatelessWidget {
     VoidCallback onTap, {
     Color? color,
   }) {
-    final ip = Theme.of(context).colorScheme.inversePrimary;
     return ListTile(
-      leading: Icon(icon, color: color ?? ip),
+      leading: Icon(icon, color: color ?? Colors.white70),
       title: Text(
         title,
-        style: TextStyle(color: color ?? ip, fontWeight: FontWeight.w500),
+        style: TextStyle(
+          color: color ?? Colors.white70,
+          fontWeight: FontWeight.w500,
+        ),
       ),
       onTap: onTap,
     );
   }
 
   void _showDeleteConfirm(BuildContext context) {
-    final ip = Theme.of(context).colorScheme.inversePrimary;
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Delete Deck?'),
-        content: Text('Delete "${deck.name}" and all its cards?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: TextStyle(color: ip)),
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
-          TextButton(
-            onPressed: () {
-              vm.deleteDeck(deck.id);
-              Navigator.pop(ctx);
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          title: const Text(
+            'Delete Deck?',
+            style: TextStyle(color: Colors.white),
           ),
-        ],
+          content: Text(
+            'Delete "${deck.name}" and all its cards?',
+            style: const TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white54),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                vm.deleteDeck(deck.id);
+                Navigator.pop(ctx);
+              },
+              child: const Text(
+                'Delete',
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -267,60 +379,56 @@ class _DeckCard extends StatelessWidget {
   void _showDeckSettingsDialog(BuildContext context) {
     final newCtrl = TextEditingController(text: deck.newCardsLimit.toString());
     final revCtrl = TextEditingController(text: deck.reviewsLimit.toString());
-    final cs = Theme.of(context).colorScheme;
-    final ip = cs.inversePrimary;
-
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: cs.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(
-          'Deck Settings',
-          style: TextStyle(color: ip, fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _LimitField(
-              controller: newCtrl,
-              label: 'Daily New Cards Limit',
-              cs: cs,
-              ip: ip,
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          title: const Text(
+            'Deck Settings',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _LimitField(controller: newCtrl, label: 'Daily New Cards Limit'),
+              const SizedBox(height: 16),
+              _LimitField(controller: revCtrl, label: 'Daily Reviews Limit'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white54),
+              ),
             ),
-            const SizedBox(height: 16),
-            _LimitField(
-              controller: revCtrl,
-              label: 'Daily Reviews Limit',
-              cs: cs,
-              ip: ip,
+            ElevatedButton(
+              onPressed: () async {
+                await vm.updateDeckLimits(
+                  deck.id,
+                  int.tryParse(newCtrl.text) ?? 20,
+                  int.tryParse(revCtrl.text) ?? 200,
+                );
+                if (context.mounted) Navigator.pop(ctx);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Save'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: TextStyle(color: ip)),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await vm.updateDeckLimits(
-                deck.id,
-                int.tryParse(newCtrl.text) ?? 20,
-                int.tryParse(revCtrl.text) ?? 200,
-              );
-              if (context.mounted) Navigator.pop(ctx);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ip,
-              foregroundColor: cs.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('Save'),
-          ),
-        ],
       ),
     );
   }
@@ -328,59 +436,63 @@ class _DeckCard extends StatelessWidget {
   void _showAddCardDialog(BuildContext context) {
     final frontCtrl = TextEditingController();
     final backCtrl = TextEditingController();
-    final cs = Theme.of(context).colorScheme;
-    final ip = cs.inversePrimary;
-
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: cs.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(
-          'Add Card',
-          style: TextStyle(color: ip, fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _LimitField(
-              controller: frontCtrl,
-              label: 'Front',
-              cs: cs,
-              ip: ip,
-              autofocus: true,
-            ),
-            const SizedBox(height: 12),
-            _LimitField(controller: backCtrl, label: 'Back', cs: cs, ip: ip),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel', style: TextStyle(color: ip)),
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
-          ElevatedButton(
-            onPressed: () async {
-              if (frontCtrl.text.isNotEmpty && backCtrl.text.isNotEmpty) {
-                await vm.addCard(
-                  deck.id,
-                  frontCtrl.text.trim(),
-                  backCtrl.text.trim(),
-                );
-                frontCtrl.clear();
-                backCtrl.clear();
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ip,
-              foregroundColor: cs.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          title: const Text(
+            'Add Card',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _LimitField(
+                controller: frontCtrl,
+                label: 'Front',
+                autofocus: true,
+              ),
+              const SizedBox(height: 12),
+              _LimitField(controller: backCtrl, label: 'Back'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white54),
               ),
             ),
-            child: const Text('Add'),
-          ),
-        ],
+            ElevatedButton(
+              onPressed: () async {
+                if (frontCtrl.text.isNotEmpty && backCtrl.text.isNotEmpty) {
+                  await vm.addCard(
+                    deck.id,
+                    frontCtrl.text.trim(),
+                    backCtrl.text.trim(),
+                  );
+                  frontCtrl.clear();
+                  backCtrl.clear();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Add'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -389,15 +501,10 @@ class _DeckCard extends StatelessWidget {
 class _LimitField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
-  final ColorScheme cs;
-  final Color ip;
   final bool autofocus;
-
   const _LimitField({
     required this.controller,
     required this.label,
-    required this.cs,
-    required this.ip,
     this.autofocus = false,
   });
 
@@ -406,15 +513,14 @@ class _LimitField extends StatelessWidget {
     return TextField(
       controller: controller,
       autofocus: autofocus,
-      style: TextStyle(color: ip),
+      style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
-        floatingLabelBehavior: FloatingLabelBehavior.always,
-        labelStyle: TextStyle(color: ip.withValues(alpha: 0.7)),
+        labelStyle: const TextStyle(color: Colors.white54),
         filled: true,
-        fillColor: cs.primary.withValues(alpha: 0.5),
+        fillColor: Colors.white.withValues(alpha: 0.05),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
         ),
       ),
@@ -425,7 +531,6 @@ class _LimitField extends StatelessWidget {
 class _CountBadges extends StatelessWidget {
   final Map<String, int> counts;
   final Color ip;
-
   const _CountBadges({required this.counts, required this.ip});
 
   @override
@@ -434,25 +539,25 @@ class _CountBadges extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (counts['new']! > 0) _badge(counts['new']!, Colors.grey.shade400),
-        const SizedBox(width: 3),
-        if (counts['again']! > 0) _badge(counts['again']!, Colors.red),
-        const SizedBox(width: 3),
-        if (counts['hard']! > 0) _badge(counts['hard']!, Colors.orange),
-        const SizedBox(width: 3),
-        if (counts['good']! > 0) _badge(counts['good']!, Colors.green),
-        const SizedBox(width: 3),
-        if (counts['easy']! > 0) _badge(counts['easy']!, Colors.blue),
+        const SizedBox(width: 4),
+        if (counts['again']! > 0) _badge(counts['again']!, Colors.redAccent),
+        const SizedBox(width: 4),
+        if (counts['hard']! > 0) _badge(counts['hard']!, Colors.orangeAccent),
+        const SizedBox(width: 4),
+        if (counts['good']! > 0) _badge(counts['good']!, Colors.greenAccent),
+        const SizedBox(width: 4),
+        if (counts['easy']! > 0) _badge(counts['easy']!, Colors.blueAccent),
       ],
     );
   }
 
   Widget _badge(int count, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color, width: 1.5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.5), width: 1.5),
       ),
       child: Text(
         '$count',

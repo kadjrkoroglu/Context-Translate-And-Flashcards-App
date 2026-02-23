@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 
 class LanguageDropdown extends StatelessWidget {
   final String value;
@@ -8,6 +9,7 @@ class LanguageDropdown extends StatelessWidget {
   final Set<String> downloadedModels;
   final bool showIcons;
   final bool isLoading;
+  final bool showHeader;
   final String? labelText;
 
   const LanguageDropdown({
@@ -19,6 +21,7 @@ class LanguageDropdown extends StatelessWidget {
     this.downloadedModels = const {},
     this.showIcons = true,
     this.isLoading = false,
+    this.showHeader = true,
     this.labelText,
   });
 
@@ -50,148 +53,159 @@ class LanguageDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final color = colorScheme.inversePrimary;
+    const Color color = Colors.white;
 
-    // Build combined list for dropdown items without duplicates
     final List<dynamic> dropdownData = [];
     final List<String> allLangs = items ?? languages;
 
-    // Add user requested header at the very top
-    dropdownData.add('SELECT_HEADER');
-
+    if (showHeader) {
+      dropdownData.add('SELECT_HEADER');
+    }
     if (recentLanguages.isNotEmpty && items == null) {
       dropdownData.add('RECENTS');
       dropdownData.addAll(recentLanguages);
       dropdownData.add('DIVIDER');
-
       dropdownData.add('ALL LANGUAGES');
-      // Add languages not already in recents
       dropdownData.addAll(
         allLangs.where((lang) => !recentLanguages.contains(lang)),
       );
     } else {
-      // Add all if no recents or custom items provided
       dropdownData.addAll(allLangs);
     }
 
     final bool isPlaceholder = value == '-';
     final String? effectiveValue = isPlaceholder ? null : value;
 
-    return Theme(
-      data: Theme.of(
-        context,
-      ).copyWith(splashColor: color.withValues(alpha: 0.2)),
-      child: DropdownButtonFormField<String>(
-        initialValue: effectiveValue,
-        hint: isPlaceholder
-            ? Center(
-                child: Text(
-                  'Select',
-                  style: TextStyle(
-                    color: color.withValues(alpha: 0.6),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              )
-            : null,
-        isExpanded: true,
-        iconEnabledColor: color,
-        borderRadius: BorderRadius.circular(16),
-        dropdownColor: colorScheme.primary,
-        decoration: InputDecoration(
-          labelText: labelText,
-          labelStyle: TextStyle(color: color.withValues(alpha: 0.7)),
-          floatingLabelBehavior: FloatingLabelBehavior.never,
-          filled: true,
-          fillColor: colorScheme.primary,
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 16,
-          ),
-          border: OutlineInputBorder(
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
-        ),
-        selectedItemBuilder: (context) {
-          // Display for the closed dropdown state
-          return dropdownData.map((data) {
-            final String text = data is String ? data : '';
-            return Center(
-              child: isLoading
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: color,
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              splashColor: color.withValues(alpha: 0.2),
+              canvasColor: const Color(
+                0xFF2D3238,
+              ).withValues(alpha: 0.6), // Glassy menu background
+            ),
+            child: DropdownButtonFormField<String>(
+              initialValue: effectiveValue,
+              hint: isPlaceholder
+                  ? Center(
+                      child: Text(
+                        labelText ?? 'Select',
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     )
-                  : Text(text, style: TextStyle(color: color, fontSize: 15)),
-            );
-          }).toList();
-        },
-        items: dropdownData.map((data) {
-          if (data == 'DIVIDER') {
-            return DropdownMenuItem<String>(
-              enabled: false,
-              child: Divider(color: color.withValues(alpha: 0.2)),
-            );
-          }
-          if (data == 'RECENTS' ||
-              data == 'ALL LANGUAGES' ||
-              data == 'SELECT_HEADER') {
-            final String displayText = data == 'SELECT_HEADER'
-                ? 'SELECT TARGET LANGUAGE'
-                : data;
-            return DropdownMenuItem<String>(
-              enabled: false,
-              child: Text(
-                displayText,
-                style: TextStyle(
-                  color: color.withValues(alpha: 0.5),
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
+                  : null,
+              isExpanded: true,
+              iconEnabledColor: Colors.white70,
+              icon: const Icon(Icons.expand_more_rounded),
+              borderRadius: BorderRadius.circular(16),
+              dropdownColor: const Color(0xFF2D3238).withValues(alpha: 0.7),
+              decoration: InputDecoration(
+                labelText: labelText,
+                labelStyle: const TextStyle(
+                  color: Colors.white54,
+                  fontSize: 12,
                 ),
+                floatingLabelBehavior: FloatingLabelBehavior.never,
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 14,
+                ),
+                border: InputBorder.none,
               ),
-            );
-          }
-
-          final String lang = data as String;
-          final bool isDownloaded = downloadedModels.contains(lang);
-
-          return DropdownMenuItem<String>(
-            value: lang,
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    lang,
-                    style: TextStyle(color: color, fontSize: 15),
+              selectedItemBuilder: (context) {
+                return dropdownData.map((data) {
+                  final String text = data is String ? data : '';
+                  return Center(
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: color,
+                            ),
+                          )
+                        : Text(
+                            text,
+                            style: const TextStyle(
+                              color: color,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                  );
+                }).toList();
+              },
+              items: dropdownData.map((data) {
+                if (data == 'DIVIDER') {
+                  return const DropdownMenuItem<String>(
+                    enabled: false,
+                    child: Divider(color: Colors.white12),
+                  );
+                }
+                if (data == 'RECENTS' ||
+                    data == 'ALL LANGUAGES' ||
+                    data == 'SELECT_HEADER') {
+                  final String displayText = data == 'SELECT_HEADER'
+                      ? 'SELECT TARGET LANGUAGE'
+                      : data;
+                  return DropdownMenuItem<String>(
+                    enabled: false,
+                    child: Text(
+                      displayText,
+                      style: const TextStyle(
+                        color: Colors.white38,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  );
+                }
+                final String lang = data as String;
+                final bool isDownloaded = downloadedModels.contains(lang);
+                return DropdownMenuItem<String>(
+                  value: lang,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          lang,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                      if (showIcons)
+                        Icon(
+                          isDownloaded
+                              ? Icons.check_circle_outline_rounded
+                              : Icons.file_download_outlined,
+                          color: Colors.white38,
+                          size: 20,
+                        ),
+                    ],
                   ),
-                ),
-                if (showIcons)
-                  Icon(
-                    isDownloaded ? Icons.check : Icons.file_download_outlined,
-                    color: color.withValues(alpha: 0.6),
-                    size: 22,
-                  ),
-              ],
+                );
+              }).toList(),
+              onChanged: onChanged,
             ),
-          );
-        }).toList(),
-        onChanged: onChanged,
+          ),
+        ),
       ),
     );
   }

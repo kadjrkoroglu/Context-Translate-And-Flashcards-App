@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:ui';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 
 class DeckSelectorSheet extends StatelessWidget {
@@ -30,57 +31,62 @@ class DeckSelectorSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final decksVM = Provider.of<DecksViewModel>(context);
-    final cs = Theme.of(context).colorScheme;
-    final ip = cs.inversePrimary;
+    final Color ip = Colors.white;
 
     return DraggableScrollableSheet(
-      initialChildSize: 0.35,
+      initialChildSize: 0.4,
       minChildSize: 0.0,
-      maxChildSize: 0.6,
+      maxChildSize: 0.7,
       expand: false,
-      builder: (ctx, scrollCtrl) => Container(
-        decoration: BoxDecoration(
-          color: cs.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-          child: CustomScrollView(
-            controller: scrollCtrl,
-            slivers: [
-              _buildAppBar(ctx, cs, ip),
-              if (decksVM.decks.isEmpty)
-                _buildEmptyState(ip)
-              else
-                _buildDeckList(ctx, cs, decksVM, ip),
-            ],
+      builder: (ctx, scrollCtrl) => ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF2D3238).withValues(alpha: 0.15),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(36),
+              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            ),
+            child: CustomScrollView(
+              controller: scrollCtrl,
+              slivers: [
+                _buildAppBar(ctx, ip),
+                if (decksVM.decks.isEmpty)
+                  _buildEmptyState(ip)
+                else
+                  _buildDeckList(ctx, decksVM, ip),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildAppBar(BuildContext context, ColorScheme cs, Color ip) {
+  Widget _buildAppBar(BuildContext context, Color ip) {
     return SliverAppBar(
       pinned: true,
       automaticallyImplyLeading: false,
-      backgroundColor: cs.surface,
+      backgroundColor: Colors.transparent,
       elevation: 0,
-      toolbarHeight: 85,
+      toolbarHeight: 80,
       titleSpacing: 0,
       title: Column(
         children: [
           Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 8),
-            width: 40,
-            height: 4,
+            margin: EdgeInsets.only(top: 12, bottom: 8),
+            width: 50,
+            height: 5,
             decoration: BoxDecoration(
               color: ip.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(2.5),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 8, 0),
+            padding: EdgeInsets.fromLTRB(24, 0, 12, 0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -88,18 +94,18 @@ class DeckSelectorSheet extends StatelessWidget {
                   'Save to Deck',
                   style: TextStyle(
                     color: ip,
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close, color: ip),
+                  icon: Icon(Icons.close_rounded, color: ip),
                 ),
               ],
             ),
           ),
-          const Divider(height: 1),
+          Divider(color: Colors.white12, height: 1),
         ],
       ),
     );
@@ -112,7 +118,7 @@ class DeckSelectorSheet extends StatelessWidget {
         child: Text(
           'No decks found.\nCreate a deck first.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: ip.withValues(alpha: 0.7)),
+          style: TextStyle(color: ip.withValues(alpha: 0.5), height: 1.5),
         ),
       ),
     );
@@ -120,60 +126,83 @@ class DeckSelectorSheet extends StatelessWidget {
 
   Widget _buildDeckList(
     BuildContext context,
-    ColorScheme cs,
     DecksViewModel decksVM,
     Color ip,
   ) {
-    return SliverList(
-      delegate: SliverChildBuilderDelegate((ctx, i) {
-        final deck = decksVM.decks[i];
-        return ListTile(
-          leading: Icon(Icons.style_outlined, color: ip),
-          title: Text(deck.name, style: TextStyle(color: ip)),
-          onTap: () => _handleSave(context, cs, decksVM, deck),
-        );
-      }, childCount: decksVM.decks.length),
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate((ctx, i) {
+          final deck = decksVM.decks[i];
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: ListTile(
+              leading: const Icon(
+                Icons.style_rounded,
+                color: Colors.blueAccent,
+              ),
+              title: Text(
+                deck.name,
+                style: TextStyle(color: ip, fontWeight: FontWeight.w600),
+              ),
+              onTap: () => _handleSave(context, decksVM, deck),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          );
+        }, childCount: decksVM.decks.length),
+      ),
     );
   }
 
   Future<void> _handleSave(
     BuildContext context,
-    ColorScheme cs,
     DecksViewModel decksVM,
     dynamic deck,
   ) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: cs.surface,
-        title: Text(
-          'Save Flashcard',
-          style: TextStyle(color: cs.inversePrimary),
-        ),
-        content: Text(
-          'Save to ${deck.name}?',
-          style: TextStyle(color: cs.inversePrimary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: cs.inversePrimary.withValues(alpha: 0.6)),
-            ),
+      builder: (dialogContext) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: cs.inversePrimary,
-              foregroundColor: cs.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          title: const Text(
+            'Save Flashcard',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          content: Text(
+            'Save word to ${deck.name}?',
+            style: const TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white54),
               ),
             ),
-            child: const Text('Save'),
-          ),
-        ],
+            ElevatedButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Save'),
+            ),
+          ],
+        ),
       ),
     );
 
