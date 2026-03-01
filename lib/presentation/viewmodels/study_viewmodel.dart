@@ -46,7 +46,7 @@ class StudyViewModel extends ChangeNotifier {
     try {
       await deck.cards.load();
       final now = DateTime.now();
-      final allCards = deck.cards.toList();
+      final allCards = deck.cards.where((c) => !c.isDeleted).toList();
 
       int todayNewStudied = 0;
       int todayReviewsStudied = 0;
@@ -93,7 +93,7 @@ class StudyViewModel extends ChangeNotifier {
   /// Rebuilds the study queue dynamically.
   void _rebuildQueue() {
     final now = DateTime.now();
-    final allCards = deck.cards.toList();
+    final allCards = deck.cards.where((c) => !c.isDeleted).toList();
 
     List<CardItem> newCards = [];
     List<CardItem> againCards =
@@ -168,6 +168,7 @@ class StudyViewModel extends ChangeNotifier {
 
     // Apply SRS algorithm
     final updatedCard = SRSService.calculateNextReview(card, rating);
+    updatedCard.lastModified = DateTime.now();
     await _storageService.updateCard(updatedCard);
 
     _isAnswerVisible = false;

@@ -2,23 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/repositories/auth_repository.dart';
 
+import '../../data/services/sync_service.dart';
+
 class AuthViewModel extends ChangeNotifier {
   final AuthRepository _authRepository;
+  final SyncService _syncService;
   User? _user;
   bool _isLoading = false;
   String? _error;
 
-  AuthViewModel(this._authRepository) {
-    _authRepository.user.listen((User? user) {
+  AuthViewModel(this._authRepository, this._syncService) {
+    _authRepository.user.listen((User? user) async {
+      final bool isLogin = user != null && _user == null;
+
       _user = user;
-      // When user object changes, we might want to reload to get fresh verification status
+
       if (user != null && !user.emailVerified) {
         user.reload().then((_) {
-          _user = FirebaseAuth.instance.currentUser;
+          _user = _authRepository.currentUser;
           notifyListeners();
         });
       }
       notifyListeners();
+
+      // Run sync operations after UI is updated
+      if (isLogin) {
+        try {
+          await _syncService.syncAll();
+        } catch (e) {
+          debugPrint('Sync on login failed: $e');
+        }
+      }
     });
   }
 
@@ -65,10 +79,10 @@ class AuthViewModel extends ChangeNotifier {
 
       // Wait for Firebase to settle, then force a reload to get fresh verification status
       await Future.delayed(const Duration(milliseconds: 500));
-      final currentUser = FirebaseAuth.instance.currentUser;
+      final currentUser = _authRepository.currentUser;
       if (currentUser != null) {
         await currentUser.reload();
-        _user = FirebaseAuth.instance.currentUser;
+        _user = _authRepository.currentUser;
       }
 
       _setLoading(false);
@@ -117,7 +131,7 @@ class AuthViewModel extends ChangeNotifier {
   Future<void> reloadUser() async {
     try {
       await _authRepository.reloadUser();
-      final freshUser = FirebaseAuth.instance.currentUser;
+      final freshUser = _authRepository.currentUser;
       if (freshUser != null) {
         _user = freshUser;
         notifyListeners();

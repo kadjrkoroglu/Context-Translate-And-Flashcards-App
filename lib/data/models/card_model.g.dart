@@ -22,48 +22,83 @@ const CardItemSchema = CollectionSchema(
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
-    r'easeFactor': PropertySchema(
+    r'deckSyncId': PropertySchema(
       id: 1,
+      name: r'deckSyncId',
+      type: IsarType.string,
+    ),
+    r'easeFactor': PropertySchema(
+      id: 2,
       name: r'easeFactor',
       type: IsarType.double,
     ),
     r'interval': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'interval',
       type: IsarType.long,
     ),
+    r'isDeleted': PropertySchema(
+      id: 4,
+      name: r'isDeleted',
+      type: IsarType.bool,
+    ),
     r'isNewCard': PropertySchema(
-      id: 3,
+      id: 5,
       name: r'isNewCard',
       type: IsarType.bool,
     ),
+    r'isSynced': PropertySchema(
+      id: 6,
+      name: r'isSynced',
+      type: IsarType.bool,
+    ),
+    r'lastModified': PropertySchema(
+      id: 7,
+      name: r'lastModified',
+      type: IsarType.dateTime,
+    ),
     r'lastRatingIndex': PropertySchema(
-      id: 4,
+      id: 8,
       name: r'lastRatingIndex',
       type: IsarType.long,
     ),
     r'lastStudiedDate': PropertySchema(
-      id: 5,
+      id: 9,
       name: r'lastStudiedDate',
       type: IsarType.dateTime,
     ),
     r'nextReviewDate': PropertySchema(
-      id: 6,
+      id: 10,
       name: r'nextReviewDate',
       type: IsarType.dateTime,
     ),
+    r'remoteId': PropertySchema(
+      id: 11,
+      name: r'remoteId',
+      type: IsarType.string,
+    ),
     r'repetitions': PropertySchema(
-      id: 7,
+      id: 12,
       name: r'repetitions',
       type: IsarType.long,
     ),
+    r'syncId': PropertySchema(
+      id: 13,
+      name: r'syncId',
+      type: IsarType.string,
+    ),
     r'translation': PropertySchema(
-      id: 8,
+      id: 14,
       name: r'translation',
       type: IsarType.string,
     ),
+    r'userId': PropertySchema(
+      id: 15,
+      name: r'userId',
+      type: IsarType.string,
+    ),
     r'word': PropertySchema(
-      id: 9,
+      id: 16,
       name: r'word',
       type: IsarType.string,
     )
@@ -73,7 +108,21 @@ const CardItemSchema = CollectionSchema(
   deserialize: _cardItemDeserialize,
   deserializeProp: _cardItemDeserializeProp,
   idName: r'id',
-  indexes: {},
+  indexes: {
+    r'syncId': IndexSchema(
+      id: 7538593479801827566,
+      name: r'syncId',
+      unique: true,
+      replace: true,
+      properties: [
+        IndexPropertySchema(
+          name: r'syncId',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    )
+  },
   links: {},
   embeddedSchemas: {},
   getId: _cardItemGetId,
@@ -88,7 +137,26 @@ int _cardItemEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  {
+    final value = object.deckSyncId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.remoteId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  bytesCount += 3 + object.syncId.length * 3;
   bytesCount += 3 + object.translation.length * 3;
+  {
+    final value = object.userId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.word.length * 3;
   return bytesCount;
 }
@@ -100,15 +168,22 @@ void _cardItemSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeDateTime(offsets[0], object.createdAt);
-  writer.writeDouble(offsets[1], object.easeFactor);
-  writer.writeLong(offsets[2], object.interval);
-  writer.writeBool(offsets[3], object.isNewCard);
-  writer.writeLong(offsets[4], object.lastRatingIndex);
-  writer.writeDateTime(offsets[5], object.lastStudiedDate);
-  writer.writeDateTime(offsets[6], object.nextReviewDate);
-  writer.writeLong(offsets[7], object.repetitions);
-  writer.writeString(offsets[8], object.translation);
-  writer.writeString(offsets[9], object.word);
+  writer.writeString(offsets[1], object.deckSyncId);
+  writer.writeDouble(offsets[2], object.easeFactor);
+  writer.writeLong(offsets[3], object.interval);
+  writer.writeBool(offsets[4], object.isDeleted);
+  writer.writeBool(offsets[5], object.isNewCard);
+  writer.writeBool(offsets[6], object.isSynced);
+  writer.writeDateTime(offsets[7], object.lastModified);
+  writer.writeLong(offsets[8], object.lastRatingIndex);
+  writer.writeDateTime(offsets[9], object.lastStudiedDate);
+  writer.writeDateTime(offsets[10], object.nextReviewDate);
+  writer.writeString(offsets[11], object.remoteId);
+  writer.writeLong(offsets[12], object.repetitions);
+  writer.writeString(offsets[13], object.syncId);
+  writer.writeString(offsets[14], object.translation);
+  writer.writeString(offsets[15], object.userId);
+  writer.writeString(offsets[16], object.word);
 }
 
 CardItem _cardItemDeserialize(
@@ -119,16 +194,23 @@ CardItem _cardItemDeserialize(
 ) {
   final object = CardItem();
   object.createdAt = reader.readDateTime(offsets[0]);
-  object.easeFactor = reader.readDouble(offsets[1]);
+  object.deckSyncId = reader.readStringOrNull(offsets[1]);
+  object.easeFactor = reader.readDouble(offsets[2]);
   object.id = id;
-  object.interval = reader.readLong(offsets[2]);
-  object.isNewCard = reader.readBool(offsets[3]);
-  object.lastRatingIndex = reader.readLongOrNull(offsets[4]);
-  object.lastStudiedDate = reader.readDateTimeOrNull(offsets[5]);
-  object.nextReviewDate = reader.readDateTimeOrNull(offsets[6]);
-  object.repetitions = reader.readLong(offsets[7]);
-  object.translation = reader.readString(offsets[8]);
-  object.word = reader.readString(offsets[9]);
+  object.interval = reader.readLong(offsets[3]);
+  object.isDeleted = reader.readBool(offsets[4]);
+  object.isNewCard = reader.readBool(offsets[5]);
+  object.isSynced = reader.readBool(offsets[6]);
+  object.lastModified = reader.readDateTime(offsets[7]);
+  object.lastRatingIndex = reader.readLongOrNull(offsets[8]);
+  object.lastStudiedDate = reader.readDateTimeOrNull(offsets[9]);
+  object.nextReviewDate = reader.readDateTimeOrNull(offsets[10]);
+  object.remoteId = reader.readStringOrNull(offsets[11]);
+  object.repetitions = reader.readLong(offsets[12]);
+  object.syncId = reader.readString(offsets[13]);
+  object.translation = reader.readString(offsets[14]);
+  object.userId = reader.readStringOrNull(offsets[15]);
+  object.word = reader.readString(offsets[16]);
   return object;
 }
 
@@ -142,22 +224,36 @@ P _cardItemDeserializeProp<P>(
     case 0:
       return (reader.readDateTime(offset)) as P;
     case 1:
-      return (reader.readDouble(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 2:
-      return (reader.readLong(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 3:
-      return (reader.readBool(offset)) as P;
-    case 4:
-      return (reader.readLongOrNull(offset)) as P;
-    case 5:
-      return (reader.readDateTimeOrNull(offset)) as P;
-    case 6:
-      return (reader.readDateTimeOrNull(offset)) as P;
-    case 7:
       return (reader.readLong(offset)) as P;
+    case 4:
+      return (reader.readBool(offset)) as P;
+    case 5:
+      return (reader.readBool(offset)) as P;
+    case 6:
+      return (reader.readBool(offset)) as P;
+    case 7:
+      return (reader.readDateTime(offset)) as P;
     case 8:
-      return (reader.readString(offset)) as P;
+      return (reader.readLongOrNull(offset)) as P;
     case 9:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 10:
+      return (reader.readDateTimeOrNull(offset)) as P;
+    case 11:
+      return (reader.readStringOrNull(offset)) as P;
+    case 12:
+      return (reader.readLong(offset)) as P;
+    case 13:
+      return (reader.readString(offset)) as P;
+    case 14:
+      return (reader.readString(offset)) as P;
+    case 15:
+      return (reader.readStringOrNull(offset)) as P;
+    case 16:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -174,6 +270,60 @@ List<IsarLinkBase<dynamic>> _cardItemGetLinks(CardItem object) {
 
 void _cardItemAttach(IsarCollection<dynamic> col, Id id, CardItem object) {
   object.id = id;
+}
+
+extension CardItemByIndex on IsarCollection<CardItem> {
+  Future<CardItem?> getBySyncId(String syncId) {
+    return getByIndex(r'syncId', [syncId]);
+  }
+
+  CardItem? getBySyncIdSync(String syncId) {
+    return getByIndexSync(r'syncId', [syncId]);
+  }
+
+  Future<bool> deleteBySyncId(String syncId) {
+    return deleteByIndex(r'syncId', [syncId]);
+  }
+
+  bool deleteBySyncIdSync(String syncId) {
+    return deleteByIndexSync(r'syncId', [syncId]);
+  }
+
+  Future<List<CardItem?>> getAllBySyncId(List<String> syncIdValues) {
+    final values = syncIdValues.map((e) => [e]).toList();
+    return getAllByIndex(r'syncId', values);
+  }
+
+  List<CardItem?> getAllBySyncIdSync(List<String> syncIdValues) {
+    final values = syncIdValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'syncId', values);
+  }
+
+  Future<int> deleteAllBySyncId(List<String> syncIdValues) {
+    final values = syncIdValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'syncId', values);
+  }
+
+  int deleteAllBySyncIdSync(List<String> syncIdValues) {
+    final values = syncIdValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'syncId', values);
+  }
+
+  Future<Id> putBySyncId(CardItem object) {
+    return putByIndex(r'syncId', object);
+  }
+
+  Id putBySyncIdSync(CardItem object, {bool saveLinks = true}) {
+    return putByIndexSync(r'syncId', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllBySyncId(List<CardItem> objects) {
+    return putAllByIndex(r'syncId', objects);
+  }
+
+  List<Id> putAllBySyncIdSync(List<CardItem> objects, {bool saveLinks = true}) {
+    return putAllByIndexSync(r'syncId', objects, saveLinks: saveLinks);
+  }
 }
 
 extension CardItemQueryWhereSort on QueryBuilder<CardItem, CardItem, QWhere> {
@@ -249,6 +399,51 @@ extension CardItemQueryWhere on QueryBuilder<CardItem, CardItem, QWhereClause> {
       ));
     });
   }
+
+  QueryBuilder<CardItem, CardItem, QAfterWhereClause> syncIdEqualTo(
+      String syncId) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'syncId',
+        value: [syncId],
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterWhereClause> syncIdNotEqualTo(
+      String syncId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncId',
+              lower: [],
+              upper: [syncId],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncId',
+              lower: [syncId],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncId',
+              lower: [syncId],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'syncId',
+              lower: [],
+              upper: [syncId],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
 }
 
 extension CardItemQueryFilter
@@ -302,6 +497,154 @@ extension CardItemQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> deckSyncIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'deckSyncId',
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      deckSyncIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'deckSyncId',
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> deckSyncIdEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'deckSyncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> deckSyncIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'deckSyncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> deckSyncIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'deckSyncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> deckSyncIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'deckSyncId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> deckSyncIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'deckSyncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> deckSyncIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'deckSyncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> deckSyncIdContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'deckSyncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> deckSyncIdMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'deckSyncId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> deckSyncIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'deckSyncId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      deckSyncIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'deckSyncId',
+        value: '',
       ));
     });
   }
@@ -473,12 +816,86 @@ extension CardItemQueryFilter
     });
   }
 
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> isDeletedEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isDeleted',
+        value: value,
+      ));
+    });
+  }
+
   QueryBuilder<CardItem, CardItem, QAfterFilterCondition> isNewCardEqualTo(
       bool value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'isNewCard',
         value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> isSyncedEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isSynced',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> lastModifiedEqualTo(
+      DateTime value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'lastModified',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition>
+      lastModifiedGreaterThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'lastModified',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> lastModifiedLessThan(
+    DateTime value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'lastModified',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> lastModifiedBetween(
+    DateTime lower,
+    DateTime upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'lastModified',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
       ));
     });
   }
@@ -704,6 +1121,152 @@ extension CardItemQueryFilter
     });
   }
 
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> remoteIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'remoteId',
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> remoteIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'remoteId',
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> remoteIdEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> remoteIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> remoteIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> remoteIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'remoteId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> remoteIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> remoteIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> remoteIdContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'remoteId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> remoteIdMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'remoteId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> remoteIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'remoteId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> remoteIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'remoteId',
+        value: '',
+      ));
+    });
+  }
+
   QueryBuilder<CardItem, CardItem, QAfterFilterCondition> repetitionsEqualTo(
       int value) {
     return QueryBuilder.apply(this, (query) {
@@ -754,6 +1317,136 @@ extension CardItemQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> syncIdEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'syncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> syncIdGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'syncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> syncIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'syncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> syncIdBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'syncId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> syncIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'syncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> syncIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'syncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> syncIdContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'syncId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> syncIdMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'syncId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> syncIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'syncId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> syncIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'syncId',
+        value: '',
       ));
     });
   }
@@ -885,6 +1578,152 @@ extension CardItemQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'translation',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> userIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'userId',
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> userIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'userId',
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> userIdEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> userIdGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> userIdLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> userIdBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'userId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> userIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> userIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> userIdContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'userId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> userIdMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'userId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> userIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'userId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterFilterCondition> userIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'userId',
         value: '',
       ));
     });
@@ -1040,6 +1879,18 @@ extension CardItemQuerySortBy on QueryBuilder<CardItem, CardItem, QSortBy> {
     });
   }
 
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByDeckSyncId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deckSyncId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByDeckSyncIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deckSyncId', Sort.desc);
+    });
+  }
+
   QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByEaseFactor() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'easeFactor', Sort.asc);
@@ -1064,6 +1915,18 @@ extension CardItemQuerySortBy on QueryBuilder<CardItem, CardItem, QSortBy> {
     });
   }
 
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByIsDeleted() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDeleted', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByIsDeletedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDeleted', Sort.desc);
+    });
+  }
+
   QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByIsNewCard() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isNewCard', Sort.asc);
@@ -1073,6 +1936,30 @@ extension CardItemQuerySortBy on QueryBuilder<CardItem, CardItem, QSortBy> {
   QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByIsNewCardDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isNewCard', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByIsSynced() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isSynced', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByIsSyncedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isSynced', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByLastModified() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastModified', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByLastModifiedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastModified', Sort.desc);
     });
   }
 
@@ -1112,6 +1999,18 @@ extension CardItemQuerySortBy on QueryBuilder<CardItem, CardItem, QSortBy> {
     });
   }
 
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByRemoteId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByRemoteIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.desc);
+    });
+  }
+
   QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByRepetitions() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'repetitions', Sort.asc);
@@ -1124,6 +2023,18 @@ extension CardItemQuerySortBy on QueryBuilder<CardItem, CardItem, QSortBy> {
     });
   }
 
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortBySyncId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'syncId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortBySyncIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'syncId', Sort.desc);
+    });
+  }
+
   QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByTranslation() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'translation', Sort.asc);
@@ -1133,6 +2044,18 @@ extension CardItemQuerySortBy on QueryBuilder<CardItem, CardItem, QSortBy> {
   QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByTranslationDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'translation', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByUserId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'userId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> sortByUserIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'userId', Sort.desc);
     });
   }
 
@@ -1160,6 +2083,18 @@ extension CardItemQuerySortThenBy
   QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByDeckSyncId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deckSyncId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByDeckSyncIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deckSyncId', Sort.desc);
     });
   }
 
@@ -1199,6 +2134,18 @@ extension CardItemQuerySortThenBy
     });
   }
 
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByIsDeleted() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDeleted', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByIsDeletedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isDeleted', Sort.desc);
+    });
+  }
+
   QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByIsNewCard() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isNewCard', Sort.asc);
@@ -1208,6 +2155,30 @@ extension CardItemQuerySortThenBy
   QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByIsNewCardDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isNewCard', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByIsSynced() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isSynced', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByIsSyncedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isSynced', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByLastModified() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastModified', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByLastModifiedDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'lastModified', Sort.desc);
     });
   }
 
@@ -1247,6 +2218,18 @@ extension CardItemQuerySortThenBy
     });
   }
 
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByRemoteId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByRemoteIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'remoteId', Sort.desc);
+    });
+  }
+
   QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByRepetitions() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'repetitions', Sort.asc);
@@ -1259,6 +2242,18 @@ extension CardItemQuerySortThenBy
     });
   }
 
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenBySyncId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'syncId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenBySyncIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'syncId', Sort.desc);
+    });
+  }
+
   QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByTranslation() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'translation', Sort.asc);
@@ -1268,6 +2263,18 @@ extension CardItemQuerySortThenBy
   QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByTranslationDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'translation', Sort.desc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByUserId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'userId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QAfterSortBy> thenByUserIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'userId', Sort.desc);
     });
   }
 
@@ -1292,6 +2299,13 @@ extension CardItemQueryWhereDistinct
     });
   }
 
+  QueryBuilder<CardItem, CardItem, QDistinct> distinctByDeckSyncId(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'deckSyncId', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<CardItem, CardItem, QDistinct> distinctByEaseFactor() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'easeFactor');
@@ -1304,9 +2318,27 @@ extension CardItemQueryWhereDistinct
     });
   }
 
+  QueryBuilder<CardItem, CardItem, QDistinct> distinctByIsDeleted() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isDeleted');
+    });
+  }
+
   QueryBuilder<CardItem, CardItem, QDistinct> distinctByIsNewCard() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isNewCard');
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QDistinct> distinctByIsSynced() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isSynced');
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QDistinct> distinctByLastModified() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'lastModified');
     });
   }
 
@@ -1328,9 +2360,23 @@ extension CardItemQueryWhereDistinct
     });
   }
 
+  QueryBuilder<CardItem, CardItem, QDistinct> distinctByRemoteId(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'remoteId', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<CardItem, CardItem, QDistinct> distinctByRepetitions() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'repetitions');
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QDistinct> distinctBySyncId(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'syncId', caseSensitive: caseSensitive);
     });
   }
 
@@ -1338,6 +2384,13 @@ extension CardItemQueryWhereDistinct
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'translation', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<CardItem, CardItem, QDistinct> distinctByUserId(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'userId', caseSensitive: caseSensitive);
     });
   }
 
@@ -1363,6 +2416,12 @@ extension CardItemQueryProperty
     });
   }
 
+  QueryBuilder<CardItem, String?, QQueryOperations> deckSyncIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'deckSyncId');
+    });
+  }
+
   QueryBuilder<CardItem, double, QQueryOperations> easeFactorProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'easeFactor');
@@ -1375,9 +2434,27 @@ extension CardItemQueryProperty
     });
   }
 
+  QueryBuilder<CardItem, bool, QQueryOperations> isDeletedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isDeleted');
+    });
+  }
+
   QueryBuilder<CardItem, bool, QQueryOperations> isNewCardProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isNewCard');
+    });
+  }
+
+  QueryBuilder<CardItem, bool, QQueryOperations> isSyncedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isSynced');
+    });
+  }
+
+  QueryBuilder<CardItem, DateTime, QQueryOperations> lastModifiedProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'lastModified');
     });
   }
 
@@ -1400,15 +2477,33 @@ extension CardItemQueryProperty
     });
   }
 
+  QueryBuilder<CardItem, String?, QQueryOperations> remoteIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'remoteId');
+    });
+  }
+
   QueryBuilder<CardItem, int, QQueryOperations> repetitionsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'repetitions');
     });
   }
 
+  QueryBuilder<CardItem, String, QQueryOperations> syncIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'syncId');
+    });
+  }
+
   QueryBuilder<CardItem, String, QQueryOperations> translationProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'translation');
+    });
+  }
+
+  QueryBuilder<CardItem, String?, QQueryOperations> userIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'userId');
     });
   }
 

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../data/models/favorite_word_model.dart';
-import '../../data/services/local_storage_service.dart';
+import '../../data/repositories/favorite_repository.dart';
 
 class FavoriteViewModel extends ChangeNotifier {
-  final LocalStorageService _storageService;
+  final FavoriteRepository _repository;
 
-  FavoriteViewModel(this._storageService);
+  FavoriteViewModel(this._repository);
 
   // --- STATE ---
   List<FavoriteWord> _favorites = [];
@@ -24,7 +24,7 @@ class FavoriteViewModel extends ChangeNotifier {
     _errorMessage = null;
 
     try {
-      _favorites = await _storageService.getAllFavorites();
+      _favorites = await _repository.getAllFavorites();
     } catch (e) {
       _errorMessage = "Failed to load favorites: $e";
     } finally {
@@ -43,12 +43,16 @@ class FavoriteViewModel extends ChangeNotifier {
     if (trimmedWord.isEmpty || trimmedTranslation.isEmpty) return;
 
     try {
+      final now = DateTime.now();
       final newFavorite = FavoriteWord()
+        ..syncId =
+            '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}'
         ..word = trimmedWord
         ..translation = trimmedTranslation
-        ..createdAt = DateTime.now();
+        ..createdAt = now
+        ..lastModified = now;
 
-      await _storageService.addFavorite(newFavorite);
+      await _repository.addFavorite(newFavorite);
       await loadFavorites();
     } catch (e) {
       _errorMessage = "Save failed: $e";
@@ -59,7 +63,7 @@ class FavoriteViewModel extends ChangeNotifier {
   /// Delete favorite by ID
   Future<void> removeFavorite(int id) async {
     try {
-      await _storageService.deleteFavorite(id);
+      await _repository.deleteFavorite(id);
       await loadFavorites();
     } catch (e) {
       _errorMessage = "Delete failed: $e";

@@ -109,7 +109,9 @@ class _DeckDetailPageState extends State<DeckDetailPage> {
                 (d) => d.id == widget.deck.id,
                 orElse: () => widget.deck,
               );
-              final cardsList = currentDeck.cards.toList();
+              final cardsList = currentDeck.cards
+                  .where((c) => !c.isDeleted)
+                  .toList();
               cardsList.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
               return CustomScrollView(
@@ -163,7 +165,7 @@ class _DeckDetailPageState extends State<DeckDetailPage> {
                           padding: const EdgeInsets.only(right: 20.0),
                           child: Center(
                             child: Text(
-                              '${currentDeck.cards.length} cards',
+                              '${currentDeck.cards.where((c) => !c.isDeleted).length} cards',
                               style: TextStyle(
                                 color: ip.withValues(alpha: 0.5),
                                 fontSize: 13,

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:translate_app/data/models/deck_model.dart';
-import 'package:translate_app/data/services/local_storage_service.dart';
+import 'package:translate_app/data/repositories/deck_repository.dart';
 import 'package:translate_app/data/models/card_model.dart';
 
 class DecksViewModel extends ChangeNotifier {
-  final LocalStorageService _storageService;
+  final DeckRepository _repository;
 
   List<DeckItem> _decks = [];
   bool _isLoading = false;
@@ -12,7 +12,7 @@ class DecksViewModel extends ChangeNotifier {
   List<DeckItem> get decks => _decks;
   bool get isLoading => _isLoading;
 
-  DecksViewModel(this._storageService) {
+  DecksViewModel(this._repository) {
     loadDecks();
   }
 
@@ -20,7 +20,7 @@ class DecksViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    _decks = await _storageService.getAllDecks();
+    _decks = await _repository.getAllDecks();
 
     for (var deck in _decks) {
       await deck.cards.load();
@@ -31,38 +31,47 @@ class DecksViewModel extends ChangeNotifier {
   }
 
   Future<void> addDeck(String name) async {
+    final now = DateTime.now();
     final newDeck = DeckItem()
+      ..syncId =
+          '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}'
       ..name = name
-      ..createdAt = DateTime.now()
+      ..createdAt = now
+      ..lastModified = now
       ..orderIndex = _decks.length + 1;
 
-    await _storageService.saveDeck(newDeck);
+    await _repository.saveDeck(newDeck);
     await loadDecks();
   }
 
   Future<void> deleteDeck(int id) async {
-    await _storageService.deleteDeck(id);
+    await _repository.deleteDeck(id);
     await loadDecks();
   }
 
   Future<void> addCard(int deckId, String word, String translation) async {
+    final now = DateTime.now();
     final newCard = CardItem()
+      ..syncId =
+          '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}'
       ..word = word
       ..translation = translation
-      ..createdAt = DateTime.now();
+      ..createdAt = now
+      ..lastModified = now;
 
-    await _storageService.addCardToDeck(deckId, newCard);
+    await _repository.addCardToDeck(deckId, newCard);
     await loadDecks();
   }
 
   Future<void> deleteMultipleCards(List<int> cardIds) async {
-    await _storageService.deleteCards(cardIds);
+    await _repository.deleteCards(cardIds);
     await loadDecks();
   }
 
   int getStudyCount(DeckItem deck) {
     final now = DateTime.now();
     return deck.cards.where((card) {
+      if (card.isDeleted) return false;
       if (card.nextReviewDate == null) return true;
       return card.nextReviewDate!.isBefore(now) ||
           card.nextReviewDate!.isAtSameMomentAs(now);
@@ -79,6 +88,7 @@ class DecksViewModel extends ChangeNotifier {
     int easyCount = 0;
 
     for (var card in deck.cards) {
+      if (card.isDeleted) continue;
       if (card.nextReviewDate == null) {
         // Newly added cards
         newCount++;
@@ -118,7 +128,7 @@ class DecksViewModel extends ChangeNotifier {
     int newCardsLimit,
     int reviewsLimit,
   ) async {
-    await _storageService.updateDeckLimits(deckId, newCardsLimit, reviewsLimit);
+    await _repository.updateDeckLimits(deckId, newCardsLimit, reviewsLimit);
     await loadDecks();
   }
 }

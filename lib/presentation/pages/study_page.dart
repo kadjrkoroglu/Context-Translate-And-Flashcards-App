@@ -63,10 +63,11 @@ class _StudyPageState extends State<StudyPage>
       _flipController.animateTo(0, duration: Duration.zero);
       _previousCardId = card.id;
     }
-    if (vm.isAnswerVisible && _flipController.value == 0)
+    if (vm.isAnswerVisible && _flipController.value == 0) {
       _flipController.forward();
-    else if (!vm.isAnswerVisible && _flipController.value == 1)
+    } else if (!vm.isAnswerVisible && _flipController.value == 1) {
       _flipController.reverse();
+    }
 
     final activeRating = _isDragging ? _getRatingFromOffset(_dragOffset) : null;
 
@@ -117,8 +118,9 @@ class _StudyPageState extends State<StudyPage>
                     if (vm.isAnswerVisible) _dragOffset += d.delta;
                   }),
                   onPanEnd: (_) {
-                    if (activeRating != null && vm.isAnswerVisible)
+                    if (activeRating != null && vm.isAnswerVisible) {
                       vm.rateCard(activeRating);
+                    }
                     setState(() {
                       _isDragging = false;
                       _dragOffset = Offset.zero;

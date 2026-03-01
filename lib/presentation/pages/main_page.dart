@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'dart:ui';
 import 'package:translate_app/presentation/pages/ml_translate_page.dart';
 import 'package:translate_app/presentation/pages/gemini_translate_page.dart';
 import 'package:translate_app/presentation/pages/history_page.dart';
@@ -106,9 +105,12 @@ class MainPage extends StatelessWidget {
             animation: viewModel.pageController,
             builder: (context, child) {
               double offset = 0;
-              if (viewModel.pageController.hasClients) {
-                offset = viewModel.pageController.page ?? 0;
-              }
+              try {
+                if (viewModel.pageController.hasClients &&
+                    viewModel.pageController.positions.length == 1) {
+                  offset = viewModel.pageController.page ?? 0;
+                }
+              } catch (_) {}
               return Align(
                 alignment: Alignment(offset * 2 - 1, 0),
                 child: FractionallySizedBox(
@@ -152,8 +154,12 @@ class MainPage extends StatelessWidget {
           animation: viewModel.pageController,
           builder: (context, child) {
             double page = 0;
-            if (viewModel.pageController.hasClients)
-              page = viewModel.pageController.page ?? 0;
+            try {
+              if (viewModel.pageController.hasClients &&
+                  viewModel.pageController.positions.length == 1) {
+                page = viewModel.pageController.page ?? 0;
+              }
+            } catch (_) {}
             double selectionFactor = (index == 0) ? (1 - page) : page;
             selectionFactor = selectionFactor.clamp(0, 1);
             return Center(
@@ -211,7 +217,14 @@ class MainPage extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            final isMLPage = (viewModel.pageController.page ?? 0) > 0.5;
+            double currentPage = 0;
+            try {
+              if (viewModel.pageController.hasClients &&
+                  viewModel.pageController.positions.length == 1) {
+                currentPage = viewModel.pageController.page ?? 0;
+              }
+            } catch (_) {}
+            final isMLPage = currentPage > 0.5;
             if (isMLPage) {
               mlVM.isListening
                   ? mlVM.stopListening()

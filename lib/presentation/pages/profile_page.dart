@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:provider/provider.dart';
+import 'package:translate_app/data/services/sync_service.dart';
 import 'package:translate_app/presentation/viewmodels/auth_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
 import 'package:translate_app/presentation/pages/auth/login_page.dart';
 import 'package:translate_app/theme/theme_provider.dart';
@@ -14,6 +18,7 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final authViewModel = context.watch<AuthViewModel>();
     final themeProvider = context.watch<ThemeProvider>();
+    final syncService = context.watch<SyncService>();
     final user = authViewModel.user;
     final bool isAuthenticated = authViewModel.isAuthenticated;
 
@@ -91,7 +96,13 @@ class ProfilePage extends StatelessWidget {
                 ),
               const SizedBox(height: 40),
               if (isAuthenticated)
-                _buildSyncStatusCard(glassTheme, textColor, subTextColor)
+                _buildSyncCard(
+                  context,
+                  glassTheme,
+                  textColor,
+                  subTextColor,
+                  syncService,
+                )
               else
                 _buildSignInCTA(context, glassTheme, textColor, subTextColor),
               const SizedBox(height: 24),
@@ -185,10 +196,12 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildSyncStatusCard(
+  Widget _buildSyncCard(
+    BuildContext context,
     GlassThemeExtension glass,
     Color textColor,
     Color subTextColor,
+    SyncService syncService,
   ) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
@@ -201,39 +214,183 @@ class ProfilePage extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: glass.borderGlassColor),
           ),
-          child: Row(
+          child: Column(
             children: [
-              _buildIconCircle(
-                Icons.cloud_done_rounded,
-                Colors.greenAccent,
-                glass,
+              Row(
+                children: [
+                  _buildIconCircle(
+                    Icons.cloud_done_rounded,
+                    Colors.greenAccent,
+                    glass,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Cloud Sync',
+                          style: TextStyle(
+                            color: textColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Sync your data across devices',
+                          style: TextStyle(fontSize: 11, color: subTextColor),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Cloud Sync Active',
-                      style: TextStyle(
-                        color: textColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: ElevatedButton.icon(
+                  onPressed: syncService.isSyncing
+                      ? null
+                      : () => _handleSync(context, syncService),
+                  icon: syncService.isSyncing
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.sync_rounded, size: 20),
+                  label: Text(
+                    syncService.isSyncing ? 'Syncing...' : 'Sync Now',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: syncService.isSyncing
+                        ? Colors.white24
+                        : Colors.white,
+                    foregroundColor: syncService.isSyncing
+                        ? Colors.white70
+                        : Colors.black87,
+                    disabledBackgroundColor: Colors.white24,
+                    disabledForegroundColor: Colors.white70,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Progress is automatically saved',
-                      style: TextStyle(fontSize: 11, color: subTextColor),
-                    ),
-                  ],
+                    elevation: 0,
+                  ),
                 ),
               ),
+              if (syncService.syncError != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  'Sync failed. Please try again.',
+                  style: TextStyle(
+                    color: Colors.redAccent.withValues(alpha: 0.8),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _handleSync(
+    BuildContext context,
+    SyncService syncService,
+  ) async {
+    final authError = await syncService.syncAll();
+
+    if (!context.mounted) return;
+
+    // If user is not logged in, show warning and return early
+    if (authError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                authError,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.orange.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
+    // Refresh all viewmodels after sync
+    context.read<DecksViewModel>().loadDecks();
+    context.read<FavoriteViewModel>().loadFavorites();
+    context.read<HistoryViewModel>().loadHistory();
+
+    if (syncService.syncError == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              SizedBox(width: 10),
+              Text(
+                'Sync completed successfully!',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.green.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Sync failed. Please check your connection and try again.',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
   }
 
   Widget _buildSignInCTA(

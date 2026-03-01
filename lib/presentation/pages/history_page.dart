@@ -15,7 +15,9 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => context.read<HistoryViewModel>().loadHistory());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<HistoryViewModel>().loadHistory();
+    });
   }
 
   @override

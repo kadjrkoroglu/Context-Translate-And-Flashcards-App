@@ -21,6 +21,12 @@ import 'package:translate_app/data/services/settings_service.dart';
 import 'package:translate_app/data/services/auth_service.dart';
 import 'package:translate_app/data/repositories/auth_repository.dart';
 import 'package:translate_app/presentation/viewmodels/auth_viewmodel.dart';
+import 'package:translate_app/data/services/firestore_service.dart';
+import 'package:translate_app/data/repositories/history_repository.dart';
+import 'package:translate_app/data/repositories/deck_repository.dart';
+import 'package:translate_app/data/repositories/favorite_repository.dart';
+
+import 'package:translate_app/data/services/sync_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,26 +46,38 @@ void main() async {
   final apiKey = envMap['api_key'] as String;
 
   Gemini.init(apiKey: apiKey);
+
+  final firestoreService = FirestoreService();
+  final historyRepository = HistoryRepository(localStorage, firestoreService);
+  final favoriteRepository = FavoriteRepository(localStorage, firestoreService);
+  final deckRepository = DeckRepository(localStorage, firestoreService);
+  final syncService = SyncService(localStorage, firestoreService);
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider(settingsService)),
-        ChangeNotifierProvider(create: (_) => AuthViewModel(authRepository)),
+        ChangeNotifierProvider(
+          create: (_) => AuthViewModel(authRepository, syncService),
+        ),
         ChangeNotifierProvider(create: (_) => MainViewModel()),
+        ChangeNotifierProvider<SyncService>.value(value: syncService),
         Provider<SettingsService>.value(value: settingsService),
         Provider<LocalStorageService>.value(value: localStorage),
         Provider<AuthRepository>.value(value: authRepository),
+        Provider<HistoryRepository>.value(value: historyRepository),
+        Provider<FavoriteRepository>.value(value: favoriteRepository),
+        Provider<DeckRepository>.value(value: deckRepository),
         ChangeNotifierProvider(
           create: (context) =>
-              FavoriteViewModel(context.read<LocalStorageService>()),
+              FavoriteViewModel(context.read<FavoriteRepository>()),
         ),
         ChangeNotifierProvider(
           create: (context) =>
-              HistoryViewModel(context.read<LocalStorageService>()),
+              HistoryViewModel(context.read<HistoryRepository>()),
         ),
         ChangeNotifierProvider(
-          create: (context) =>
-              DecksViewModel(context.read<LocalStorageService>()),
+          create: (context) => DecksViewModel(context.read<DeckRepository>()),
         ),
         ChangeNotifierProvider(
           create: (context) => GeminiTranslateViewModel(

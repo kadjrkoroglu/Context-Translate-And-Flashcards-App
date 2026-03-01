@@ -8,6 +8,15 @@ import '../models/deck_model.dart';
 class LocalStorageService {
   late Isar isar;
 
+  Future<void> clearAllData() async {
+    await isar.writeTxn(() async {
+      await isar.favoriteWords.clear();
+      await isar.historyItems.clear();
+      await isar.cardItems.clear();
+      await isar.deckItems.clear();
+    });
+  }
+
   Future<void> init() async {
     final dir = await getApplicationDocumentsDirectory();
     isar = await Isar.open([
@@ -103,6 +112,10 @@ class LocalStorageService {
     await isar.writeTxn(() async {
       await isar.cardItems.put(card);
     });
+  }
+
+  Future<CardItem?> getCardById(int id) async {
+    return await isar.cardItems.get(id);
   }
 
   Future<void> updateDeckLimits(

@@ -8,6 +8,7 @@ class AuthRepository {
 
   // Auth state changes stream
   Stream<User?> get user => _authService.user;
+  User? get currentUser => _authService.currentUser;
 
   // Sign in with Email & Password
   Future<UserCredential?> signInWithEmail(String email, String password) =>

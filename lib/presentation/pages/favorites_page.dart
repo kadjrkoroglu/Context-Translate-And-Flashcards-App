@@ -15,7 +15,9 @@ class _FavoritesPageState extends State<FavoritesPage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => context.read<FavoriteViewModel>().loadFavorites());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<FavoriteViewModel>().loadFavorites();
+    });
   }
 
   @override

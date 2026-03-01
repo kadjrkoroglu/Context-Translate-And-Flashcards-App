@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../data/models/history_model.dart';
-import '../../data/services/local_storage_service.dart';
+import '../../data/repositories/history_repository.dart';
 
 class HistoryViewModel extends ChangeNotifier {
-  final LocalStorageService _storageService;
+  final HistoryRepository _repository;
 
-  HistoryViewModel(this._storageService);
+  HistoryViewModel(this._repository);
 
   List<HistoryItem> _historyItems = [];
   bool _isLoading = false;
@@ -18,7 +18,7 @@ class HistoryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _historyItems = await _storageService.getAllHistory();
+      _historyItems = await _repository.getAllHistory();
     } catch (e) {
       debugPrint('Load history error: $e');
     } finally {
@@ -45,22 +45,26 @@ class HistoryViewModel extends ChangeNotifier {
       }
     }
 
+    final now = DateTime.now();
     final item = HistoryItem()
+      ..syncId =
+          '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}'
       ..word = word
       ..translation = translation
-      ..createdAt = DateTime.now();
+      ..createdAt = now
+      ..lastModified = now;
 
-    await _storageService.addHistory(item);
+    await _repository.addHistory(item);
     await loadHistory();
   }
 
   Future<void> deleteItem(int id) async {
-    await _storageService.deleteHistoryItem(id);
+    await _repository.deleteHistoryItem(id);
     await loadHistory();
   }
 
   Future<void> clearAll() async {
-    await _storageService.clearHistory();
+    await _repository.clearHistory();
     _historyItems = [];
     notifyListeners();
   }

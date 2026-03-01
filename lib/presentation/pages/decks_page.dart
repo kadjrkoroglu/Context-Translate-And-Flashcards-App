@@ -9,8 +9,21 @@ import 'package:translate_app/presentation/viewmodels/study_viewmodel.dart';
 import 'package:translate_app/data/services/local_storage_service.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
 
-class DecksPage extends StatelessWidget {
+class DecksPage extends StatefulWidget {
   const DecksPage({super.key});
+
+  @override
+  State<DecksPage> createState() => _DecksPageState();
+}
+
+class _DecksPageState extends State<DecksPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<DecksViewModel>().loadDecks();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
