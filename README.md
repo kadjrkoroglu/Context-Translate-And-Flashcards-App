@@ -18,5 +18,5 @@ Flutter, Dart, Gemini 1.5 Flash API, Google ML Kit, Speech-to-Text, Provider, Is
 Developed as a real-world application highlighting clean architecture, modern Flutter workflows, and AI-driven translation features.
 
 
-![Uploading image (3).png…]()
+<img width="3588" height="1200" alt="image (3)" src="https://github.com/user-attachments/assets/51a5131a-e777-4766-bbbf-b21f1c293a32" />
 
