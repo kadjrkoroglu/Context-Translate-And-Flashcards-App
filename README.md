@@ -19,4 +19,5 @@ Developed as a real-world application highlighting clean architecture, modern Fl
 
 
 <img width="3588" height="1200" alt="image (3)" src="https://github.com/user-attachments/assets/51a5131a-e777-4766-bbbf-b21f1c293a32" />
+<img width="3323" height="838" alt="image (7)" src="https://github.com/user-attachments/assets/5f0ea9bf-c93c-46b8-b628-82db06a19bb5" />
 
