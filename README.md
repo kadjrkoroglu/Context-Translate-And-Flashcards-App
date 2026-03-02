@@ -18,6 +18,5 @@ Flutter, Dart, Gemini 1.5 Flash API, Google ML Kit, Speech-to-Text, Provider, Is
 Developed as a real-world application highlighting clean architecture, modern Flutter workflows, and AI-driven translation features.
 
 
-![Fotoram io](https://github.com/user-attachments/assets/8ad096d3-cc15-41ff-a441-6187519bd7fb)
-<img width="1200" height="1200" alt="Fotoram io" src="https://github.com/user-attachments/assets/3fbaa81f-eefe-4c47-88c7-7f95d027c289" />
-![Fotoram io (1)](https://github.com/user-attachments/assets/f3c1614d-3d69-48ed-8d6e-0b33bb1f17fd)
+![Uploading image (3).png…]()
+
