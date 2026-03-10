@@ -27,6 +27,7 @@ import 'package:translate_app/data/repositories/deck_repository.dart';
 import 'package:translate_app/data/repositories/favorite_repository.dart';
 
 import 'package:translate_app/data/services/sync_service.dart';
+import 'package:translate_app/data/services/tts_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,6 +57,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        Provider<TtsService>(create: (_) => TtsService()),
         ChangeNotifierProvider(create: (_) => ThemeProvider(settingsService)),
         ChangeNotifierProvider(
           create: (_) => AuthViewModel(authRepository, syncService),

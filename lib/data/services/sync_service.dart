@@ -21,19 +21,12 @@ class SyncService extends ChangeNotifier {
 
   String? get _userId => FirebaseAuth.instance.currentUser?.uid;
 
-  // ── Firestore paths ──
-  // Decks: users/{uid}/decks/{deckId}
-  // Cards: users/{uid}/decks/{deckRemoteId}/cards/{cardId}
-  //        (also accessible as users/{uid}/flashcards/{cardSyncId} for flat access)
-  // Favorites: users/{uid}/favorites/{favId}
-  // History: users/{uid}/history/{historyId}
   String get _decksPath => 'users/$_userId/decks';
   String get _favoritesPath => 'users/$_userId/favorites';
   String get _historyPath => 'users/$_userId/history';
   String _cardsPath(String deckRemoteId) =>
       'users/$_userId/decks/$deckRemoteId/cards';
 
-  /// Flat flashcards path: users/{uid}/flashcards/{cardSyncId}
   String get _flashcardsPath => 'users/$_userId/flashcards';
 
   /// Main sync entry point — call this from the "Senkronize Et" button.
@@ -41,7 +34,6 @@ class SyncService extends ChangeNotifier {
   /// Returns an error message string if the user is not logged in,
   /// otherwise returns null on success (check [syncError] for failures).
   Future<String?> syncAll() async {
-    // ── Auth guard ──
     if (_userId == null) {
       _syncError = 'Please log in first';
       notifyListeners();
@@ -59,7 +51,6 @@ class SyncService extends ChangeNotifier {
       await _syncFavorites();
       await _syncHistory();
 
-      // ── Confirmation: verify lastModified dates are in sync ──
       await _verifyTimestampSync();
     } catch (e) {
       _syncError = e.toString();
@@ -106,7 +97,6 @@ class SyncService extends ChangeNotifier {
       final remoteMap = remoteBySyncId[syncId];
 
       if (localDeck != null && remoteMap != null) {
-        // ── CONFLICT RESOLUTION ──
         final localMod = localDeck.lastModified;
         final remoteMod = remoteMap['lastModified'] != null
             ? DateTime.parse(remoteMap['lastModified'])
@@ -162,7 +152,7 @@ class SyncService extends ChangeNotifier {
         // Sync cards for this deck
         await _syncCardsForDeck(localDeck, remoteId);
       } else if (localDeck != null && remoteMap == null) {
-        // ── LOCAL ONLY → push to remote ──
+        // LOCAL ONLY
         if (localDeck.isDeleted) continue; // don't push deleted items
 
         localDeck.userId = _userId;
@@ -176,7 +166,7 @@ class SyncService extends ChangeNotifier {
         // Also push cards using batch write
         await _pushAllCardsForDeck(localDeck, remoteId);
       } else if (localDeck == null && remoteMap != null) {
-        // ── REMOTE ONLY → pull to local ──
+        // REMOTE ONLY
         if (remoteMap['isDeleted'] == true) continue; // skip deleted
 
         final remoteId = remoteMap['remoteId'] as String;

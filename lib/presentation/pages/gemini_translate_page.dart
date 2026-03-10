@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'package:translate_app/presentation/widgets/dropdown.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
+import 'package:translate_app/data/services/tts_service.dart';
 
 class GeminiTranslatePage extends StatelessWidget {
   final TextEditingController outputController;
@@ -62,12 +63,30 @@ class GeminiTranslatePage extends StatelessWidget {
                       Positioned(
                         bottom: 0,
                         right: 0,
-                        child: IconButton(
-                          icon: Icon(
-                            Icons.clear_rounded,
-                            color: Colors.white.withValues(alpha: 0.5),
-                          ),
-                          onPressed: () => viewModel.clear(outputController),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.volume_up_rounded,
+                                color: Colors.white.withValues(alpha: 0.5),
+                              ),
+                              onPressed: () {
+                                context.read<TtsService>().speak(
+                                  viewModel.textController.text,
+                                  'English', // Default for Gemini input since it's auto-detected
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.clear_rounded,
+                                color: Colors.white.withValues(alpha: 0.5),
+                              ),
+                              onPressed: () =>
+                                  viewModel.clear(outputController),
+                            ),
+                          ],
                         ),
                       ),
                   ],

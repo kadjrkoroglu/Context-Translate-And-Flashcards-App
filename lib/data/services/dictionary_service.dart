@@ -21,6 +21,38 @@ class DictionaryService {
         'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/fr/fr_full.txt',
     'es':
         'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/es/es_full.txt',
+    'it':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/it/it_full.txt',
+    'ru':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/ru/ru_full.txt',
+    'ja':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/ja/ja_full.txt',
+    'zh':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/zh/zh_full.txt',
+    'ko':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/ko/ko_full.txt',
+    'ar':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/ar/ar_full.txt',
+    'pt':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/pt/pt_full.txt',
+    'hi':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/hi/hi_full.txt',
+    'nl':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/nl/nl_full.txt',
+    'sv':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/sv/sv_full.txt',
+    'no':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/no/no_full.txt',
+    'da':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/da/da_full.txt',
+    'fi':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/fi/fi_full.txt',
+    'pl':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/pl/pl_full.txt',
+    'el':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/el/el_full.txt',
+    'he':
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/he/he_full.txt',
   };
 
   Future<bool> isDictionaryDownloaded(String langCode) async {

@@ -18,7 +18,6 @@ class HistoryRepository {
   Future<List<HistoryItem>> getAllHistory() async {
     final allItems = await _local.getAllHistory();
     if (currentUserId == null) {
-      // Logged out: show all non-deleted history so data persists visually
       return allItems.where((i) => !i.isDeleted).toList();
     }
     return allItems
@@ -37,10 +36,8 @@ class HistoryRepository {
       item.syncId = _generateSyncId();
     }
 
-    // Save locally
     await _local.addHistory(item);
 
-    // Push to firebase if logged in
     if (currentUserId != null) {
       try {
         final collectionDir = _collection;
@@ -71,7 +68,6 @@ class HistoryRepository {
     final item = historyList.where((element) => element.id == id).firstOrNull;
 
     if (item != null) {
-      // Soft delete
       item.isDeleted = true;
       item.lastModified = DateTime.now();
       await _local.addHistory(item);
@@ -94,7 +90,6 @@ class HistoryRepository {
   Future<void> clearHistory() async {
     final historyList = await _local.getAllHistory();
 
-    // Soft delete all
     for (final item in historyList) {
       item.isDeleted = true;
       item.lastModified = DateTime.now();

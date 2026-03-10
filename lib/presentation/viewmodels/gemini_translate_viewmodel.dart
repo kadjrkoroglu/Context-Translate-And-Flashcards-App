@@ -16,7 +16,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   bool _speechEnabled = false;
   final TextEditingController _textController = TextEditingController();
   List<String> _results = [];
-  int _selectedToneIndex = 0; // 0: Standard, 1: Formal, 2: Slang
+  int _selectedToneIndex = 0;
 
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -118,7 +118,6 @@ class GeminiTranslateViewModel extends ChangeNotifier {
       _results = response;
       _updateOutputText(outputController);
 
-      // Save to history with trimmed text
       if (outputController.text.isNotEmpty) {
         final trimmedWord = _textController.text.trim();
         final trimmedTranslation = outputController.text.trim();

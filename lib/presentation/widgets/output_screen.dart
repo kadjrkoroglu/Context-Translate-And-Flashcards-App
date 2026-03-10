@@ -6,6 +6,7 @@ import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/deck_selector_sheet.dart';
+import 'package:translate_app/data/services/tts_service.dart';
 
 class OutputScreen extends StatelessWidget {
   final TextEditingController controller;
@@ -82,6 +83,7 @@ class OutputScreen extends StatelessWidget {
       right: 8,
       child: Row(
         children: [
+          _TtsButton(mainVM: mainVM, text: controller.text),
           _DeckAddButton(mainVM: mainVM, translation: controller.text),
           _FavoriteButton(mainVM: mainVM, translation: controller.text),
         ],
@@ -152,6 +154,35 @@ class _FavoriteButton extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _TtsButton extends StatelessWidget {
+  final MainViewModel mainVM;
+  final String text;
+  const _TtsButton({required this.mainVM, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: () {
+        final tts = context.read<TtsService>();
+        final language = mainVM.isMLPage
+            ? Provider.of<MLTranslateViewModel>(
+                context,
+                listen: false,
+              ).targetLanguage
+            : Provider.of<GeminiTranslateViewModel>(
+                context,
+                listen: false,
+              ).selectedLanguage;
+        tts.speak(text, language);
+      },
+      icon: Icon(
+        Icons.volume_up_rounded,
+        color: Colors.white.withValues(alpha: 0.7),
+      ),
     );
   }
 }

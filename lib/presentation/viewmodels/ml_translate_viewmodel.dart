@@ -24,6 +24,7 @@ class MLTranslateViewModel extends ChangeNotifier {
   Timer? _debounce;
   Timer? _historyTimer;
   Set<String> _downloadedModels = {};
+  bool _isDownloading = false;
 
   TextEditingController get textController => _textController;
   String get sourceLanguage => _sourceLanguage;
@@ -47,7 +48,6 @@ class MLTranslateViewModel extends ChangeNotifier {
     final modelManager = OnDeviceTranslatorModelManager();
     final List<String> downloaded = [];
 
-    // Check all languages in the list
     for (final lang in MlLanguages.languageList) {
       final bcp = MlLanguages.mapNameToBCP(lang);
       if (await modelManager.isModelDownloaded(bcp)) {
@@ -91,7 +91,6 @@ class MLTranslateViewModel extends ChangeNotifier {
     _sourceLanguage = _targetLanguage;
     _targetLanguage = temp;
 
-    // Persist
     _settingsService.setMlSourceLang(_sourceLanguage);
     _settingsService.setMlTargetLang(_targetLanguage);
     _settingsService.addRecentLanguage(_sourceLanguage);
@@ -111,7 +110,6 @@ class MLTranslateViewModel extends ChangeNotifier {
       swapLanguages(outputController);
     } else {
       _sourceLanguage = language;
-      _settingsService.setMlSourceLang(language); // Persist
       _settingsService.addRecentLanguage(language);
       checkAndDownloadModel(language, outputController);
       translate(outputController);
@@ -127,7 +125,6 @@ class MLTranslateViewModel extends ChangeNotifier {
       swapLanguages(outputController);
     } else {
       _targetLanguage = language;
-      _settingsService.setMlTargetLang(language); // Persist
       _settingsService.addRecentLanguage(language);
       checkAndDownloadModel(language, outputController);
       translate(outputController);
@@ -139,13 +136,14 @@ class MLTranslateViewModel extends ChangeNotifier {
     String languageName,
     TextEditingController outputController,
   ) async {
-    if (languageName == '-') return;
+    if (languageName == '-' || _isDownloading) return;
 
     final bcpCode = MlLanguages.mapNameToBCP(languageName);
     final modelManager = OnDeviceTranslatorModelManager();
     final isDownloaded = await modelManager.isModelDownloaded(bcpCode);
 
     if (!isDownloaded) {
+      _isDownloading = true;
       _downloadingLanguage = languageName;
       notifyListeners();
 
@@ -154,11 +152,12 @@ class MLTranslateViewModel extends ChangeNotifier {
           await _dictionaryService.downloadDictionary(bcpCode);
         }
         await modelManager.downloadModel(bcpCode);
-        await fetchDownloadedModels(); // Refresh
       } catch (e) {
         debugPrint('Download error: $e');
       } finally {
+        _isDownloading = false;
         _downloadingLanguage = null;
+        await Future.delayed(const Duration(milliseconds: 200));
         translate(outputController);
         notifyListeners();
       }
@@ -199,20 +198,24 @@ class MLTranslateViewModel extends ChangeNotifier {
           : null;
 
       _onDeviceTranslator?.close();
-      _onDeviceTranslator = OnDeviceTranslator(
-        sourceLanguage: sourceLang,
-        targetLanguage: targetLang,
-      );
+      try {
+        _onDeviceTranslator = OnDeviceTranslator(
+          sourceLanguage: sourceLang,
+          targetLanguage: targetLang,
+        );
 
-      final String? response = await _onDeviceTranslator?.translateText(
-        correctedText,
-      );
-      outputController.text = response ?? '';
+        final String? response = await _onDeviceTranslator?.translateText(
+          correctedText,
+        );
+        outputController.text = response ?? '';
+      } catch (e) {
+        debugPrint('OnDeviceTranslator init/translate error: $e');
+        outputController.text = 'Error initializing translator';
+        return;
+      }
 
-      // Debounce history saving
       _historyTimer?.cancel();
 
-      // Save after 3s inactivity
       if (outputController.text.isNotEmpty) {
         final trimmedWord = originalText.trim();
         final trimmedTranslation = outputController.text.trim();
@@ -238,7 +241,6 @@ class MLTranslateViewModel extends ChangeNotifier {
     await _speechToText.listen(
       onResult: (result) {
         _textController.text = result.recognizedWords;
-        // Auto-translate voice result
         translate(outputController);
       },
     );
@@ -273,7 +275,6 @@ class MLTranslateViewModel extends ChangeNotifier {
   }
 
   void clear(TextEditingController outputController) {
-    // Save history before clear
     if (outputController.text.isNotEmpty) {
       saveHistoryNow(outputController.text);
     }

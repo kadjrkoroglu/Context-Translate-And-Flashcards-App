@@ -18,7 +18,6 @@ class FavoriteRepository {
   Future<List<FavoriteWord>> getAllFavorites() async {
     final allItems = await _local.getAllFavorites();
     if (currentUserId == null) {
-      // Logged out: show all non-deleted favorites so data persists visually
       return allItems.where((i) => !i.isDeleted).toList();
     }
     return allItems
@@ -37,10 +36,8 @@ class FavoriteRepository {
       favorite.syncId = _generateSyncId();
     }
 
-    // Save to local storage first (Offline first)
     await _local.addFavorite(favorite);
 
-    // Try syncing to Firebase
     if (currentUserId != null) {
       try {
         final collectionDir = _collection;
@@ -71,7 +68,6 @@ class FavoriteRepository {
     final favorite = favorites.where((element) => element.id == id).firstOrNull;
 
     if (favorite != null) {
-      // Soft delete
       favorite.isDeleted = true;
       favorite.lastModified = DateTime.now();
       await _local.addFavorite(favorite);

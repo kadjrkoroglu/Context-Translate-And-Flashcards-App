@@ -6,11 +6,9 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  // Auth state changes stream
   Stream<User?> get user => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
 
-  // Sign in with Email & Password
   Future<UserCredential?> signInWithEmail(String email, String password) async {
     try {
       return await _auth.signInWithEmailAndPassword(
@@ -22,7 +20,6 @@ class AuthService {
     }
   }
 
-  // Register with Email & Password
   Future<UserCredential?> registerWithEmail(
     String email,
     String password,
@@ -32,7 +29,6 @@ class AuthService {
         email: email,
         password: password,
       );
-      // Send verification email automatically upon registration
       if (credential.user != null) {
         await credential.user!.sendEmailVerification();
         debugPrint('Verification email sent to: ${credential.user!.email}');
@@ -43,7 +39,6 @@ class AuthService {
     }
   }
 
-  // Send email verification manually
   Future<void> sendEmailVerification() async {
     try {
       await _auth.currentUser?.sendEmailVerification();
@@ -52,12 +47,10 @@ class AuthService {
     }
   }
 
-  // Reload user data to check email verification status
   Future<void> reloadUser() async {
     await _auth.currentUser?.reload();
   }
 
-  // Sign in with Google
   Future<UserCredential?> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -76,7 +69,6 @@ class AuthService {
     }
   }
 
-  // Sign out
   Future<void> signOut() async {
     try {
       await Future.wait([_auth.signOut(), _googleSignIn.signOut()]);

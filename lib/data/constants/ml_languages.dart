@@ -151,6 +151,20 @@ class MlLanguages {
         return 'hi';
       case 'Dutch':
         return 'nl';
+      case 'Swedish':
+        return 'sv';
+      case 'Norwegian':
+        return 'no';
+      case 'Danish':
+        return 'da';
+      case 'Finnish':
+        return 'fi';
+      case 'Polish':
+        return 'pl';
+      case 'Greek':
+        return 'el';
+      case 'Hebrew':
+        return 'he';
       case 'Turkish':
         return 'tr';
       default:
