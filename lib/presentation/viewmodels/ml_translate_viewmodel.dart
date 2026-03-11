@@ -6,6 +6,7 @@ import 'package:translate_app/data/services/dictionary_service.dart';
 import 'package:translate_app/data/constants/ml_languages.dart';
 import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/data/services/settings_service.dart';
+import 'package:google_mlkit_language_id/google_mlkit_language_id.dart';
 
 class MLTranslateViewModel extends ChangeNotifier {
   final DictionaryService _dictionaryService = DictionaryService();
@@ -19,6 +20,7 @@ class MLTranslateViewModel extends ChangeNotifier {
   late String _targetLanguage;
   bool _isLoading = false;
   String? _spellingCorrection;
+  String? _detectedLanguage;
   String? _downloadingLanguage;
   bool _speechEnabled = false;
   Timer? _debounce;
@@ -31,6 +33,7 @@ class MLTranslateViewModel extends ChangeNotifier {
   String get targetLanguage => _targetLanguage;
   bool get isLoading => _isLoading;
   String? get spellingCorrection => _spellingCorrection;
+  String? get detectedLanguage => _detectedLanguage;
   String? get downloadingLanguage => _downloadingLanguage;
   bool get speechEnabled => _speechEnabled;
   bool get isListening => _speechToText.isListening;
@@ -79,11 +82,49 @@ class MLTranslateViewModel extends ChangeNotifier {
       if (text.isEmpty) {
         outputController.text = '';
         _spellingCorrection = null;
+        _detectedLanguage = null;
         notifyListeners();
       } else {
+        _detectLanguage(text);
         translate(outputController);
       }
     });
+  }
+
+  Future<void> _detectLanguage(String text) async {
+    if (text.length < 4) {
+      _detectedLanguage = null;
+      notifyListeners();
+      return;
+    }
+
+    final languageIdentifier = LanguageIdentifier(confidenceThreshold: 0.5);
+    try {
+      final String languageCode = await languageIdentifier.identifyLanguage(
+        text,
+      );
+      final languageName = MlLanguages.mapBCPToName(languageCode);
+
+      if (languageName != null && languageName != _sourceLanguage) {
+        _detectedLanguage = languageName;
+      } else {
+        _detectedLanguage = null;
+      }
+    } catch (e) {
+      debugPrint('ML language detection error: $e');
+      _detectedLanguage = null;
+    } finally {
+      languageIdentifier.close();
+      notifyListeners();
+    }
+  }
+
+  void applyDetectedLanguage(TextEditingController outputController) {
+    if (_detectedLanguage != null) {
+      setSourceLanguage(_detectedLanguage!, outputController);
+      _detectedLanguage = null;
+      notifyListeners();
+    }
   }
 
   void swapLanguages(TextEditingController outputController) {
@@ -171,6 +212,7 @@ class MLTranslateViewModel extends ChangeNotifier {
       if (_textController.text.isEmpty) {
         outputController.text = '';
         _spellingCorrection = null;
+        _detectedLanguage = null;
       }
       _isLoading = false;
       notifyListeners();
@@ -225,6 +267,7 @@ class MLTranslateViewModel extends ChangeNotifier {
             _historyViewModel.addHistoryItem(
               word: trimmedWord,
               translation: trimmedTranslation,
+              isGemini: false,
             );
           });
         }
@@ -270,6 +313,7 @@ class MLTranslateViewModel extends ChangeNotifier {
       _historyViewModel.addHistoryItem(
         word: word,
         translation: trimmedTranslation,
+        isGemini: false,
       );
     }
   }
@@ -282,6 +326,7 @@ class MLTranslateViewModel extends ChangeNotifier {
     _textController.clear();
     outputController.clear();
     _spellingCorrection = null;
+    _detectedLanguage = null;
     notifyListeners();
   }
 

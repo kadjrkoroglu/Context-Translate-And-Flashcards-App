@@ -34,7 +34,7 @@ class LocalStorageService {
   }
 
   Future<List<FavoriteWord>> getAllFavorites() async {
-    return await isar.favoriteWords.where().findAll();
+    return await isar.favoriteWords.where().sortByCreatedAtDesc().findAll();
   }
 
   Future<void> deleteFavorite(int id) async {

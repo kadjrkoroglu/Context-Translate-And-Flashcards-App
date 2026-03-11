@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
+import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -140,6 +143,27 @@ class _HistoryPageState extends State<HistoryPage> {
                                     ),
                                   ),
                                   child: ListTile(
+                                    onTap: () {
+                                      final mainVM = context
+                                          .read<MainViewModel>();
+                                      final mlVM = context
+                                          .read<MLTranslateViewModel>();
+                                      final geminiVM = context
+                                          .read<GeminiTranslateViewModel>();
+
+                                      if (item.isGemini) {
+                                        geminiVM.textController.text =
+                                            item.word;
+                                      } else {
+                                        mlVM.textController.text = item.word;
+                                      }
+
+                                      mainVM.restoreTranslation(
+                                        item.translation,
+                                        item.isGemini,
+                                      );
+                                      Navigator.pop(context);
+                                    },
                                     contentPadding: const EdgeInsets.all(16),
                                     title: Text(
                                       item.word,

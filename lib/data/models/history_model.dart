@@ -18,6 +18,7 @@ class HistoryItem {
   String? remoteId;
   bool isSynced = false;
   bool isDeleted = false;
+  bool isGemini = false;
 
   Map<String, dynamic> toMap() {
     return {
@@ -28,6 +29,7 @@ class HistoryItem {
       'lastModified': lastModified.toIso8601String(),
       'userId': userId,
       'isDeleted': isDeleted,
+      'isGemini': isGemini,
     };
   }
 
@@ -43,6 +45,7 @@ class HistoryItem {
       ..userId = map['userId']
       ..remoteId = remoteId
       ..isSynced = true
-      ..isDeleted = map['isDeleted'] ?? false;
+      ..isDeleted = map['isDeleted'] ?? false
+      ..isGemini = map['isGemini'] ?? false;
   }
 }

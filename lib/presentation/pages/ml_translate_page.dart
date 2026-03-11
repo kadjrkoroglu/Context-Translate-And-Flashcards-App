@@ -125,6 +125,60 @@ class MLTranslatePage extends StatelessWidget {
                                 ),
                               ),
                             ),
+                          if (viewModel.detectedLanguage != null)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                              child: Material(
+                                color: Colors.white.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(12),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(12),
+                                  onTap: () => viewModel.applyDetectedLanguage(
+                                    outputController,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.auto_fix_high,
+                                          size: 16,
+                                          color: Colors.blueAccent,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Flexible(
+                                          child: Text.rich(
+                                            TextSpan(
+                                              text: 'Translate from: ',
+                                              style: TextStyle(
+                                                color: Colors.white.withValues(
+                                                  alpha: 0.6,
+                                                ),
+                                                fontSize: 13,
+                                              ),
+                                              children: [
+                                                TextSpan(
+                                                  text: viewModel
+                                                      .detectedLanguage,
+                                                  style: const TextStyle(
+                                                    color: Colors.blueAccent,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),

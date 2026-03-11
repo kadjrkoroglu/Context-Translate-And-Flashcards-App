@@ -142,7 +142,11 @@ class _FavoriteButton extends StatelessWidget {
         return IconButton(
           onPressed: () {
             if (word.isNotEmpty && translation.isNotEmpty) {
-              favVM.toggleFavorite(word: word, translation: translation);
+              favVM.toggleFavorite(
+                word: word,
+                translation: translation,
+                isGemini: !mainVM.isMLPage,
+              );
               if (mainVM.isMLPage) mlVM.saveHistoryNow(translation);
             }
           },

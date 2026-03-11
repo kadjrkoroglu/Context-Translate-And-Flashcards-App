@@ -30,17 +30,17 @@ class HistoryViewModel extends ChangeNotifier {
   Future<void> addHistoryItem({
     required String word,
     required String translation,
+    bool isGemini = false,
   }) async {
-    // If history is empty, ensure it's loaded first to check for duplicates
     if (_historyItems.isEmpty && !_isLoading) {
       await loadHistory();
     }
 
-    // Don't save if it's the same as the last entry
     if (_historyItems.isNotEmpty) {
       final lastItem = _historyItems.first;
       if (lastItem.word.trim() == word.trim() &&
-          lastItem.translation.trim() == translation.trim()) {
+          lastItem.translation.trim() == translation.trim() &&
+          lastItem.isGemini == isGemini) {
         return;
       }
     }
@@ -51,6 +51,7 @@ class HistoryViewModel extends ChangeNotifier {
           '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}'
       ..word = word
       ..translation = translation
+      ..isGemini = isGemini
       ..createdAt = now
       ..lastModified = now;
 

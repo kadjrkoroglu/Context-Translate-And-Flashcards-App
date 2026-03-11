@@ -72,9 +72,8 @@ class GeminiTranslatePage extends StatelessWidget {
                                 color: Colors.white.withValues(alpha: 0.5),
                               ),
                               onPressed: () {
-                                context.read<TtsService>().speak(
-                                  viewModel.textController.text,
-                                  'English', // Default for Gemini input since it's auto-detected
+                                viewModel.speakInputText(
+                                  context.read<TtsService>(),
                                 );
                               },
                             ),

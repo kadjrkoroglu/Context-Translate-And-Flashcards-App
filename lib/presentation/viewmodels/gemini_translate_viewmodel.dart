@@ -3,6 +3,9 @@ import 'package:translate_app/data/services/gemini_service.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/data/services/settings_service.dart';
+import 'package:google_mlkit_language_id/google_mlkit_language_id.dart';
+import 'package:translate_app/data/services/tts_service.dart';
+import 'package:translate_app/data/constants/ml_languages.dart';
 
 class GeminiTranslateViewModel extends ChangeNotifier {
   final GeminiService _geminiService = GeminiService();
@@ -126,6 +129,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
           _historyViewModel.addHistoryItem(
             word: trimmedWord,
             translation: trimmedTranslation,
+            isGemini: true,
           );
         }
       }
@@ -159,6 +163,38 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     outputController.clear();
     _results = [];
     notifyListeners();
+  }
+
+  Future<void> speakInputText(TtsService tts) async {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+
+    final languageIdentifier = LanguageIdentifier(confidenceThreshold: 0.1);
+    try {
+      final List<IdentifiedLanguage> possibleLanguages =
+          await languageIdentifier.identifyPossibleLanguages(text);
+
+      String? bestLanguageName;
+
+      for (var lang in possibleLanguages) {
+        final name = MlLanguages.mapBCPToName(lang.languageTag);
+        if (name != null) {
+          bestLanguageName = name;
+          break;
+        }
+      }
+
+      if (bestLanguageName != null) {
+        await tts.speak(text, bestLanguageName);
+      } else {
+        await tts.speak(text, 'English');
+      }
+    } catch (e) {
+      debugPrint('Language detection error: $e');
+      await tts.speak(text, 'English');
+    } finally {
+      languageIdentifier.close();
+    }
   }
 
   @override

@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
+import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
 
 class FavoritesPage extends StatefulWidget {
   const FavoritesPage({super.key});
@@ -118,6 +121,27 @@ class _FavoritesPageState extends State<FavoritesPage> {
                                   ),
                                 ),
                                 child: ListTile(
+                                  onTap: () {
+                                    final mainVM = context
+                                        .read<MainViewModel>();
+                                    final mlVM = context
+                                        .read<MLTranslateViewModel>();
+                                    final geminiVM = context
+                                        .read<GeminiTranslateViewModel>();
+
+                                    if (favorite.isGemini) {
+                                      geminiVM.textController.text =
+                                          favorite.word;
+                                    } else {
+                                      mlVM.textController.text = favorite.word;
+                                    }
+
+                                    mainVM.restoreTranslation(
+                                      favorite.translation,
+                                      favorite.isGemini,
+                                    );
+                                    Navigator.pop(context);
+                                  },
                                   contentPadding: const EdgeInsets.all(16),
                                   title: Text(
                                     favorite.word,

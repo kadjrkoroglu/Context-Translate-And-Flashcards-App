@@ -36,6 +36,7 @@ class FavoriteViewModel extends ChangeNotifier {
   Future<void> addFavorite({
     required String word,
     required String translation,
+    bool isGemini = false,
   }) async {
     final trimmedWord = word.trim();
     final trimmedTranslation = translation.trim();
@@ -49,6 +50,7 @@ class FavoriteViewModel extends ChangeNotifier {
             '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}'
         ..word = trimmedWord
         ..translation = trimmedTranslation
+        ..isGemini = isGemini
         ..createdAt = now
         ..lastModified = now;
 
@@ -81,10 +83,11 @@ class FavoriteViewModel extends ChangeNotifier {
   Future<void> toggleFavorite({
     required String word,
     required String translation,
+    bool isGemini = false,
   }) async {
     final trimmedWord = word.trim().toLowerCase();
     final existing = _favorites.where(
-      (f) => f.word.toLowerCase() == trimmedWord,
+      (f) => f.word.toLowerCase() == trimmedWord && f.isGemini == isGemini,
     );
 
     if (existing.isNotEmpty) {
@@ -94,7 +97,11 @@ class FavoriteViewModel extends ChangeNotifier {
       }
     } else {
       // Add if not exists
-      await addFavorite(word: word.trim(), translation: translation.trim());
+      await addFavorite(
+        word: word.trim(),
+        translation: translation.trim(),
+        isGemini: isGemini,
+      );
     }
   }
 

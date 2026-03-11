@@ -27,38 +27,43 @@ const HistoryItemSchema = CollectionSchema(
       name: r'isDeleted',
       type: IsarType.bool,
     ),
-    r'isSynced': PropertySchema(
+    r'isGemini': PropertySchema(
       id: 2,
+      name: r'isGemini',
+      type: IsarType.bool,
+    ),
+    r'isSynced': PropertySchema(
+      id: 3,
       name: r'isSynced',
       type: IsarType.bool,
     ),
     r'lastModified': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'lastModified',
       type: IsarType.dateTime,
     ),
     r'remoteId': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'remoteId',
       type: IsarType.string,
     ),
     r'syncId': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'syncId',
       type: IsarType.string,
     ),
     r'translation': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'translation',
       type: IsarType.string,
     ),
     r'userId': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'userId',
       type: IsarType.string,
     ),
     r'word': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'word',
       type: IsarType.string,
     )
@@ -123,13 +128,14 @@ void _historyItemSerialize(
 ) {
   writer.writeDateTime(offsets[0], object.createdAt);
   writer.writeBool(offsets[1], object.isDeleted);
-  writer.writeBool(offsets[2], object.isSynced);
-  writer.writeDateTime(offsets[3], object.lastModified);
-  writer.writeString(offsets[4], object.remoteId);
-  writer.writeString(offsets[5], object.syncId);
-  writer.writeString(offsets[6], object.translation);
-  writer.writeString(offsets[7], object.userId);
-  writer.writeString(offsets[8], object.word);
+  writer.writeBool(offsets[2], object.isGemini);
+  writer.writeBool(offsets[3], object.isSynced);
+  writer.writeDateTime(offsets[4], object.lastModified);
+  writer.writeString(offsets[5], object.remoteId);
+  writer.writeString(offsets[6], object.syncId);
+  writer.writeString(offsets[7], object.translation);
+  writer.writeString(offsets[8], object.userId);
+  writer.writeString(offsets[9], object.word);
 }
 
 HistoryItem _historyItemDeserialize(
@@ -142,13 +148,14 @@ HistoryItem _historyItemDeserialize(
   object.createdAt = reader.readDateTime(offsets[0]);
   object.id = id;
   object.isDeleted = reader.readBool(offsets[1]);
-  object.isSynced = reader.readBool(offsets[2]);
-  object.lastModified = reader.readDateTime(offsets[3]);
-  object.remoteId = reader.readStringOrNull(offsets[4]);
-  object.syncId = reader.readString(offsets[5]);
-  object.translation = reader.readString(offsets[6]);
-  object.userId = reader.readStringOrNull(offsets[7]);
-  object.word = reader.readString(offsets[8]);
+  object.isGemini = reader.readBool(offsets[2]);
+  object.isSynced = reader.readBool(offsets[3]);
+  object.lastModified = reader.readDateTime(offsets[4]);
+  object.remoteId = reader.readStringOrNull(offsets[5]);
+  object.syncId = reader.readString(offsets[6]);
+  object.translation = reader.readString(offsets[7]);
+  object.userId = reader.readStringOrNull(offsets[8]);
+  object.word = reader.readString(offsets[9]);
   return object;
 }
 
@@ -166,16 +173,18 @@ P _historyItemDeserializeProp<P>(
     case 2:
       return (reader.readBool(offset)) as P;
     case 3:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readBool(offset)) as P;
     case 4:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 5:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 6:
       return (reader.readString(offset)) as P;
     case 7:
-      return (reader.readStringOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 8:
+      return (reader.readStringOrNull(offset)) as P;
+    case 9:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -489,6 +498,16 @@ extension HistoryItemQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'isDeleted',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<HistoryItem, HistoryItem, QAfterFilterCondition> isGeminiEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'isGemini',
         value: value,
       ));
     });
@@ -1298,6 +1317,18 @@ extension HistoryItemQuerySortBy
     });
   }
 
+  QueryBuilder<HistoryItem, HistoryItem, QAfterSortBy> sortByIsGemini() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isGemini', Sort.asc);
+    });
+  }
+
+  QueryBuilder<HistoryItem, HistoryItem, QAfterSortBy> sortByIsGeminiDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isGemini', Sort.desc);
+    });
+  }
+
   QueryBuilder<HistoryItem, HistoryItem, QAfterSortBy> sortByIsSynced() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isSynced', Sort.asc);
@@ -1422,6 +1453,18 @@ extension HistoryItemQuerySortThenBy
     });
   }
 
+  QueryBuilder<HistoryItem, HistoryItem, QAfterSortBy> thenByIsGemini() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isGemini', Sort.asc);
+    });
+  }
+
+  QueryBuilder<HistoryItem, HistoryItem, QAfterSortBy> thenByIsGeminiDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'isGemini', Sort.desc);
+    });
+  }
+
   QueryBuilder<HistoryItem, HistoryItem, QAfterSortBy> thenByIsSynced() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isSynced', Sort.asc);
@@ -1522,6 +1565,12 @@ extension HistoryItemQueryWhereDistinct
     });
   }
 
+  QueryBuilder<HistoryItem, HistoryItem, QDistinct> distinctByIsGemini() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'isGemini');
+    });
+  }
+
   QueryBuilder<HistoryItem, HistoryItem, QDistinct> distinctByIsSynced() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isSynced');
@@ -1587,6 +1636,12 @@ extension HistoryItemQueryProperty
   QueryBuilder<HistoryItem, bool, QQueryOperations> isDeletedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isDeleted');
+    });
+  }
+
+  QueryBuilder<HistoryItem, bool, QQueryOperations> isGeminiProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'isGemini');
     });
   }
 
