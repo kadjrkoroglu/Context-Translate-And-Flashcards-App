@@ -80,14 +80,85 @@ class OutputScreen extends StatelessWidget {
   Widget _buildActionButtons(BuildContext context, MainViewModel mainVM) {
     return Positioned(
       bottom: 8,
+      left: 8,
       right: 8,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _TtsButton(mainVM: mainVM, text: controller.text),
-          _DeckAddButton(mainVM: mainVM, translation: controller.text),
-          _FavoriteButton(mainVM: mainVM, translation: controller.text),
+          Row(
+            children: [
+              if (!mainVM.isMLPage) _ToneDropdown(controller: controller),
+            ],
+          ),
+          Row(
+            children: [
+              _TtsButton(mainVM: mainVM, text: controller.text),
+              _DeckAddButton(mainVM: mainVM, translation: controller.text),
+              _FavoriteButton(mainVM: mainVM, translation: controller.text),
+            ],
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _ToneDropdown extends StatelessWidget {
+  final TextEditingController controller;
+  const _ToneDropdown({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<GeminiTranslateViewModel>(
+      builder: (context, viewModel, child) {
+        return Container(
+          height: 38,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<int>(
+              value: viewModel.selectedToneIndex,
+              onChanged: (value) => viewModel.setSelectedToneIndex(
+                value!,
+                controller,
+              ),
+              dropdownColor: const Color(0xFF2D3238),
+              icon: const Icon(
+                Icons.tune_rounded,
+                color: Colors.white70,
+                size: 16,
+              ),
+              items: const [
+                DropdownMenuItem(
+                  value: 0,
+                  child: Text(
+                    "Standard",
+                    style: TextStyle(color: Colors.white, fontSize: 13),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 1,
+                  child: Text(
+                    "Formal",
+                    style: TextStyle(color: Colors.white, fontSize: 13),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 2,
+                  child: Text(
+                    "Slang",
+                    style: TextStyle(color: Colors.white, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -180,7 +251,7 @@ class _TtsButton extends StatelessWidget {
             : Provider.of<GeminiTranslateViewModel>(
                 context,
                 listen: false,
-              ).selectedLanguage;
+              ).targetLanguage;
         tts.speak(text, language);
       },
       icon: Icon(

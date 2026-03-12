@@ -15,7 +15,8 @@ class GeminiTranslateViewModel extends ChangeNotifier {
 
   bool _isLoading = false;
   String? _error;
-  late String _selectedLanguage;
+  late String _sourceLanguage;
+  late String _targetLanguage;
   bool _speechEnabled = false;
   final TextEditingController _textController = TextEditingController();
   List<String> _results = [];
@@ -23,7 +24,8 @@ class GeminiTranslateViewModel extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   String? get error => _error;
-  String get selectedLanguage => _selectedLanguage;
+  String get sourceLanguage => _sourceLanguage;
+  String get targetLanguage => _targetLanguage;
   bool get speechEnabled => _speechEnabled;
   bool get isListening => _speechToText.isListening;
   TextEditingController get textController => _textController;
@@ -31,14 +33,35 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   int get selectedToneIndex => _selectedToneIndex;
 
   GeminiTranslateViewModel(this._settingsService, this._historyViewModel) {
-    _selectedLanguage = _settingsService.geminiTargetLang;
+    _sourceLanguage = 'Turkish'; // Varsayılan kaynak dil
+    _targetLanguage = _settingsService.geminiTargetLang;
     _initSpeech();
   }
 
-  void setSelectedLanguage(String language) {
-    _selectedLanguage = language;
+  void setSourceLanguage(String language) {
+    _sourceLanguage = language;
+    _settingsService.addRecentLanguage(language);
+    notifyListeners();
+  }
+
+  void setTargetLanguage(String language) {
+    _targetLanguage = language;
     _settingsService.setGeminiTargetLang(language);
     _settingsService.addRecentLanguage(language);
+    notifyListeners();
+  }
+
+  void swapLanguages(TextEditingController outputController) {
+    final temp = _sourceLanguage;
+    _sourceLanguage = _targetLanguage;
+    _targetLanguage = temp;
+
+    if (_textController.text.isNotEmpty && outputController.text.isNotEmpty) {
+      final inputTemp = _textController.text;
+      _textController.text = outputController.text;
+      outputController.text = inputTemp;
+    }
+
     notifyListeners();
   }
 
@@ -88,7 +111,9 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   }
 
   Future<void> startListening() async {
+    final languageCode = MlLanguages.mapNameToBCP(_sourceLanguage);
     await _speechToText.listen(
+      localeId: languageCode,
       onResult: (result) {
         _textController.text = result.recognizedWords;
       },
@@ -102,7 +127,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   }
 
   Future<void> translate(TextEditingController outputController) async {
-    if (_textController.text.isEmpty || _selectedLanguage == '-') {
+    if (_textController.text.isEmpty || _targetLanguage == '-') {
       if (_textController.text.isEmpty) {
         outputController.text = '';
       }
@@ -116,7 +141,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     try {
       final response = await _geminiService.translateText(
         _textController.text,
-        _selectedLanguage,
+        _targetLanguage,
       );
       _results = response;
       _updateOutputText(outputController);
@@ -169,31 +194,11 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     final text = _textController.text.trim();
     if (text.isEmpty) return;
 
-    final languageIdentifier = LanguageIdentifier(confidenceThreshold: 0.1);
     try {
-      final List<IdentifiedLanguage> possibleLanguages =
-          await languageIdentifier.identifyPossibleLanguages(text);
-
-      String? bestLanguageName;
-
-      for (var lang in possibleLanguages) {
-        final name = MlLanguages.mapBCPToName(lang.languageTag);
-        if (name != null) {
-          bestLanguageName = name;
-          break;
-        }
-      }
-
-      if (bestLanguageName != null) {
-        await tts.speak(text, bestLanguageName);
-      } else {
-        await tts.speak(text, 'English');
-      }
+      await tts.speak(text, _sourceLanguage);
     } catch (e) {
-      debugPrint('Language detection error: $e');
+      debugPrint('Speak error: $e');
       await tts.speak(text, 'English');
-    } finally {
-      languageIdentifier.close();
     }
   }
 

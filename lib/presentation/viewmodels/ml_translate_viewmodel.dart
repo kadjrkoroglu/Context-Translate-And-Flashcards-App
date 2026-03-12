@@ -281,7 +281,9 @@ class MLTranslateViewModel extends ChangeNotifier {
   }
 
   void startListening(TextEditingController outputController) async {
+    final languageCode = MlLanguages.mapNameToBCP(_sourceLanguage);
     await _speechToText.listen(
+      localeId: languageCode,
       onResult: (result) {
         _textController.text = result.recognizedWords;
         translate(outputController);
