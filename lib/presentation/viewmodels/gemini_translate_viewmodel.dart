@@ -3,7 +3,6 @@ import 'package:translate_app/data/services/gemini_service.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/data/services/settings_service.dart';
-import 'package:google_mlkit_language_id/google_mlkit_language_id.dart';
 import 'package:translate_app/data/services/tts_service.dart';
 import 'package:translate_app/data/constants/ml_languages.dart';
 

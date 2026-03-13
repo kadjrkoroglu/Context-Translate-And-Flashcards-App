@@ -28,10 +28,13 @@ import 'package:translate_app/data/repositories/favorite_repository.dart';
 
 import 'package:translate_app/data/services/sync_service.dart';
 import 'package:translate_app/data/services/tts_service.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   final localStorage = LocalStorageService();
   await localStorage.init();
