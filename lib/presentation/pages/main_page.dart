@@ -13,6 +13,8 @@ import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
 import 'package:translate_app/theme/theme.dart';
+import 'dart:ui';
+import 'dart:math' as math;
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
@@ -22,11 +24,12 @@ class MainPage extends StatelessWidget {
     final viewModel = Provider.of<MainViewModel>(context);
     final mlViewModel = Provider.of<MLTranslateViewModel>(context);
     final geminiViewModel = Provider.of<GeminiTranslateViewModel>(context);
+    const Color inversePrimary = Colors.white;
 
-    const Color inversePrimary = Colors.white; // Modern white for dark mode
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
-      backgroundColor: Colors.transparent, // Transparent for gradient
+      backgroundColor: Colors.transparent,
       extendBody: true,
       resizeToAvoidBottomInset: false,
       body: AppBackground(
@@ -50,25 +53,86 @@ class MainPage extends StatelessWidget {
               const SizedBox(height: 10),
               _buildPageSelector(context, viewModel, inversePrimary),
               const SizedBox(height: 20),
-              SizedBox(
-                height: 295,
-                child: PageView(
-                  controller: viewModel.pageController,
-                  onPageChanged: (index) => viewModel.clearOutput(),
-                  children: [
-                    GeminiTranslatePage(
-                      outputController: viewModel.outputController,
+
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    bottom: math.max(200.0, keyboardHeight + 8),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Flexible(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxHeight: 295),
+                                child: PageView(
+                                  controller: viewModel.pageController,
+                                  onPageChanged: (index) =>
+                                      viewModel.clearOutput(),
+                                  children: [
+                                    GeminiTranslatePage(
+                                      outputController:
+                                          viewModel.outputController,
+                                    ),
+                                    MLTranslatePage(
+                                      outputController:
+                                          viewModel.outputController,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            ValueListenableBuilder<TextEditingValue>(
+                              valueListenable: viewModel.outputController,
+                              builder: (context, value, _) {
+                                if (value.text.isEmpty) {
+                                  return const SizedBox.shrink();
+                                }
+                                return Expanded(
+                                  child: Column(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                        ),
+                                        child: Divider(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.15,
+                                          ),
+                                          thickness: 0.5,
+                                          height: 1,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: OutputScreen(
+                                          controller:
+                                              viewModel.outputController,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    MLTranslatePage(
-                      outputController: viewModel.outputController,
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: OutputScreen(controller: viewModel.outputController),
               ),
             ],
           ),

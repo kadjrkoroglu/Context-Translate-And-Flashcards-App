@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:ui';
 import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
@@ -22,64 +21,52 @@ class OutputScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = Provider.of<MainViewModel>(context);
 
-    return SizedBox(
-      height: 210,
-      child: AnimatedBuilder(
-        animation: Listenable.merge([viewModel.pageController, controller]),
-        builder: (context, _) {
-          const double fontSize = 26;
+    return AnimatedBuilder(
+      animation: Listenable.merge([viewModel.pageController, controller]),
+      builder: (context, _) {
+        const double fontSize = 20;
 
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.1),
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    _buildTranslationField(fontSize),
-                    if (controller.text.isNotEmpty)
-                      _buildActionButtons(context, viewModel),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Stack(
+            children: [
+              _buildTranslationField(fontSize),
+              if (controller.text.isNotEmpty)
+                _buildActionButtons(context, viewModel),
+            ],
+          ),
+        );
+      },
     );
   }
 
   Widget _buildTranslationField(double fontSize) {
-    return TextField(
-      controller: controller,
-      readOnly: true,
-      expands: true,
-      maxLines: null,
-      textAlignVertical: TextAlignVertical.top,
-      style: TextStyle(
-        fontSize: fontSize,
-        color: Colors.white,
-        fontWeight: FontWeight.w500,
-      ),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
-        contentPadding: const EdgeInsets.all(20),
-        border: InputBorder.none,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 48),
+      child: TextField(
+        controller: controller,
+        readOnly: true,
+        maxLines: null,
+        minLines: 1,
+        textAlignVertical: TextAlignVertical.top,
+        style: TextStyle(
+          fontSize: fontSize,
+          color: Colors.white.withValues(alpha: 0.85),
+          fontWeight: FontWeight.w400,
+        ),
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+          contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+          border: InputBorder.none,
+        ),
       ),
     );
   }
 
   Widget _buildActionButtons(BuildContext context, MainViewModel mainVM) {
     return Positioned(
-      bottom: 8,
+      bottom: 0,
       left: 8,
       right: 8,
       child: Row(
@@ -122,10 +109,8 @@ class _ToneDropdown extends StatelessWidget {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<int>(
               value: viewModel.selectedToneIndex,
-              onChanged: (value) => viewModel.setSelectedToneIndex(
-                value!,
-                controller,
-              ),
+              onChanged: (value) =>
+                  viewModel.setSelectedToneIndex(value!, controller),
               dropdownColor: const Color(0xFF2D3238),
               icon: const Icon(
                 Icons.tune_rounded,
