@@ -24,7 +24,7 @@ class OutputScreen extends StatelessWidget {
     return AnimatedBuilder(
       animation: Listenable.merge([viewModel.pageController, controller]),
       builder: (context, _) {
-        const double fontSize = 20;
+        const double fontSize = 22;
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
@@ -52,7 +52,7 @@ class OutputScreen extends StatelessWidget {
         style: TextStyle(
           fontSize: fontSize,
           color: Colors.white.withValues(alpha: 0.85),
-          fontWeight: FontWeight.w400,
+          fontWeight: FontWeight.w500,
         ),
         decoration: InputDecoration(
           hintText: hintText,

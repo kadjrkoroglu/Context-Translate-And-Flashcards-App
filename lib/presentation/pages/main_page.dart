@@ -38,22 +38,21 @@ class MainPage extends StatelessWidget {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.only(top: 20.0, bottom: 10),
+                padding: const EdgeInsets.only(top: 0, bottom: 0),
                 child: Center(
                   child: Text(
-                    'Context Translate',
+                    'Context Translate & Flashcards',
                     style: GoogleFonts.caveat(
                       color: inversePrimary,
-                      fontSize: 44,
+                      fontSize: 26,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
-              _buildPageSelector(context, viewModel, inversePrimary),
-              const SizedBox(height: 20),
 
+              _buildPageSelector(context, viewModel, inversePrimary),
+              const SizedBox(height: 12),
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(
@@ -77,11 +76,19 @@ class MainPage extends StatelessWidget {
                           children: [
                             Flexible(
                               child: ConstrainedBox(
-                                constraints: const BoxConstraints(maxHeight: 295),
+                                constraints: const BoxConstraints(
+                                  maxHeight: 295,
+                                ),
                                 child: PageView(
                                   controller: viewModel.pageController,
-                                  onPageChanged: (index) =>
-                                      viewModel.clearOutput(),
+                                  onPageChanged: (index) {
+                                    geminiViewModel.clear(
+                                      viewModel.outputController,
+                                    );
+                                    mlViewModel.clear(
+                                      viewModel.outputController,
+                                    );
+                                  },
                                   children: [
                                     GeminiTranslatePage(
                                       outputController:
@@ -104,6 +111,9 @@ class MainPage extends StatelessWidget {
                                 return Expanded(
                                   child: Column(
                                     children: [
+                                      SizedBox(
+                                        height: 16,
+                                      ), // Input divider padding
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 12,

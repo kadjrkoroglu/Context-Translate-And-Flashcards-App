@@ -87,31 +87,7 @@ class GeminiTranslatePage extends StatelessWidget {
               style: const TextStyle(color: Colors.redAccent, fontSize: 12),
             ),
           ),
-        if (viewModel.isListening)
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.3),
-              ),
-              child: const Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.mic_none_rounded, color: Colors.white, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'Listening...',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+
             ],
           ),
         ),
@@ -123,72 +99,108 @@ class GeminiTranslatePage extends StatelessWidget {
     BuildContext context,
     GeminiTranslateViewModel geminiVM,
   ) {
-    return SizedBox(
-      height: 48,
-      child: Row(
-        children: [
-          Expanded(
-            child: LanguageDropdown(
-              value: geminiVM.sourceLanguage,
-              recentLanguages: geminiVM.recentLanguages,
-              showIcons: false,
-              showHeader: true,
-              onChanged: (v) => geminiVM.setSourceLanguage(v!),
-            ),
-          ),
-          IconButton(
-            onPressed: () => geminiVM.swapLanguages(outputController),
-            icon: const Icon(Icons.swap_horiz_rounded, color: Colors.white),
-          ),
-          Expanded(
-            child: LanguageDropdown(
-              value: geminiVM.targetLanguage,
-              recentLanguages: geminiVM.recentLanguages,
-              showIcons: false,
-              showHeader: true,
-              onChanged: (v) => geminiVM.setTargetLanguage(v!),
-            ),
-          ),
-          const SizedBox(width: 8),
-          SizedBox(
-            width: 48,
-            height: 48,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: ElevatedButton(
-                  onPressed: geminiVM.isLoading
-                      ? null
-                      : () => geminiVM.translate(outputController),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white.withValues(alpha: 0.1),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      side: BorderSide(
-                        color: Colors.white.withValues(alpha: 0.1),
+    return Stack(
+      children: [
+        SizedBox(
+          height: 48,
+          child: Row(
+            children: [
+              Expanded(
+                child: LanguageDropdown(
+                  value: geminiVM.sourceLanguage,
+                  recentLanguages: geminiVM.recentLanguages,
+                  showIcons: false,
+                  showHeader: true,
+                  onChanged: (v) => geminiVM.setSourceLanguage(v!),
+                ),
+              ),
+              IconButton(
+                onPressed: () => geminiVM.swapLanguages(outputController),
+                icon: const Icon(Icons.swap_horiz_rounded, color: Colors.white),
+              ),
+              Expanded(
+                child: LanguageDropdown(
+                  value: geminiVM.targetLanguage,
+                  recentLanguages: geminiVM.recentLanguages,
+                  showIcons: false,
+                  showHeader: true,
+                  onChanged: (v) => geminiVM.setTargetLanguage(v!),
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 48,
+                height: 48,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: ElevatedButton(
+                      onPressed: geminiVM.isLoading
+                          ? null
+                          : () => geminiVM.translate(outputController),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white.withValues(alpha: 0.1),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                        ),
                       ),
+                      child: geminiVM.isLoading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Icon(Icons.auto_awesome_rounded, size: 20),
                     ),
                   ),
-                  child: geminiVM.isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (geminiVM.isListening)
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.mic_none_rounded, color: Colors.white, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'Listening...',
+                          style: TextStyle(
                             color: Colors.white,
-                            strokeWidth: 2,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
                           ),
-                        )
-                      : const Icon(Icons.auto_awesome_rounded, size: 20),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 }
