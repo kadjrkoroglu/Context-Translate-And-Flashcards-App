@@ -115,7 +115,7 @@ class _HistoryPageState extends State<HistoryPage> {
                             margin: const EdgeInsets.symmetric(vertical: 8),
                             decoration: BoxDecoration(
                               color: Colors.redAccent.withValues(alpha: 0.8),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(24),
                             ),
                             child: const Icon(
                               Icons.delete_outline_rounded,
@@ -126,7 +126,7 @@ class _HistoryPageState extends State<HistoryPage> {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 8.0),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(24),
                               child: BackdropFilter(
                                 filter: ImageFilter.blur(
                                   sigmaX: 10,
@@ -135,7 +135,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                 child: Container(
                                   decoration: BoxDecoration(
                                     color: Colors.white.withValues(alpha: 0.08),
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius: BorderRadius.circular(24),
                                     border: Border.all(
                                       color: Colors.white.withValues(
                                         alpha: 0.1,
@@ -143,6 +143,9 @@ class _HistoryPageState extends State<HistoryPage> {
                                     ),
                                   ),
                                   child: ListTile(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(24),
+                                    ),
                                     onTap: () {
                                       final mainVM = context
                                           .read<MainViewModel>();

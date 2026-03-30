@@ -188,7 +188,7 @@ class _FinishedView extends StatelessWidget {
                   vertical: 16,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(24),
                   side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                 ),
               ),

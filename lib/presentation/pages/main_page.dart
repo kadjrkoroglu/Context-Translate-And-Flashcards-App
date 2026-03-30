@@ -27,6 +27,12 @@ class MainPage extends StatelessWidget {
     const Color inversePrimary = Colors.white;
 
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // Calculates space between input and bottom bar
+    final double bottomAreaHeight = 85 + 38;
+    final double fixedGap = 15;
+    final double totalBottomPadding = bottomAreaHeight + fixedGap;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -58,7 +64,7 @@ class MainPage extends StatelessWidget {
                   padding: EdgeInsets.only(
                     left: 20,
                     right: 20,
-                    bottom: math.max(200.0, keyboardHeight + 8),
+                    bottom: math.max(totalBottomPadding, keyboardHeight + 8),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(24),
@@ -76,8 +82,10 @@ class MainPage extends StatelessWidget {
                           children: [
                             Flexible(
                               child: ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxHeight: 295,
+                                constraints: BoxConstraints(
+                                  maxHeight:
+                                      screenHeight *
+                                      0.38, // Dynamic max height for input area
                                 ),
                                 child: PageView(
                                   controller: viewModel.pageController,
@@ -170,7 +178,7 @@ class MainPage extends StatelessWidget {
       width: 140,
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Stack(
@@ -193,7 +201,7 @@ class MainPage extends StatelessWidget {
                     margin: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(22),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.2),
                       ),

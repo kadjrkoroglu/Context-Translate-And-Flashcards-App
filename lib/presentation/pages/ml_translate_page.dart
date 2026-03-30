@@ -225,7 +225,6 @@ class MLTranslatePage extends StatelessWidget {
                   onChanged: (v) =>
                       mlVM.setSourceLanguage(v!, outputController),
                   showIcons: true,
-                  showHeader: false,
                 ),
               ),
               IconButton(
@@ -241,7 +240,6 @@ class MLTranslatePage extends StatelessWidget {
                   onChanged: (v) =>
                       mlVM.setTargetLanguage(v!, outputController),
                   showIcons: true,
-                  showHeader: false,
                 ),
               ),
             ],

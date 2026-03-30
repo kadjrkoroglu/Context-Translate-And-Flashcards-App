@@ -9,7 +9,6 @@ class LanguageDropdown extends StatelessWidget {
   final Set<String> downloadedModels;
   final bool showIcons;
   final bool isLoading;
-  final bool showHeader;
   final String? labelText;
 
   const LanguageDropdown({
@@ -21,7 +20,6 @@ class LanguageDropdown extends StatelessWidget {
     this.downloadedModels = const {},
     this.showIcons = true,
     this.isLoading = false,
-    this.showHeader = true,
     this.labelText,
   });
 
@@ -58,9 +56,7 @@ class LanguageDropdown extends StatelessWidget {
     final List<dynamic> dropdownData = [];
     final List<String> allLangs = items ?? languages;
 
-    if (showHeader) {
-      dropdownData.add('SELECT_HEADER');
-    }
+
     if (recentLanguages.isNotEmpty && items == null) {
       dropdownData.add('RECENTS');
       dropdownData.addAll(recentLanguages);
@@ -157,12 +153,8 @@ class LanguageDropdown extends StatelessWidget {
                     child: Divider(color: Colors.white12),
                   );
                 }
-                if (data == 'RECENTS' ||
-                    data == 'ALL LANGUAGES' ||
-                    data == 'SELECT_HEADER') {
-                  final String displayText = data == 'SELECT_HEADER'
-                      ? 'SELECT TARGET LANGUAGE'
-                      : data;
+                if (data == 'RECENTS' || data == 'ALL LANGUAGES') {
+                  final String displayText = data as String;
                   return DropdownMenuItem<String>(
                     enabled: false,
                     child: Text(
