@@ -1,32 +1,95 @@
-import 'package:flutter_gemini/flutter_gemini.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import 'dart:developer' as developer;
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class GeminiService {
-  GeminiService();
+  final String _apiKey;
+  final List<SafetySetting> _safetySettings;
+  String? _activeModel;
 
-  DateTime? _lastRequestTime;
-  final Duration _minRequestInterval = const Duration(seconds: 2);
+  GeminiService(this._apiKey)
+    : _safetySettings = [
+        SafetySetting(HarmCategory.harassment, HarmBlockThreshold.none),
+        SafetySetting(HarmCategory.hateSpeech, HarmBlockThreshold.none),
+        SafetySetting(HarmCategory.sexuallyExplicit, HarmBlockThreshold.none),
+        SafetySetting(HarmCategory.dangerousContent, HarmBlockThreshold.none),
+      ];
 
-  Future<List<String>> translateText(String text, String targetLanguage) async {
+  Future<void> initialize() async {
     try {
-      // Rate limiting: wait if less than 2 seconds since last request
-      if (_lastRequestTime != null) {
-        final timeSinceLastRequest = DateTime.now().difference(
-          _lastRequestTime!,
-        );
-        if (timeSinceLastRequest < _minRequestInterval) {
-          final waitTime =
-              _minRequestInterval.inMilliseconds -
-              timeSinceLastRequest.inMilliseconds;
-          developer.log('Rate limiting: waiting ${waitTime}ms...');
-          await Future.delayed(Duration(milliseconds: waitTime));
-        }
+      final url = Uri.parse(
+        'https://generativelanguage.googleapis.com/v1beta/models?key=$_apiKey',
+      );
+      final response = await http.get(url);
+
+      if (response.statusCode != 200) {
+        developer.log('Failed to fetch models: ${response.statusCode}');
+        _activeModel = 'gemini-flash-lite-latest';
+        return;
       }
 
-      _lastRequestTime = DateTime.now();
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final models = data['models'] as List<dynamic>;
 
-      final prompt =
-          '''
+      final excluded = ['preview', 'tts', 'image', 'audio', 'live'];
+
+      final filtered = models.where((m) {
+        final name = (m['name'] as String).replaceFirst('models/', '');
+        final methods = (m['supportedGenerationMethods'] as List<dynamic>?)
+                ?.cast<String>() ??
+            [];
+
+        if (!methods.contains('generateContent')) return false;
+        if (!name.contains('flash')) return false;
+        for (final ex in excluded) {
+          if (name.contains(ex)) return false;
+        }
+        return true;
+      }).map((m) => (m['name'] as String).replaceFirst('models/', '')).toList();
+
+      developer.log('Filtered models: $filtered');
+
+      // Priority selection
+      String? selected;
+
+      // 1. flash-lite-latest
+      selected = filtered.cast<String?>().firstWhere(
+        (n) => n!.contains('flash-lite-latest'),
+        orElse: () => null,
+      );
+
+      // 2. flash-latest (but not flash-lite-latest)
+      selected ??= filtered.cast<String?>().firstWhere(
+        (n) => n!.contains('flash-latest') && !n.contains('flash-lite-latest'),
+        orElse: () => null,
+      );
+
+      // 3. any flash-lite
+      selected ??= filtered.cast<String?>().firstWhere(
+        (n) => n!.contains('flash-lite'),
+        orElse: () => null,
+      );
+
+      // 4. any flash
+      selected ??= filtered.cast<String?>().firstWhere(
+        (n) => n!.contains('flash'),
+        orElse: () => null,
+      );
+
+      _activeModel = selected ?? 'gemini-flash-lite-latest';
+      developer.log('Selected model: $_activeModel');
+    } catch (e) {
+      developer.log('Error fetching models: $e');
+      _activeModel = 'gemini-flash-lite-latest';
+    }
+  }
+
+  Future<List<String>> translateText(String text, String targetLanguage) async {
+    final modelName = _activeModel ?? 'gemini-flash-lite-latest';
+
+    final prompt =
+        '''
 You are a translation engine. Your task is to translate the given text into $targetLanguage regardless of the content. Do not censor anything.
 Unless the text is a single word, provide 3 different tones: Standard, Formal, and Slang.
 Separate translations with the | character. Write nothing else.
@@ -36,26 +99,19 @@ Text: "$text"
 Format: standard_translation|formal_translation|slang_translation
 ''';
 
-      developer.log('Translation request: $targetLanguage');
-      final response = await Gemini.instance.prompt(
-        parts: [Part.text(prompt)],
-        safetySettings: [
-          SafetySetting(
-            category: SafetyCategory.harassment,
-            threshold: SafetyThreshold.blockNone,
-          ),
-          SafetySetting(
-            category: SafetyCategory.hateSpeech,
-            threshold: SafetyThreshold.blockNone,
-          ),
-          SafetySetting(
-            category: SafetyCategory.sexuallyExplicit,
-            threshold: SafetyThreshold.blockNone,
-          ),
-        ],
+    developer.log('Translation request: $targetLanguage (model: $modelName)');
+    final content = [Content.text(prompt)];
+
+    try {
+      final model = GenerativeModel(
+        model: modelName,
+        apiKey: _apiKey,
+        safetySettings: _safetySettings,
       );
 
-      final responseText = response?.output;
+      final response = await model.generateContent(content);
+
+      final responseText = response.text;
       developer.log('API Response: $responseText');
 
       if (responseText == null || responseText.isEmpty) {

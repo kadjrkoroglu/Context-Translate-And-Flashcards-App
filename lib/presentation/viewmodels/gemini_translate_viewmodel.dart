@@ -7,7 +7,7 @@ import 'package:translate_app/data/services/tts_service.dart';
 import 'package:translate_app/data/constants/ml_languages.dart';
 
 class GeminiTranslateViewModel extends ChangeNotifier {
-  final GeminiService _geminiService = GeminiService();
+  final GeminiService _geminiService;
   final SpeechToText _speechToText = SpeechToText();
   final SettingsService _settingsService;
   final HistoryViewModel _historyViewModel;
@@ -31,7 +31,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   List<String> get recentLanguages => _settingsService.recentLanguages;
   int get selectedToneIndex => _selectedToneIndex;
 
-  GeminiTranslateViewModel(this._settingsService, this._historyViewModel) {
+  GeminiTranslateViewModel(this._geminiService, this._settingsService, this._historyViewModel) {
     _sourceLanguage = 'Turkish'; // Varsayılan kaynak dil
     _targetLanguage = _settingsService.geminiTargetLang;
     _initSpeech();

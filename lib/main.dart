@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_gemini/flutter_gemini.dart';
+import 'package:translate_app/data/services/gemini_service.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/pages/auth/auth_wrapper.dart';
 import 'dart:convert';
@@ -32,9 +32,7 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   final localStorage = LocalStorageService();
   await localStorage.init();
@@ -49,7 +47,8 @@ void main() async {
   final envMap = jsonDecode(envString) as Map<String, dynamic>;
   final apiKey = envMap['api_key'] as String;
 
-  Gemini.init(apiKey: apiKey);
+  final geminiService = GeminiService(apiKey);
+  await geminiService.initialize();
 
   final firestoreService = FirestoreService();
   final historyRepository = HistoryRepository(localStorage, firestoreService);
@@ -86,6 +85,7 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (context) => GeminiTranslateViewModel(
+            geminiService,
             context.read<SettingsService>(),
             context.read<HistoryViewModel>(),
           ),
