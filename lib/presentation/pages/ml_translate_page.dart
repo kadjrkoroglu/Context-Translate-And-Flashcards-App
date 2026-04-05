@@ -173,7 +173,7 @@ class MLTranslatePage extends StatelessWidget {
                   ],
                 ),
               ),
-              if (viewModel.textController.text.isNotEmpty)
+              if (outputController.text.isNotEmpty)
                 Positioned(
                   bottom: 4,
                   right: 4,

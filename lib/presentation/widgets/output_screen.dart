@@ -67,24 +67,48 @@ class OutputScreen extends StatelessWidget {
   Widget _buildActionButtons(BuildContext context, MainViewModel mainVM) {
     return Positioned(
       bottom: 0,
-      left: 8,
-      right: 8,
+      left: 4,
+      right: 4,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              if (!mainVM.isMLPage) _ToneDropdown(controller: controller),
-            ],
-          ),
-          Row(
-            children: [
-              _TtsButton(mainVM: mainVM, text: controller.text),
-              _DeckAddButton(mainVM: mainVM, translation: controller.text),
-              _FavoriteButton(mainVM: mainVM, translation: controller.text),
-            ],
-          ),
+          if (!mainVM.isMLPage) ...[
+            _ToneDropdown(controller: controller),
+            const SizedBox(width: 6),
+            _actionIcon(context, Icons.auto_awesome_rounded, "Translate"),
+          ],
+          const Spacer(),
+          _TtsButton(mainVM: mainVM, text: controller.text),
+          _DeckAddButton(mainVM: mainVM, translation: controller.text),
+          _FavoriteButton(mainVM: mainVM, translation: controller.text),
         ],
+      ),
+    );
+  }
+
+  Widget _actionIcon(BuildContext context, IconData icon, String label) {
+    return InkWell(
+      onTap: () =>
+          context.read<GeminiTranslateViewModel>().translate(controller),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        height: 38,
+        padding: const EdgeInsets.symmetric(horizontal: 9),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: Colors.white70, size: 16),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white, fontSize: 13),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -100,7 +124,7 @@ class _ToneDropdown extends StatelessWidget {
       builder: (context, viewModel, child) {
         return Container(
           height: 38,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 11),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
@@ -156,6 +180,8 @@ class _DeckAddButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 40),
       onPressed: () {
         final word = mainVM.isMLPage
             ? Provider.of<MLTranslateViewModel>(
@@ -196,6 +222,8 @@ class _FavoriteButton extends StatelessWidget {
         final isFav = favVM.isFavorite(word);
 
         return IconButton(
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(minWidth: 40),
           onPressed: () {
             if (word.isNotEmpty && translation.isNotEmpty) {
               favVM.toggleFavorite(
@@ -226,6 +254,8 @@ class _TtsButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 40),
       onPressed: () {
         final tts = context.read<TtsService>();
         final language = mainVM.isMLPage

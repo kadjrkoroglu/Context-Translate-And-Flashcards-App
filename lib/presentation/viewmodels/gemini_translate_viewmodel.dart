@@ -20,7 +20,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   final TextEditingController _textController = TextEditingController();
   List<String> _results = [];
   int _selectedToneIndex = 0;
-
+  String _lastText = '';
   bool get isLoading => _isLoading;
   String? get error => _error;
   String get sourceLanguage => _sourceLanguage;
@@ -31,7 +31,11 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   List<String> get recentLanguages => _settingsService.recentLanguages;
   int get selectedToneIndex => _selectedToneIndex;
 
-  GeminiTranslateViewModel(this._geminiService, this._settingsService, this._historyViewModel) {
+  GeminiTranslateViewModel(
+    this._geminiService,
+    this._settingsService,
+    this._historyViewModel,
+  ) {
     _sourceLanguage = 'Turkish'; // Varsayılan kaynak dil
     _targetLanguage = _settingsService.geminiTargetLang;
     _initSpeech();
@@ -133,6 +137,8 @@ class GeminiTranslateViewModel extends ChangeNotifier {
       return;
     }
 
+    if (_textController.text.trim() == _lastText) return;
+
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -161,6 +167,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
       _error = _handleError(e);
       _results = [];
     } finally {
+      _lastText = _textController.text.trim();
       _isLoading = false;
       notifyListeners();
     }

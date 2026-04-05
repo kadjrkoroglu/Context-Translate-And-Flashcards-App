@@ -31,63 +31,68 @@ class GeminiTranslatePage extends StatelessWidget {
         Expanded(
           child: Stack(
             children: [
-        TextField(
-          controller: viewModel.textController,
-          expands: true,
-          maxLines: null,
-          minLines: null,
-          textAlignVertical: TextAlignVertical.top,
-          style: const TextStyle(
-            fontSize: 22,
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-          ),
-          cursorColor: Colors.white,
-          decoration: InputDecoration(
-            hintText: 'Enter text',
-            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
-            contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 48),
-            border: InputBorder.none,
-          ),
-          onChanged: (value) {
-            if (value.isEmpty) outputController.clear();
-          },
-        ),
-        if (viewModel.textController.text.isNotEmpty)
-          Positioned(
-            bottom: 4,
-            right: 4,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.volume_up_rounded,
-                    color: Colors.white.withValues(alpha: 0.5),
-                  ),
-                  onPressed: () =>
-                      viewModel.speakInputText(context.read<TtsService>()),
+              TextField(
+                controller: viewModel.textController,
+                expands: true,
+                maxLines: null,
+                minLines: null,
+                textAlignVertical: TextAlignVertical.top,
+                style: const TextStyle(
+                  fontSize: 22,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
                 ),
-                IconButton(
-                  icon: Icon(
-                    Icons.clear_rounded,
-                    color: Colors.white.withValues(alpha: 0.5),
+                cursorColor: Colors.white,
+                decoration: InputDecoration(
+                  hintText: 'Enter text',
+                  hintStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.3),
                   ),
-                  onPressed: () => viewModel.clear(outputController),
+                  contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 48),
+                  border: InputBorder.none,
                 ),
-              ],
-            ),
-          ),
-        if (viewModel.error != null)
-          Positioned(
-            bottom: 8,
-            left: 16,
-            child: Text(
-              viewModel.error!,
-              style: const TextStyle(color: Colors.redAccent, fontSize: 12),
-            ),
-          ),
-
+                onChanged: (value) {
+                  if (value.isEmpty) outputController.clear();
+                },
+              ),
+              if (outputController.text.isNotEmpty && !viewModel.isLoading)
+                Positioned(
+                  bottom: 4,
+                  right: 4,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.volume_up_rounded,
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                        onPressed: () => viewModel.speakInputText(
+                          context.read<TtsService>(),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.clear_rounded,
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                        onPressed: () => viewModel.clear(outputController),
+                      ),
+                    ],
+                  ),
+                ),
+              if (viewModel.error != null)
+                Positioned(
+                  bottom: 8,
+                  left: 16,
+                  child: Text(
+                    viewModel.error!,
+                    style: const TextStyle(
+                      color: Colors.redAccent,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -125,44 +130,7 @@ class GeminiTranslatePage extends StatelessWidget {
                   onChanged: (v) => geminiVM.setTargetLanguage(v!),
                 ),
               ),
-              const SizedBox(width: 8),
-              SizedBox(
-                width: 48,
-                height: 48,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: ElevatedButton(
-                      onPressed: geminiVM.isLoading
-                          ? null
-                          : () => geminiVM.translate(outputController),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withValues(alpha: 0.1),
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          side: BorderSide(
-                            color: Colors.white.withValues(alpha: 0.1),
-                          ),
-                        ),
-                      ),
-                      child: geminiVM.isLoading
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Icon(Icons.auto_awesome_rounded, size: 20),
-                    ),
-                  ),
-                ),
-              ),
+
             ],
           ),
         ),
@@ -181,7 +149,11 @@ class GeminiTranslatePage extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.mic_none_rounded, color: Colors.white, size: 18),
+                        Icon(
+                          Icons.mic_none_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                         SizedBox(width: 8),
                         Text(
                           'Listening...',

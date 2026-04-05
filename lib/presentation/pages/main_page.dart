@@ -30,9 +30,11 @@ class MainPage extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
 
     // Calculates space between input and bottom bar
+    final double safeAreaBottom = MediaQuery.of(context).padding.bottom;
     final double bottomAreaHeight = 85 + 38;
     final double fixedGap = 15;
-    final double totalBottomPadding = bottomAreaHeight + fixedGap;
+    final double totalBottomPadding =
+        bottomAreaHeight + fixedGap + safeAreaBottom;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -113,33 +115,45 @@ class MainPage extends StatelessWidget {
                             ValueListenableBuilder<TextEditingValue>(
                               valueListenable: viewModel.outputController,
                               builder: (context, value, _) {
-                                if (value.text.isEmpty) {
-                                  return const SizedBox.shrink();
-                                }
+                                final bool hasOutput = value.text.isNotEmpty;
                                 return Expanded(
                                   child: Column(
                                     children: [
-                                      SizedBox(
-                                        height: 16,
-                                      ), // Input divider padding
+                                      if (!hasOutput) const Spacer(),
                                       Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
+                                        padding: const EdgeInsets.only(
+                                          bottom: 15,
                                         ),
-                                        child: Divider(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.15,
+                                        child: Stack(
+                                          alignment: Alignment.center,
+                                          children: [
+                                            if (hasOutput)
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 12,
+                                                    ),
+                                                child: Divider(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.15),
+                                                  thickness: 0.5,
+                                                ),
+                                              ),
+                                            if (!hasOutput)
+                                              _buildTranslateButton(
+                                                viewModel,
+                                                geminiViewModel,
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      if (hasOutput)
+                                        Expanded(
+                                          child: OutputScreen(
+                                            controller:
+                                                viewModel.outputController,
                                           ),
-                                          thickness: 0.5,
-                                          height: 1,
                                         ),
-                                      ),
-                                      Expanded(
-                                        child: OutputScreen(
-                                          controller:
-                                              viewModel.outputController,
-                                        ),
-                                      ),
                                     ],
                                   ),
                                 );
@@ -354,6 +368,78 @@ class MainPage extends StatelessWidget {
       icon: Icon(icon, color: Colors.white.withValues(alpha: 0.7), size: 28),
       onPressed: () =>
           Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
+    );
+  }
+
+  Widget _buildTranslateButton(
+    MainViewModel viewModel,
+    GeminiTranslateViewModel gVM,
+  ) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([viewModel.pageController, gVM]),
+      builder: (context, _) {
+        final isMLPage =
+            (viewModel.pageController.hasClients &&
+                    viewModel.pageController.positions.isNotEmpty
+                ? viewModel.pageController.page ?? 0
+                : 0) >
+            0.5;
+
+        return AnimatedOpacity(
+          opacity: isMLPage ? 0.0 : 1.0,
+          duration: const Duration(milliseconds: 200),
+          child: IgnorePointer(
+            ignoring: isMLPage || gVM.isLoading,
+            child: SizedBox(
+              height: 42,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: ElevatedButton(
+                    onPressed: () => gVM.translate(viewModel.outputController),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white.withValues(alpha: 0.1),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.1),
+                        ),
+                      ),
+                    ),
+                    child: gVM.isLoading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.auto_awesome_rounded, size: 20),
+                              SizedBox(width: 8),
+                              Text(
+                                'Translate',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
