@@ -34,19 +34,23 @@ class GeminiService {
 
       final excluded = ['preview', 'tts', 'image', 'audio', 'live'];
 
-      final filtered = models.where((m) {
-        final name = (m['name'] as String).replaceFirst('models/', '');
-        final methods = (m['supportedGenerationMethods'] as List<dynamic>?)
-                ?.cast<String>() ??
-            [];
+      final filtered = models
+          .where((m) {
+            final name = (m['name'] as String).replaceFirst('models/', '');
+            final methods =
+                (m['supportedGenerationMethods'] as List<dynamic>?)
+                    ?.cast<String>() ??
+                [];
 
-        if (!methods.contains('generateContent')) return false;
-        if (!name.contains('flash')) return false;
-        for (final ex in excluded) {
-          if (name.contains(ex)) return false;
-        }
-        return true;
-      }).map((m) => (m['name'] as String).replaceFirst('models/', '')).toList();
+            if (!methods.contains('generateContent')) return false;
+            if (!name.contains('flash')) return false;
+            for (final ex in excluded) {
+              if (name.contains(ex)) return false;
+            }
+            return true;
+          })
+          .map((m) => (m['name'] as String).replaceFirst('models/', ''))
+          .toList();
 
       developer.log('Filtered models: $filtered');
 
