@@ -130,7 +130,6 @@ class GeminiTranslatePage extends StatelessWidget {
                   onChanged: (v) => geminiVM.setTargetLanguage(v!),
                 ),
               ),
-
             ],
           ),
         ),

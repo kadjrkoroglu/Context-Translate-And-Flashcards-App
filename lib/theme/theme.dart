@@ -55,10 +55,13 @@ class GlassThemeExtension extends ThemeExtension<GlassThemeExtension> {
 
 final ThemeData lightTheme = ThemeData(
   brightness: Brightness.light,
+  scaffoldBackgroundColor: const Color(0xFF7A8386),
+  canvasColor: const Color(0xFF7A8386),
+  cardColor: const Color(0xFF7A8386),
   colorScheme: ColorScheme.light(
-    surface: Colors.grey.shade200,
-    primary: Colors.grey.shade300,
-    secondary: Colors.grey.shade400,
+    surface: const Color(0xFF7A8386),
+    primary: Colors.grey.shade400,
+    secondary: Colors.grey.shade500,
     tertiary: Colors.grey.shade600,
     surfaceContainer: Colors.black,
     inversePrimary: Colors.white,
@@ -66,15 +69,12 @@ final ThemeData lightTheme = ThemeData(
   ),
   extensions: [
     GlassThemeExtension(
-      baseGlassColor: Colors.white.withValues(alpha: 0.1),
+      baseGlassColor: Colors.white.withValues(alpha: 0.12),
       borderGlassColor: Colors.white.withValues(alpha: 0.15),
-      backgroundGradient: [
-        const Color.fromARGB(255, 149, 157, 160),
-        const Color.fromARGB(255, 94, 106, 121),
-      ],
+      backgroundGradient: [const Color(0xFF7A8386), const Color(0xFF7A8386)],
       micGradient: [
-        const Color(0xFF89979D),
-        const Color.fromARGB(255, 94, 106, 121),
+        Colors.white.withValues(alpha: 0.12),
+        Colors.white.withValues(alpha: 0.12)
       ],
     ),
   ],
@@ -87,8 +87,11 @@ final ThemeData lightTheme = ThemeData(
 
 final ThemeData darkTheme = ThemeData(
   brightness: Brightness.dark,
+  scaffoldBackgroundColor: const Color(0xFF2D3436),
+  canvasColor: const Color(0xFF2D3436),
+  cardColor: const Color(0xFF2D3436),
   colorScheme: ColorScheme.dark(
-    surface: const Color.fromARGB(255, 27, 27, 27),
+    surface: const Color(0xFF2D3436),
     primary: Colors.grey.shade800,
     secondary: Colors.grey.shade700,
     tertiary: Colors.grey.shade600,
@@ -98,15 +101,12 @@ final ThemeData darkTheme = ThemeData(
   ),
   extensions: [
     GlassThemeExtension(
-      baseGlassColor: Colors.black.withValues(alpha: 0.15),
-      borderGlassColor: Colors.white.withValues(alpha: 0.05),
-      backgroundGradient: [
-        const Color.fromARGB(255, 45, 52, 54),
-        const Color.fromARGB(255, 29, 34, 40),
-      ],
+      baseGlassColor: Colors.white.withValues(alpha: 0.08),
+      borderGlassColor: Colors.white.withValues(alpha: 0.1),
+      backgroundGradient: [const Color(0xFF2D3436), const Color(0xFF2D3436)],
       micGradient: [
-        const Color(0xFF454D50),
-        const Color.fromARGB(255, 29, 34, 40),
+        Colors.white.withValues(alpha: 0.08),
+        Colors.white.withValues(alpha: 0.08)
       ],
     ),
   ],

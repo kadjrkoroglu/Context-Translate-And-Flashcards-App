@@ -24,6 +24,7 @@ class MainPage extends StatelessWidget {
     final viewModel = Provider.of<MainViewModel>(context);
     final mlViewModel = Provider.of<MLTranslateViewModel>(context);
     final geminiViewModel = Provider.of<GeminiTranslateViewModel>(context);
+    final glassTheme = Theme.of(context).extension<GlassThemeExtension>();
     const Color inversePrimary = Colors.white;
 
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
@@ -74,11 +75,27 @@ class MainPage extends StatelessWidget {
                       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.08),
+                          color: Color.alphaBlend(
+                            glassTheme?.baseGlassColor ??
+                                Colors.white.withValues(
+                                  alpha: 0.12,
+                                ), // Kök temadaki parlak cam rengini kullanıyoruz
+                            glassTheme?.backgroundGradient.first ??
+                                (Theme.of(context).brightness == Brightness.dark
+                                    ? const Color(0xFF2D3436)
+                                    : const Color(0xFF7A8386)),
+                          ),
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
                             color: Colors.white.withValues(alpha: 0.1),
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
                         ),
                         child: Column(
                           children: [
@@ -191,8 +208,8 @@ class MainPage extends StatelessWidget {
       height: 36,
       width: 140,
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(24),
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Stack(
@@ -301,13 +318,6 @@ class MainPage extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -343,10 +353,11 @@ class MainPage extends StatelessWidget {
   }
 
   Widget _buildBottomNavBar(BuildContext context, Color ip) {
+    final glassTheme = Theme.of(context).extension<GlassThemeExtension>();
     return BottomAppBar(
       padding: const EdgeInsets.symmetric(horizontal: 10),
       height: 85,
-      color: Colors.white.withValues(alpha: 0.1),
+      color: glassTheme?.baseGlassColor ?? Colors.white.withValues(alpha: 0.1),
       elevation: 0,
       shape: const CircularNotchedRectangle(),
       notchMargin: 12,
