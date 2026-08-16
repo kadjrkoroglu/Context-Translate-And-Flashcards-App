@@ -51,6 +51,9 @@ env.json
 *.jks
 *.keystore
 *.key
+/ios/Runner/GoogleService-Info.plist
+/android/app/google-services.json
+/macos/Runner/GoogleService-Info.plist
 
 # IDE settings
 .vscode/
