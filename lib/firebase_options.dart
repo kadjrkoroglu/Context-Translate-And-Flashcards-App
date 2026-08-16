@@ -60,24 +60,24 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAQ1vRV6-hvE0vXTyVUVfko1wZ7nEiW3eQ',
-    appId: '1:49581970803:ios:fde51d64e314b713bbe106',
+    appId: '1:49581970803:ios:03a28dd86dd9306fbbe106',
     messagingSenderId: '49581970803',
     projectId: 'translateapp-bd410',
     storageBucket: 'translateapp-bd410.firebasestorage.app',
     androidClientId: '49581970803-fags810ht6c9v4m1hlffr3vl297sotl8.apps.googleusercontent.com',
-    iosClientId: '49581970803-45o3glc92a4kp9hok6ulcak0dfj55lim.apps.googleusercontent.com',
-    iosBundleId: 'com.example.translateApp',
+    iosClientId: '49581970803-90iqb3uuc3chg6n4h4sgrhphh3ddg3jl.apps.googleusercontent.com',
+    iosBundleId: 'com.kadirkoroglu.translateApp',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyAQ1vRV6-hvE0vXTyVUVfko1wZ7nEiW3eQ',
-    appId: '1:49581970803:ios:fde51d64e314b713bbe106',
+    appId: '1:49581970803:ios:03a28dd86dd9306fbbe106',
     messagingSenderId: '49581970803',
     projectId: 'translateapp-bd410',
     storageBucket: 'translateapp-bd410.firebasestorage.app',
     androidClientId: '49581970803-fags810ht6c9v4m1hlffr3vl297sotl8.apps.googleusercontent.com',
-    iosClientId: '49581970803-45o3glc92a4kp9hok6ulcak0dfj55lim.apps.googleusercontent.com',
-    iosBundleId: 'com.example.translateApp',
+    iosClientId: '49581970803-90iqb3uuc3chg6n4h4sgrhphh3ddg3jl.apps.googleusercontent.com',
+    iosBundleId: 'com.kadirkoroglu.translateApp',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

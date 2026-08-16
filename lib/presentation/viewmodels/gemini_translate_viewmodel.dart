@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:translate_app/data/services/gemini_service.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:translate_app/domain/usecases/translate_usecase.dart';
 import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/data/services/settings_service.dart';
 import 'package:translate_app/data/services/tts_service.dart';
 import 'package:translate_app/data/constants/ml_languages.dart';
 
 class GeminiTranslateViewModel extends ChangeNotifier {
-  final GeminiService _geminiService;
+  final TranslateUsecase _translateUsecase;
   final SpeechToText _speechToText = SpeechToText();
   final SettingsService _settingsService;
   final HistoryViewModel _historyViewModel;
@@ -32,7 +32,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   int get selectedToneIndex => _selectedToneIndex;
 
   GeminiTranslateViewModel(
-    this._geminiService,
+    this._translateUsecase,
     this._settingsService,
     this._historyViewModel,
   ) {
@@ -144,11 +144,15 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _geminiService.translateText(
+      final entity = await _translateUsecase.execute(
         _textController.text,
+        _sourceLanguage,
         _targetLanguage,
       );
-      _results = response;
+      _results = entity.translatedText
+          .split('|')
+          .map((t) => t.trim())
+          .toList();
       _updateOutputText(outputController);
 
       if (outputController.text.isNotEmpty) {

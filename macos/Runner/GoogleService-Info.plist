@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>49581970803-45o3glc92a4kp9hok6ulcak0dfj55lim.apps.googleusercontent.com</string>
+	<string>49581970803-90iqb3uuc3chg6n4h4sgrhphh3ddg3jl.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.49581970803-45o3glc92a4kp9hok6ulcak0dfj55lim</string>
+	<string>com.googleusercontent.apps.49581970803-90iqb3uuc3chg6n4h4sgrhphh3ddg3jl</string>
 	<key>ANDROID_CLIENT_ID</key>
 	<string>49581970803-fags810ht6c9v4m1hlffr3vl297sotl8.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
@@ -15,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.translateApp</string>
+	<string>com.kadirkoroglu.translateApp</string>
 	<key>PROJECT_ID</key>
 	<string>translateapp-bd410</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:49581970803:ios:fde51d64e314b713bbe106</string>
+	<string>1:49581970803:ios:03a28dd86dd9306fbbe106</string>
 </dict>
 </plist>

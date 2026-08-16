@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:translate_app/data/services/gemini_service.dart';
+import 'package:translate_app/data/repositories/translation_repository_impl.dart';
+import 'package:translate_app/domain/usecases/translate_usecase.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/pages/auth/auth_wrapper.dart';
 import 'dart:convert';
@@ -85,7 +87,7 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (context) => GeminiTranslateViewModel(
-            geminiService,
+            TranslateUsecase(TranslationRepositoryImpl(geminiService)),
             context.read<SettingsService>(),
             context.read<HistoryViewModel>(),
           ),
