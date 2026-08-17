@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:translate_app/data/models/deck_model.dart';
-import 'package:translate_app/data/repositories/deck_repository.dart';
-import 'package:translate_app/data/models/card_model.dart';
+import 'package:translate_app/domain/entities/card_entity.dart';
+import 'package:translate_app/domain/entities/deck_entity.dart';
+import 'package:translate_app/domain/usecases/deck_usecase.dart';
 
 class DecksViewModel extends ChangeNotifier {
-  final DeckRepository _repository;
+  final DeckUsecase _usecase;
 
-  List<DeckItem> _decks = [];
+  List<DeckEntity> _decks = [];
   bool _isLoading = false;
 
-  List<DeckItem> get decks => _decks;
+  List<DeckEntity> get decks => _decks;
   bool get isLoading => _isLoading;
 
-  DecksViewModel(this._repository) {
+  DecksViewModel(this._usecase) {
     loadDecks();
   }
 
@@ -20,11 +20,7 @@ class DecksViewModel extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    _decks = await _repository.getAllDecks();
-
-    for (var deck in _decks) {
-      await deck.cards.load();
-    }
+    _decks = await _usecase.executeGetAllDecks();
 
     _isLoading = false;
     notifyListeners();
@@ -32,43 +28,47 @@ class DecksViewModel extends ChangeNotifier {
 
   Future<void> addDeck(String name) async {
     final now = DateTime.now();
-    final newDeck = DeckItem()
-      ..syncId =
-          '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}'
-      ..name = name
-      ..createdAt = now
-      ..lastModified = now
-      ..orderIndex = _decks.length + 1;
+    final newDeck = DeckEntity(
+      id: 0,
+      syncId:
+          '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}',
+      name: name,
+      createdAt: now,
+      lastModified: now,
+      orderIndex: _decks.length + 1,
+    );
 
-    await _repository.saveDeck(newDeck);
+    await _usecase.executeSaveDeck(newDeck);
     await loadDecks();
   }
 
   Future<void> deleteDeck(int id) async {
-    await _repository.deleteDeck(id);
+    await _usecase.executeDeleteDeck(id);
     await loadDecks();
   }
 
   Future<void> addCard(int deckId, String word, String translation) async {
     final now = DateTime.now();
-    final newCard = CardItem()
-      ..syncId =
-          '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}'
-      ..word = word
-      ..translation = translation
-      ..createdAt = now
-      ..lastModified = now;
+    final newCard = CardEntity(
+      id: 0,
+      syncId:
+          '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}',
+      word: word,
+      translation: translation,
+      createdAt: now,
+      lastModified: now,
+    );
 
-    await _repository.addCardToDeck(deckId, newCard);
+    await _usecase.executeAddCardToDeck(deckId, newCard);
     await loadDecks();
   }
 
   Future<void> deleteMultipleCards(List<int> cardIds) async {
-    await _repository.deleteCards(cardIds);
+    await _usecase.executeDeleteCards(cardIds);
     await loadDecks();
   }
 
-  int getStudyCount(DeckItem deck) {
+  int getStudyCount(DeckEntity deck) {
     final now = DateTime.now();
     return deck.cards.where((card) {
       if (card.isDeleted) return false;
@@ -78,7 +78,7 @@ class DecksViewModel extends ChangeNotifier {
     }).length;
   }
 
-  Map<String, int> getCardCountsByStatus(DeckItem deck) {
+  Map<String, int> getCardCountsByStatus(DeckEntity deck) {
     final now = DateTime.now();
 
     int newCount = 0;
@@ -128,7 +128,11 @@ class DecksViewModel extends ChangeNotifier {
     int newCardsLimit,
     int reviewsLimit,
   ) async {
-    await _repository.updateDeckLimits(deckId, newCardsLimit, reviewsLimit);
+    await _usecase.executeUpdateDeckLimits(
+      deckId,
+      newCardsLimit,
+      reviewsLimit,
+    );
     await loadDecks();
   }
 }

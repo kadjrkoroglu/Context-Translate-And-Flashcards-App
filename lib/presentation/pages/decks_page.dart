@@ -6,7 +6,7 @@ import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/pages/deck_detail_page.dart';
 import 'package:translate_app/presentation/pages/study_page.dart';
 import 'package:translate_app/presentation/viewmodels/study_viewmodel.dart';
-import 'package:translate_app/data/services/local_storage_service.dart';
+import 'package:translate_app/domain/usecases/deck_usecase.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
 
 class DecksPage extends StatefulWidget {
@@ -254,7 +254,10 @@ class _DeckCard extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (_) => ChangeNotifierProvider(
                       create: (ctx) =>
-                          StudyViewModel(ctx.read<LocalStorageService>(), deck),
+                          StudyViewModel(
+                            deck,
+                            ctx.read<DeckUsecase>(),
+                          ),
                       child: const StudyPage(),
                     ),
                   ),

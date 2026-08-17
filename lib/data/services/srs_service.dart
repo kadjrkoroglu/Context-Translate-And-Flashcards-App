@@ -1,10 +1,10 @@
 import 'dart:math';
-import '../models/card_model.dart';
+import '../../domain/entities/card_entity.dart';
 
 enum StudyRating { again, hard, good, easy }
 
 class SRSService {
-  static CardItem calculateNextReview(CardItem card, StudyRating rating) {
+  static CardEntity calculateNextReview(CardEntity card, StudyRating rating) {
     final now = DateTime.now();
 
     // Again - Reset progress

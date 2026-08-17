@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import '../../data/models/history_model.dart';
-import '../../data/repositories/history_repository.dart';
+import 'package:translate_app/domain/entities/history_item_entity.dart';
+import 'package:translate_app/domain/usecases/history_usecase.dart';
 
 class HistoryViewModel extends ChangeNotifier {
-  final HistoryRepository _repository;
+  final HistoryUsecase _usecase;
 
-  HistoryViewModel(this._repository);
+  HistoryViewModel(this._usecase);
 
-  List<HistoryItem> _historyItems = [];
+  List<HistoryItemEntity> _historyItems = [];
   bool _isLoading = false;
 
-  List<HistoryItem> get historyItems => _historyItems;
+  List<HistoryItemEntity> get historyItems => _historyItems;
   bool get isLoading => _isLoading;
 
   Future<void> loadHistory() async {
@@ -18,7 +18,7 @@ class HistoryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _historyItems = await _repository.getAllHistory();
+      _historyItems = await _usecase.executeGetAllHistory();
     } catch (e) {
       debugPrint('Load history error: $e');
     } finally {
@@ -46,26 +46,28 @@ class HistoryViewModel extends ChangeNotifier {
     }
 
     final now = DateTime.now();
-    final item = HistoryItem()
-      ..syncId =
-          '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}'
-      ..word = word
-      ..translation = translation
-      ..isGemini = isGemini
-      ..createdAt = now
-      ..lastModified = now;
+    final item = HistoryItemEntity(
+      id: 0,
+      syncId:
+          '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}',
+      word: word,
+      translation: translation,
+      createdAt: now,
+      lastModified: now,
+      isGemini: isGemini,
+    );
 
-    await _repository.addHistory(item);
+    await _usecase.executeAddHistory(item);
     await loadHistory();
   }
 
   Future<void> deleteItem(int id) async {
-    await _repository.deleteHistoryItem(id);
+    await _usecase.executeDeleteHistoryItem(id);
     await loadHistory();
   }
 
   Future<void> clearAll() async {
-    await _repository.clearHistory();
+    await _usecase.executeClearHistory();
     _historyItems = [];
     notifyListeners();
   }

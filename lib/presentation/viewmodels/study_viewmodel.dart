@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import '../../data/models/card_model.dart';
-import '../../data/models/deck_model.dart';
-import '../../data/services/local_storage_service.dart';
+import 'package:translate_app/domain/entities/card_entity.dart';
+import 'package:translate_app/domain/entities/deck_entity.dart';
+import 'package:translate_app/domain/usecases/deck_usecase.dart';
 import '../../data/services/srs_service.dart';
 
 class StudyViewModel extends ChangeNotifier {
-  final LocalStorageService _storageService;
-  final DeckItem deck;
+  final DeckUsecase _deckUsecase;
+  final DeckEntity deck;
 
   // Study queue
-  List<CardItem> _queue = [];
+  List<CardEntity> _queue = [];
   // Session progress
   int _completedCount = 0;
   int _totalSessionCards = 0;
@@ -26,12 +26,12 @@ class StudyViewModel extends ChangeNotifier {
   final Set<int> _sessionNewCardIds = {};
   final Set<int> _sessionReviewCardIds = {};
 
-  StudyViewModel(this._storageService, this.deck) {
+  StudyViewModel(this.deck, this._deckUsecase) {
     _initializeStudySession();
   }
 
-  List<CardItem> get dueCards => _queue;
-  CardItem? get currentCard => _queue.isNotEmpty ? _queue.first : null;
+  List<CardEntity> get dueCards => _queue;
+  CardEntity? get currentCard => _queue.isNotEmpty ? _queue.first : null;
   int get currentIndex => _completedCount;
   bool get isAnswerVisible => _isAnswerVisible;
   bool get isFinished => _isFinished;
@@ -44,7 +44,6 @@ class StudyViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await deck.cards.load();
       final now = DateTime.now();
       final allCards = deck.cards.where((c) => !c.isDeleted).toList();
 
@@ -95,10 +94,10 @@ class StudyViewModel extends ChangeNotifier {
     final now = DateTime.now();
     final allCards = deck.cards.where((c) => !c.isDeleted).toList();
 
-    List<CardItem> newCards = [];
-    List<CardItem> againCards =
+    List<CardEntity> newCards = [];
+    List<CardEntity> againCards =
         []; // Learning-phase: Again with expired cooldown
-    List<CardItem> reviewCards = [];
+    List<CardEntity> reviewCards = [];
 
     for (var card in allCards) {
       if (card.nextReviewDate == null) {
@@ -169,7 +168,7 @@ class StudyViewModel extends ChangeNotifier {
     // Apply SRS algorithm
     final updatedCard = SRSService.calculateNextReview(card, rating);
     updatedCard.lastModified = DateTime.now();
-    await _storageService.updateCard(updatedCard);
+    await _deckUsecase.executeUpdateCard(updatedCard);
 
     _isAnswerVisible = false;
 
@@ -179,7 +178,6 @@ class StudyViewModel extends ChangeNotifier {
     }
 
     // Reload cards from storage and rebuild queue dynamically
-    await deck.cards.load();
     _rebuildQueue();
 
     // Update total to account for again cards that re-enter the queue

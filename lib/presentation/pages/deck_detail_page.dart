@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:translate_app/data/models/deck_model.dart';
+import 'package:translate_app/domain/entities/deck_entity.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/add_card_dialog.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
 import 'dart:ui';
 
 class DeckDetailPage extends StatefulWidget {
-  final DeckItem deck;
+  final DeckEntity deck;
 
   const DeckDetailPage({super.key, required this.deck});
 

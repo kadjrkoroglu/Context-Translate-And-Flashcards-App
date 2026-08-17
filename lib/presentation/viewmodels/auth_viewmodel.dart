@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../data/repositories/auth_repository.dart';
+import 'package:translate_app/domain/entities/auth_entity.dart';
+import 'package:translate_app/domain/usecases/auth_usecase.dart';
 
 import '../../data/services/sync_service.dart';
 
 class AuthViewModel extends ChangeNotifier {
-  final AuthRepository _authRepository;
+  final AuthUsecase _authUsecase;
   final SyncService _syncService;
-  User? _user;
+  AuthEntity? _user;
   bool _isLoading = false;
   String? _error;
 
-  AuthViewModel(this._authRepository, this._syncService) {
-    _authRepository.user.listen((User? user) async {
+  AuthViewModel(this._authUsecase, this._syncService) {
+    _authUsecase.user.listen((AuthEntity? user) async {
       final bool isLogin = user != null && _user == null;
 
       _user = user;
 
       if (user != null && !user.emailVerified) {
-        user.reload().then((_) {
-          _user = _authRepository.currentUser;
+        _authUsecase.executeReloadUser().then((_) {
+          _user = _authUsecase.currentUser;
           notifyListeners();
         });
       }
@@ -36,7 +37,7 @@ class AuthViewModel extends ChangeNotifier {
     });
   }
 
-  User? get user => _user;
+  AuthEntity? get user => _user;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get isAuthenticated => _user != null;
@@ -48,7 +49,7 @@ class AuthViewModel extends ChangeNotifier {
     _setLoading(true);
     clearError();
     try {
-      await _authRepository.signInWithEmail(email, password);
+      await _authUsecase.executeSignIn(email, password);
       _setLoading(false);
       return true;
     } catch (e) {
@@ -75,15 +76,12 @@ class AuthViewModel extends ChangeNotifier {
     _setLoading(true);
     clearError();
     try {
-      await _authRepository.registerWithEmail(email, password);
+      await _authUsecase.executeRegister(email, password);
 
       // Wait for Firebase to settle, then force a reload to get fresh verification status
       await Future.delayed(const Duration(milliseconds: 500));
-      final currentUser = _authRepository.currentUser;
-      if (currentUser != null) {
-        await currentUser.reload();
-        _user = _authRepository.currentUser;
-      }
+      await _authUsecase.executeReloadUser();
+      _user = _authUsecase.currentUser;
 
       _setLoading(false);
       notifyListeners();
@@ -99,7 +97,7 @@ class AuthViewModel extends ChangeNotifier {
     _setLoading(true);
     clearError();
     try {
-      await _authRepository.signInWithGoogle();
+      await _authUsecase.executeSignInWithGoogle();
       _setLoading(false);
       return true;
     } catch (e) {
@@ -112,7 +110,7 @@ class AuthViewModel extends ChangeNotifier {
   Future<void> signOut() async {
     _setLoading(true);
     try {
-      await _authRepository.signOut();
+      await _authUsecase.executeSignOut();
       _setLoading(false);
     } catch (e) {
       _setError(e);
@@ -122,7 +120,7 @@ class AuthViewModel extends ChangeNotifier {
 
   Future<void> sendEmailVerification() async {
     try {
-      await _authRepository.sendEmailVerification();
+      await _authUsecase.executeSendEmailVerification();
     } catch (e) {
       _setError(e);
     }
@@ -130,8 +128,8 @@ class AuthViewModel extends ChangeNotifier {
 
   Future<void> reloadUser() async {
     try {
-      await _authRepository.reloadUser();
-      final freshUser = _authRepository.currentUser;
+      await _authUsecase.executeReloadUser();
+      final freshUser = _authUsecase.currentUser;
       if (freshUser != null) {
         _user = freshUser;
         notifyListeners();

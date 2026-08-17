@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:translate_app/data/services/gemini_service.dart';
+import 'package:translate_app/data/repositories/auth_repository_impl.dart';
+import 'package:translate_app/data/repositories/deck_repository_impl.dart';
+import 'package:translate_app/data/repositories/favorite_repository_impl.dart';
+import 'package:translate_app/data/repositories/history_repository_impl.dart';
 import 'package:translate_app/data/repositories/translation_repository_impl.dart';
+import 'package:translate_app/domain/usecases/auth_usecase.dart';
+import 'package:translate_app/domain/usecases/deck_usecase.dart';
+import 'package:translate_app/domain/usecases/favorite_usecase.dart';
+import 'package:translate_app/domain/usecases/history_usecase.dart';
 import 'package:translate_app/domain/usecases/translate_usecase.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/pages/auth/auth_wrapper.dart';
@@ -16,18 +23,14 @@ import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dar
 import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/data/services/local_storage_service.dart';
+import 'package:translate_app/data/services/gemini_service.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:translate_app/data/services/settings_service.dart';
 
 import 'package:translate_app/data/services/auth_service.dart';
-import 'package:translate_app/data/repositories/auth_repository.dart';
 import 'package:translate_app/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:translate_app/data/services/firestore_service.dart';
-import 'package:translate_app/data/repositories/history_repository.dart';
-import 'package:translate_app/data/repositories/deck_repository.dart';
-import 'package:translate_app/data/repositories/favorite_repository.dart';
-
 import 'package:translate_app/data/services/sync_service.dart';
 import 'package:translate_app/data/services/tts_service.dart';
 import 'firebase_options.dart';
@@ -40,7 +43,8 @@ void main() async {
   await localStorage.init();
 
   final authService = AuthService();
-  final authRepository = AuthRepository(authService);
+  final authRepository = AuthRepositoryImpl(authService);
+  final authUsecase = AuthUsecase(authRepository);
 
   final prefs = await SharedPreferences.getInstance();
   final settingsService = SettingsService(prefs);
@@ -53,10 +57,17 @@ void main() async {
   await geminiService.initialize();
 
   final firestoreService = FirestoreService();
-  final historyRepository = HistoryRepository(localStorage, firestoreService);
-  final favoriteRepository = FavoriteRepository(localStorage, firestoreService);
-  final deckRepository = DeckRepository(localStorage, firestoreService);
+  final historyRepository = HistoryRepositoryImpl(localStorage, firestoreService);
+  final favoriteRepository = FavoriteRepositoryImpl(
+    localStorage,
+    firestoreService,
+  );
+  final deckRepository = DeckRepositoryImpl(localStorage, firestoreService);
   final syncService = SyncService(localStorage, firestoreService);
+
+  final historyUsecase = HistoryUsecase(historyRepository);
+  final favoriteUsecase = FavoriteUsecase(favoriteRepository);
+  final deckUsecase = DeckUsecase(deckRepository);
 
   runApp(
     MultiProvider(
@@ -64,26 +75,26 @@ void main() async {
         Provider<TtsService>(create: (_) => TtsService()),
         ChangeNotifierProvider(create: (_) => ThemeProvider(settingsService)),
         ChangeNotifierProvider(
-          create: (_) => AuthViewModel(authRepository, syncService),
+          create: (_) => AuthViewModel(authUsecase, syncService),
         ),
         ChangeNotifierProvider(create: (_) => MainViewModel()),
         ChangeNotifierProvider<SyncService>.value(value: syncService),
         Provider<SettingsService>.value(value: settingsService),
         Provider<LocalStorageService>.value(value: localStorage),
-        Provider<AuthRepository>.value(value: authRepository),
-        Provider<HistoryRepository>.value(value: historyRepository),
-        Provider<FavoriteRepository>.value(value: favoriteRepository),
-        Provider<DeckRepository>.value(value: deckRepository),
+        Provider<AuthUsecase>.value(value: authUsecase),
+        Provider<HistoryUsecase>.value(value: historyUsecase),
+        Provider<FavoriteUsecase>.value(value: favoriteUsecase),
+        Provider<DeckUsecase>.value(value: deckUsecase),
         ChangeNotifierProvider(
-          create: (context) =>
-              FavoriteViewModel(context.read<FavoriteRepository>()),
+          create: (context) => FavoriteViewModel(
+            context.read<FavoriteUsecase>(),
+          ),
         ),
         ChangeNotifierProvider(
-          create: (context) =>
-              HistoryViewModel(context.read<HistoryRepository>()),
+          create: (context) => HistoryViewModel(context.read<HistoryUsecase>()),
         ),
         ChangeNotifierProvider(
-          create: (context) => DecksViewModel(context.read<DeckRepository>()),
+          create: (context) => DecksViewModel(context.read<DeckUsecase>()),
         ),
         ChangeNotifierProvider(
           create: (context) => GeminiTranslateViewModel(

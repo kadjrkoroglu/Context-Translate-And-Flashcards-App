@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import '../../data/models/favorite_word_model.dart';
-import '../../data/repositories/favorite_repository.dart';
+import 'package:translate_app/domain/entities/favorite_word_entity.dart';
+import 'package:translate_app/domain/usecases/favorite_usecase.dart';
 
 class FavoriteViewModel extends ChangeNotifier {
-  final FavoriteRepository _repository;
+  final FavoriteUsecase _usecase;
 
-  FavoriteViewModel(this._repository);
+  FavoriteViewModel(this._usecase);
 
   // --- STATE ---
-  List<FavoriteWord> _favorites = [];
+  List<FavoriteWordEntity> _favorites = [];
   bool _isLoading = false;
   String? _errorMessage;
 
-  List<FavoriteWord> get favorites => _favorites;
+  List<FavoriteWordEntity> get favorites => _favorites;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -24,7 +24,7 @@ class FavoriteViewModel extends ChangeNotifier {
     _errorMessage = null;
 
     try {
-      _favorites = await _repository.getAllFavorites();
+      _favorites = await _usecase.executeGetAllFavorites();
     } catch (e) {
       _errorMessage = "Failed to load favorites: $e";
     } finally {
@@ -45,16 +45,18 @@ class FavoriteViewModel extends ChangeNotifier {
 
     try {
       final now = DateTime.now();
-      final newFavorite = FavoriteWord()
-        ..syncId =
-            '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}'
-        ..word = trimmedWord
-        ..translation = trimmedTranslation
-        ..isGemini = isGemini
-        ..createdAt = now
-        ..lastModified = now;
+      final newFavorite = FavoriteWordEntity(
+        id: 0,
+        syncId:
+            '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}',
+        word: trimmedWord,
+        translation: trimmedTranslation,
+        createdAt: now,
+        lastModified: now,
+        isGemini: isGemini,
+      );
 
-      await _repository.addFavorite(newFavorite);
+      await _usecase.executeAddFavorite(newFavorite);
       await loadFavorites();
     } catch (e) {
       _errorMessage = "Save failed: $e";
@@ -65,7 +67,7 @@ class FavoriteViewModel extends ChangeNotifier {
   /// Delete favorite by ID
   Future<void> removeFavorite(int id) async {
     try {
-      await _repository.deleteFavorite(id);
+      await _usecase.executeDeleteFavorite(id);
       await loadFavorites();
     } catch (e) {
       _errorMessage = "Delete failed: $e";
