@@ -45,4 +45,14 @@ void main() {
 
     verify(() => mockRepo.translate('hello', 'en', 'tr')).called(1);
   });
+
+  test('repository hata verdiğinde hatayı fırlatır', () async {
+    when(() => mockRepo.translate(any(), any(), any()))
+        .thenThrow(Exception('Bağlantı hatası'));
+
+    expect(
+      () => usecase.execute('hello', 'en', 'tr'),
+      throwsA(isA<Exception>()),
+    );
+  });
 }
