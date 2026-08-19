@@ -1,4 +1,5 @@
 # Context Translate And Flashcards 🌍
+![CI](https://github.com/kadjrkoroglu/Context-Translate-And-Flashcards-App/actions/workflows/ci.yml/badge.svg)
 A Flutter translation app powered by AI that provides three contextual variations (Standard, Formal, Casual) for every translation. It also includes offline translation powered by Google ML Kit for instant translations without internet. Includes Flashcards Mode for vocabulary learning, allowing users to save and review words with spaced repetition. Features voice input via speech-to-text, auto dark/light theme, and support for multiple languages. Built with clean architecture using Provider for state management and async API integration.
 ---
 ## Translation Modes
