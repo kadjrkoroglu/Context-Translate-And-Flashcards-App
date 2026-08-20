@@ -36,13 +36,14 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     this._settingsService,
     this._historyViewModel,
   ) {
-    _sourceLanguage = 'Turkish'; // Varsayılan kaynak dil
+    _sourceLanguage = _settingsService.geminiSourceLang;
     _targetLanguage = _settingsService.geminiTargetLang;
     _initSpeech();
   }
 
   void setSourceLanguage(String language) {
     _sourceLanguage = language;
+    _settingsService.setGeminiSourceLang(language);
     _settingsService.addRecentLanguage(language);
     notifyListeners();
   }
@@ -58,6 +59,11 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     final temp = _sourceLanguage;
     _sourceLanguage = _targetLanguage;
     _targetLanguage = temp;
+
+    _settingsService.setGeminiSourceLang(_sourceLanguage);
+    _settingsService.setGeminiTargetLang(_targetLanguage);
+    _settingsService.addRecentLanguage(_sourceLanguage);
+    _settingsService.addRecentLanguage(_targetLanguage);
 
     if (_textController.text.isNotEmpty && outputController.text.isNotEmpty) {
       final inputTemp = _textController.text;

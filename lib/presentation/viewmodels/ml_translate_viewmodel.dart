@@ -151,6 +151,7 @@ class MLTranslateViewModel extends ChangeNotifier {
       swapLanguages(outputController);
     } else {
       _sourceLanguage = language;
+      _settingsService.setMlSourceLang(language);
       _settingsService.addRecentLanguage(language);
       checkAndDownloadModel(language, outputController);
       translate(outputController);
@@ -166,6 +167,7 @@ class MLTranslateViewModel extends ChangeNotifier {
       swapLanguages(outputController);
     } else {
       _targetLanguage = language;
+      _settingsService.setMlTargetLang(language);
       _settingsService.addRecentLanguage(language);
       checkAndDownloadModel(language, outputController);
       translate(outputController);

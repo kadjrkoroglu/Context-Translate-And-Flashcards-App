@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SettingsService {
   static const String _keySourceLang = 'ml_source_lang';
   static const String _keyTargetLang = 'ml_target_lang';
+  static const String _keyGeminiSourceLang = 'gemini_source_lang';
   static const String _keyGeminiLang = 'gemini_target_lang';
   static const String _keyRecentLangs = 'recent_languages';
   static const String _keyThemeMode = 'theme_mode';
@@ -39,6 +40,10 @@ class SettingsService {
       _prefs.setString(_keyTargetLang, lang);
 
   // Gemini Language
+  String get geminiSourceLang => _prefs.getString(_keyGeminiSourceLang) ?? 'English';
+  Future<void> setGeminiSourceLang(String lang) =>
+      _prefs.setString(_keyGeminiSourceLang, lang);
+
   String get geminiTargetLang => _prefs.getString(_keyGeminiLang) ?? '-';
   Future<void> setGeminiTargetLang(String lang) =>
       _prefs.setString(_keyGeminiLang, lang);
