@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import '../../core/errors/app_exception.dart';
 import '../../domain/entities/card_entity.dart';
 import '../../domain/entities/deck_entity.dart';
 import '../../domain/repositories/deck_repository.dart';
@@ -84,6 +85,7 @@ class DeckRepositoryImpl implements DeckRepository {
           await _local.saveDeck(deck);
         }
       } catch (e) {
+        if (e is AppException) rethrow;
         debugPrint('Deck save sync failed: $e');
       }
     }
@@ -108,9 +110,10 @@ class DeckRepositoryImpl implements DeckRepository {
             '$collectionDir/${deck.remoteId}',
             deck.toMap(),
           );
-        } catch (e) {
-          debugPrint('Deck soft-delete sync failed: $e');
-        }
+      } catch (e) {
+        if (e is AppException) rethrow;
+        debugPrint('Deck soft-delete sync failed: $e');
+      }
       }
     }
   }
@@ -155,6 +158,7 @@ class DeckRepositoryImpl implements DeckRepository {
         cardItem.isSynced = true;
         await _local.updateCard(cardItem);
       } catch (e) {
+        if (e is AppException) rethrow;
         debugPrint('Card add sync failed: $e');
       }
     }

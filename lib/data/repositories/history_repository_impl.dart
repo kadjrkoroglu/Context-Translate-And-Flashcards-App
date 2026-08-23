@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import '../../core/errors/app_exception.dart';
 import '../../domain/entities/history_item_entity.dart';
 import '../../domain/repositories/history_repository.dart';
 import '../models/history_model.dart';
@@ -67,6 +68,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
         historyItem.isSynced = true;
         await _local.addHistory(historyItem);
       } catch (e) {
+        if (e is AppException) rethrow;
         debugPrint('History add sync failed: $e');
       }
     }
@@ -90,9 +92,10 @@ class HistoryRepositoryImpl implements HistoryRepository {
             '$collectionDir/${item.remoteId}',
             item.toMap(),
           );
-        } catch (e) {
-          debugPrint('History soft-delete sync failed: $e');
-        }
+      } catch (e) {
+        if (e is AppException) rethrow;
+        debugPrint('History soft-delete sync failed: $e');
+      }
       }
     }
   }
@@ -121,6 +124,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
           }
         }
       } catch (e) {
+        if (e is AppException) rethrow;
         debugPrint('History clear sync failed: $e');
       }
     }

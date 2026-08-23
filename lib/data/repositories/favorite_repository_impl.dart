@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import '../../core/errors/app_exception.dart';
 import '../../domain/entities/favorite_word_entity.dart';
 import '../../domain/repositories/favorite_repository.dart';
 import '../models/favorite_word_model.dart';
@@ -67,6 +68,7 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
         item.isSynced = true;
         await _local.addFavorite(item);
       } catch (e) {
+        if (e is AppException) rethrow;
         debugPrint('Favorite add sync failed: $e');
       }
     }
@@ -90,9 +92,10 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
             '$collectionDir/${favorite.remoteId}',
             favorite.toMap(),
           );
-        } catch (e) {
-          debugPrint('Favorite soft-delete sync failed: $e');
-        }
+      } catch (e) {
+        if (e is AppException) rethrow;
+        debugPrint('Favorite soft-delete sync failed: $e');
+      }
       }
     }
   }
