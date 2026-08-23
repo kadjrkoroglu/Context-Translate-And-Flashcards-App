@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:translate_app/core/errors/app_exception.dart';
 import 'dart:math';
 
 class DictionaryService {
@@ -56,44 +57,61 @@ class DictionaryService {
   };
 
   Future<bool> isDictionaryDownloaded(String langCode) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/dict_$langCode.txt');
-    return await file.exists();
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/dict_$langCode.txt');
+      return await file.exists();
+    } catch (e) {
+      throw StorageException('Failed to check dictionary status', details: e.toString());
+    }
   }
 
   Future<void> downloadDictionary(String langCode) async {
     if (!_dictionaryUrls.containsKey(langCode)) return;
 
     final url = _dictionaryUrls[langCode]!;
-    final response = await http.get(Uri.parse(url));
+    try {
+      final response = await http.get(Uri.parse(url));
 
-    if (response.statusCode == 200) {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/dict_$langCode.txt');
+      if (response.statusCode == 200) {
+        final directory = await getApplicationDocumentsDirectory();
+        final file = File('${directory.path}/dict_$langCode.txt');
 
-      // Extract words, removing frequencies
-      final lines = response.body.split('\n');
-      final words = lines
-          .map((line) => line.split(' ')[0].toLowerCase().trim())
-          .where((w) => w.length > 1)
-          .take(20000)
-          .join('\n');
+        final lines = response.body.split('\n');
+        final words = lines
+            .map((line) => line.split(' ')[0].toLowerCase().trim())
+            .where((w) => w.length > 1)
+            .take(20000)
+            .join('\n');
 
-      await file.writeAsString(words);
-    } else {
-      throw Exception('Failed to download dictionary');
+        await file.writeAsString(words);
+      } else {
+        throw NetworkException('Failed to download dictionary', details: 'HTTP ${response.statusCode}');
+      }
+    } on SocketException catch (e) {
+      throw NetworkException('No internet connection', details: e.toString());
+    } on HttpException catch (e) {
+      throw NetworkException('HTTP error', details: e.toString());
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw GeneralException('Failed to download dictionary', details: e.toString());
     }
   }
 
   Future<void> loadDictionary(String langCode) async {
-    if (_loadedDictionaries.containsKey(langCode)) return;
+    try {
+      if (_loadedDictionaries.containsKey(langCode)) return;
 
-    final directory = await getApplicationDocumentsDirectory();
-    final file = File('${directory.path}/dict_$langCode.txt');
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/dict_$langCode.txt');
 
-    if (await file.exists()) {
-      final content = await file.readAsString();
-      _loadedDictionaries[langCode] = content.split('\n').toSet();
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        _loadedDictionaries[langCode] = content.split('\n').toSet();
+      }
+    } catch (e) {
+      if (e is AppException) rethrow;
+      throw StorageException('Failed to load dictionary', details: e.toString());
     }
   }
 
@@ -113,10 +131,9 @@ class DictionaryService {
     if (dict.contains(word) || word.length < 3) return word;
 
     String bestMatch = word;
-    int minDistance = 3; // Allow up to 2 character difference
+    int minDistance = 3;
 
     for (var dictWord in dict) {
-      // Optimization: look for words with similar length
       if ((dictWord.length - word.length).abs() > 2) continue;
 
       int distance = _levenshtein(word, dictWord);

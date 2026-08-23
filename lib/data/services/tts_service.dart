@@ -1,4 +1,5 @@
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/data/constants/ml_languages.dart';
 
 class TtsService {
@@ -9,12 +10,20 @@ class TtsService {
 
     final bcpCode = MlLanguages.mapNameToBCP(languageName);
 
-    await _flutterTts.setLanguage(bcpCode);
-    await _flutterTts.setPitch(1.0);
-    await _flutterTts.speak(text);
+    try {
+      await _flutterTts.setLanguage(bcpCode);
+      await _flutterTts.setPitch(1.0);
+      await _flutterTts.speak(text);
+    } catch (e) {
+      throw GeneralException('Failed to play audio', details: e.toString());
+    }
   }
 
   Future<void> stop() async {
-    await _flutterTts.stop();
+    try {
+      await _flutterTts.stop();
+    } catch (e) {
+      throw GeneralException('Failed to stop audio', details: e.toString());
+    }
   }
 }

@@ -8,25 +8,42 @@ class DecksViewModel extends ChangeNotifier {
 
   List<DeckEntity> _decks = [];
   bool _isLoading = false;
+  String? _error;
 
   List<DeckEntity> get decks => _decks;
   bool get isLoading => _isLoading;
+  String? get error => _error;
 
   DecksViewModel(this._usecase) {
     loadDecks();
   }
 
-  Future<void> loadDecks() async {
-    _isLoading = true;
-    notifyListeners();
-
-    _decks = await _usecase.executeGetAllDecks();
-
-    _isLoading = false;
+  void _setError(String msg) {
+    _error = msg;
     notifyListeners();
   }
 
+  void _clearError() {
+    _error = null;
+  }
+
+  Future<void> loadDecks() async {
+    _isLoading = true;
+    _clearError();
+    notifyListeners();
+
+    try {
+      _decks = await _usecase.executeGetAllDecks();
+    } catch (e) {
+      _setError('Failed to load decks');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> addDeck(String name) async {
+    _clearError();
     final now = DateTime.now();
     final newDeck = DeckEntity(
       id: 0,
@@ -38,16 +55,26 @@ class DecksViewModel extends ChangeNotifier {
       orderIndex: _decks.length + 1,
     );
 
-    await _usecase.executeSaveDeck(newDeck);
-    await loadDecks();
+    try {
+      await _usecase.executeSaveDeck(newDeck);
+      await loadDecks();
+    } catch (e) {
+      _setError('Failed to add deck');
+    }
   }
 
   Future<void> deleteDeck(int id) async {
-    await _usecase.executeDeleteDeck(id);
-    await loadDecks();
+    _clearError();
+    try {
+      await _usecase.executeDeleteDeck(id);
+      await loadDecks();
+    } catch (e) {
+      _setError('Failed to delete deck');
+    }
   }
 
   Future<void> addCard(int deckId, String word, String translation) async {
+    _clearError();
     final now = DateTime.now();
     final newCard = CardEntity(
       id: 0,
@@ -59,13 +86,22 @@ class DecksViewModel extends ChangeNotifier {
       lastModified: now,
     );
 
-    await _usecase.executeAddCardToDeck(deckId, newCard);
-    await loadDecks();
+    try {
+      await _usecase.executeAddCardToDeck(deckId, newCard);
+      await loadDecks();
+    } catch (e) {
+      _setError('Failed to add card');
+    }
   }
 
   Future<void> deleteMultipleCards(List<int> cardIds) async {
-    await _usecase.executeDeleteCards(cardIds);
-    await loadDecks();
+    _clearError();
+    try {
+      await _usecase.executeDeleteCards(cardIds);
+      await loadDecks();
+    } catch (e) {
+      _setError('Failed to delete cards');
+    }
   }
 
   int getStudyCount(DeckEntity deck) {
@@ -90,11 +126,9 @@ class DecksViewModel extends ChangeNotifier {
     for (var card in deck.cards) {
       if (card.isDeleted) continue;
       if (card.nextReviewDate == null) {
-        // Newly added cards
         newCount++;
       } else if (card.nextReviewDate!.isBefore(now) ||
           card.nextReviewDate!.isAtSameMomentAs(now)) {
-        // Due for review - check by last rating
         switch (card.lastRatingIndex) {
           case 0:
             againCount++;
@@ -128,11 +162,16 @@ class DecksViewModel extends ChangeNotifier {
     int newCardsLimit,
     int reviewsLimit,
   ) async {
-    await _usecase.executeUpdateDeckLimits(
-      deckId,
-      newCardsLimit,
-      reviewsLimit,
-    );
-    await loadDecks();
+    _clearError();
+    try {
+      await _usecase.executeUpdateDeckLimits(
+        deckId,
+        newCardsLimit,
+        reviewsLimit,
+      );
+      await loadDecks();
+    } catch (e) {
+      _setError('Failed to update deck limits');
+    }
   }
 }
