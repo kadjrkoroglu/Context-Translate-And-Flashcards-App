@@ -7,32 +7,41 @@ class FavoriteViewModel extends ChangeNotifier {
 
   FavoriteViewModel(this._usecase);
 
-  // --- STATE ---
   List<FavoriteWordEntity> _favorites = [];
   bool _isLoading = false;
-  String? _errorMessage;
+  String? _error;
 
   List<FavoriteWordEntity> get favorites => _favorites;
   bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
+  String? get error => _error;
 
-  // --- METHODS ---
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
 
-  /// Fetch all favorites from database
+  void _setError(String? message) {
+    _error = message;
+    notifyListeners();
+  }
+
+  void _clearError() {
+    _error = null;
+  }
+
   Future<void> loadFavorites() async {
     _setLoading(true);
-    _errorMessage = null;
+    _clearError();
 
     try {
       _favorites = await _usecase.executeGetAllFavorites();
     } catch (e) {
-      _errorMessage = "Failed to load favorites: $e";
+      _setError('Failed to load favorites');
     } finally {
       _setLoading(false);
     }
   }
 
-  /// Add word to favorites
   Future<void> addFavorite({
     required String word,
     required String translation,
@@ -43,6 +52,7 @@ class FavoriteViewModel extends ChangeNotifier {
 
     if (trimmedWord.isEmpty || trimmedTranslation.isEmpty) return;
 
+    _clearError();
     try {
       final now = DateTime.now();
       final newFavorite = FavoriteWordEntity(
@@ -59,29 +69,25 @@ class FavoriteViewModel extends ChangeNotifier {
       await _usecase.executeAddFavorite(newFavorite);
       await loadFavorites();
     } catch (e) {
-      _errorMessage = "Save failed: $e";
-      notifyListeners();
+      _setError('Failed to save favorite');
     }
   }
 
-  /// Delete favorite by ID
   Future<void> removeFavorite(int id) async {
+    _clearError();
     try {
       await _usecase.executeDeleteFavorite(id);
       await loadFavorites();
     } catch (e) {
-      _errorMessage = "Delete failed: $e";
-      notifyListeners();
+      _setError('Failed to delete favorite');
     }
   }
 
-  /// Check if word is already favorited
   bool isFavorite(String word) {
     final trimmed = word.trim().toLowerCase();
     return _favorites.any((f) => f.word.toLowerCase() == trimmed);
   }
 
-  /// Toggle favorite status
   Future<void> toggleFavorite({
     required String word,
     required String translation,
@@ -93,23 +99,15 @@ class FavoriteViewModel extends ChangeNotifier {
     );
 
     if (existing.isNotEmpty) {
-      // Remove all matches to avoid duplicates
       for (var fav in existing) {
         await removeFavorite(fav.id);
       }
     } else {
-      // Add if not exists
       await addFavorite(
         word: word.trim(),
         translation: translation.trim(),
         isGemini: isGemini,
       );
     }
-  }
-
-  /// Update loading state and notify UI
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
   }
 }

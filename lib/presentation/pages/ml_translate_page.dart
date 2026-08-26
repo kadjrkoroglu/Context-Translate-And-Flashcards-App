@@ -65,6 +65,17 @@ class MLTranslatePage extends StatelessWidget {
                       onChanged: (text) =>
                           viewModel.onTextChanged(text, outputController),
                     ),
+                    if (viewModel.error != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          viewModel.error!,
+                          style: const TextStyle(
+                            color: Colors.redAccent,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
                     if (viewModel.spellingCorrection != null)
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),

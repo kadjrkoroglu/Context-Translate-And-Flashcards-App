@@ -54,6 +54,7 @@ class _StudyPageState extends State<StudyPage>
     const Color ip = Colors.white;
 
     if (vm.isLoading) return _LoadingView();
+    if (vm.error != null) return _ErrorView(message: vm.error!);
     if (vm.isFinished) return _FinishedView();
 
     final card = vm.currentCard;
@@ -150,6 +151,56 @@ class _LoadingView extends StatelessWidget {
     child: const Scaffold(
       backgroundColor: Colors.transparent,
       body: Center(child: CircularProgressIndicator(color: Colors.white)),
+    ),
+  );
+}
+
+class _ErrorView extends StatelessWidget {
+  final String message;
+  const _ErrorView({required this.message});
+
+  @override
+  Widget build(BuildContext context) => AppBackground(
+    child: Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 64,
+              color: Colors.redAccent,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: const TextStyle(color: Colors.redAccent, fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: 0.2),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 40,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                ),
+              ),
+              child: const Text(
+                'Back to Decks',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
     ),
   );
 }

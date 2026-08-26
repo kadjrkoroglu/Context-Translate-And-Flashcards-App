@@ -18,8 +18,13 @@ class DecksViewModel extends ChangeNotifier {
     loadDecks();
   }
 
-  void _setError(String msg) {
-    _error = msg;
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setError(String? message) {
+    _error = message;
     notifyListeners();
   }
 
@@ -28,17 +33,15 @@ class DecksViewModel extends ChangeNotifier {
   }
 
   Future<void> loadDecks() async {
-    _isLoading = true;
+    _setLoading(true);
     _clearError();
-    notifyListeners();
 
     try {
       _decks = await _usecase.executeGetAllDecks();
     } catch (e) {
       _setError('Failed to load decks');
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      _setLoading(false);
     }
   }
 

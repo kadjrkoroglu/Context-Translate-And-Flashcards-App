@@ -41,6 +41,20 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     _initSpeech();
   }
 
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setError(String? message) {
+    _error = message;
+    notifyListeners();
+  }
+
+  void _clearError() {
+    _error = null;
+  }
+
   void setSourceLanguage(String language) {
     _sourceLanguage = language;
     _settingsService.setGeminiSourceLang(language);
@@ -145,9 +159,8 @@ class GeminiTranslateViewModel extends ChangeNotifier {
 
     if (_textController.text.trim() == _lastText) return;
 
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
+    _setLoading(true);
+    _clearError();
 
     try {
       final entity = await _translateUsecase.execute(
@@ -174,12 +187,11 @@ class GeminiTranslateViewModel extends ChangeNotifier {
         }
       }
     } catch (e) {
-      _error = _handleError(e);
+      _setError(_handleError(e));
       _results = [];
     } finally {
       _lastText = _textController.text.trim();
-      _isLoading = false;
-      notifyListeners();
+      _setLoading(false);
     }
   }
 
@@ -203,6 +215,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     _textController.clear();
     outputController.clear();
     _results = [];
+    _clearError();
     notifyListeners();
   }
 

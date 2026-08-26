@@ -68,11 +68,11 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       child: CircularProgressIndicator(color: Colors.white),
                     ),
                   )
-                else if (viewModel.errorMessage != null)
+                else if (viewModel.error != null)
                   SliverFillRemaining(
                     child: Center(
                       child: Text(
-                        viewModel.errorMessage!,
+                        viewModel.error!,
                         style: const TextStyle(color: Colors.redAccent),
                       ),
                     ),

@@ -19,6 +19,7 @@ class MLTranslateViewModel extends ChangeNotifier {
   late String _sourceLanguage;
   late String _targetLanguage;
   bool _isLoading = false;
+  String? _error;
   String? _spellingCorrection;
   String? _detectedLanguage;
   String? _downloadingLanguage;
@@ -32,6 +33,7 @@ class MLTranslateViewModel extends ChangeNotifier {
   String get sourceLanguage => _sourceLanguage;
   String get targetLanguage => _targetLanguage;
   bool get isLoading => _isLoading;
+  String? get error => _error;
   String? get spellingCorrection => _spellingCorrection;
   String? get detectedLanguage => _detectedLanguage;
   String? get downloadingLanguage => _downloadingLanguage;
@@ -45,6 +47,20 @@ class MLTranslateViewModel extends ChangeNotifier {
     _targetLanguage = _settingsService.mlTargetLang;
     _initSpeech();
     fetchDownloadedModels();
+  }
+
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setError(String? message) {
+    _error = message;
+    notifyListeners();
+  }
+
+  void _clearError() {
+    _error = null;
   }
 
   Future<void> fetchDownloadedModels() async {
@@ -196,13 +212,12 @@ class MLTranslateViewModel extends ChangeNotifier {
         }
         await modelManager.downloadModel(bcpCode);
       } catch (e) {
-        debugPrint('Download error: $e');
+        _setError('Failed to download model for $languageName');
       } finally {
         _isDownloading = false;
         _downloadingLanguage = null;
         await Future.delayed(const Duration(milliseconds: 200));
         translate(outputController);
-        notifyListeners();
       }
     }
   }
@@ -221,8 +236,8 @@ class MLTranslateViewModel extends ChangeNotifier {
       return;
     }
 
-    _isLoading = true;
-    notifyListeners();
+    _setLoading(true);
+    _clearError();
 
     try {
       final sourceLang = MlLanguages.mapStringToLanguage(_sourceLanguage);
@@ -253,8 +268,8 @@ class MLTranslateViewModel extends ChangeNotifier {
         );
         outputController.text = response ?? '';
       } catch (e) {
-        debugPrint('OnDeviceTranslator init/translate error: $e');
-        outputController.text = 'Error initializing translator';
+        _setError('Failed to initialize translator');
+        outputController.text = '';
         return;
       }
 
@@ -275,10 +290,9 @@ class MLTranslateViewModel extends ChangeNotifier {
         }
       }
     } catch (e) {
-      debugPrint('Translation error: $e');
+      _setError('Translation failed');
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      _setLoading(false);
     }
   }
 
@@ -331,6 +345,7 @@ class MLTranslateViewModel extends ChangeNotifier {
     outputController.clear();
     _spellingCorrection = null;
     _detectedLanguage = null;
+    _clearError();
     notifyListeners();
   }
 

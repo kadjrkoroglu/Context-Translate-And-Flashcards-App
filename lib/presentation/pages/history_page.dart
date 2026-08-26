@@ -77,6 +77,15 @@ class _HistoryPageState extends State<HistoryPage> {
                       child: CircularProgressIndicator(color: Colors.white),
                     ),
                   )
+                else if (viewModel.error != null)
+                  SliverFillRemaining(
+                    child: Center(
+                      child: Text(
+                        viewModel.error!,
+                        style: const TextStyle(color: Colors.redAccent),
+                      ),
+                    ),
+                  )
                 else if (viewModel.historyItems.isEmpty)
                   SliverFillRemaining(
                     child: Center(

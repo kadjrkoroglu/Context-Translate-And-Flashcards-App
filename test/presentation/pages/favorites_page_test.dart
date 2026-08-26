@@ -44,7 +44,7 @@ void main() {
     mockGeminiVM = MockGeminiTranslateViewModel();
 
     when(() => mockFavoriteVM.isLoading).thenReturn(false);
-    when(() => mockFavoriteVM.errorMessage).thenReturn(null);
+    when(() => mockFavoriteVM.error).thenReturn(null);
     when(() => mockFavoriteVM.favorites).thenReturn([]);
     when(() => mockFavoriteVM.loadFavorites()).thenAnswer((_) async {});
     when(() => mockMainVM.outputController).thenReturn(FakeTextEditingController());
@@ -116,7 +116,7 @@ void main() {
   });
 
   testWidgets('shows error message when error occurs', (tester) async {
-    when(() => mockFavoriteVM.errorMessage).thenReturn('Something went wrong');
+    when(() => mockFavoriteVM.error).thenReturn('Something went wrong');
 
     await tester.pumpWidget(buildSubject());
     await tester.pump();

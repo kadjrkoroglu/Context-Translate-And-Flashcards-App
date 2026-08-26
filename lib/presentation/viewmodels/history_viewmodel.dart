@@ -9,21 +9,36 @@ class HistoryViewModel extends ChangeNotifier {
 
   List<HistoryItemEntity> _historyItems = [];
   bool _isLoading = false;
+  String? _error;
 
   List<HistoryItemEntity> get historyItems => _historyItems;
   bool get isLoading => _isLoading;
+  String? get error => _error;
+
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setError(String? message) {
+    _error = message;
+    notifyListeners();
+  }
+
+  void _clearError() {
+    _error = null;
+  }
 
   Future<void> loadHistory() async {
-    _isLoading = true;
-    notifyListeners();
+    _setLoading(true);
+    _clearError();
 
     try {
       _historyItems = await _usecase.executeGetAllHistory();
     } catch (e) {
-      debugPrint('Load history error: $e');
+      _setError('Failed to load history');
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      _setLoading(false);
     }
   }
 
@@ -45,6 +60,7 @@ class HistoryViewModel extends ChangeNotifier {
       }
     }
 
+    _clearError();
     final now = DateTime.now();
     final item = HistoryItemEntity(
       id: 0,
@@ -57,18 +73,32 @@ class HistoryViewModel extends ChangeNotifier {
       isGemini: isGemini,
     );
 
-    await _usecase.executeAddHistory(item);
-    await loadHistory();
+    try {
+      await _usecase.executeAddHistory(item);
+      await loadHistory();
+    } catch (e) {
+      _setError('Failed to save history item');
+    }
   }
 
   Future<void> deleteItem(int id) async {
-    await _usecase.executeDeleteHistoryItem(id);
-    await loadHistory();
+    _clearError();
+    try {
+      await _usecase.executeDeleteHistoryItem(id);
+      await loadHistory();
+    } catch (e) {
+      _setError('Failed to delete history item');
+    }
   }
 
   Future<void> clearAll() async {
-    await _usecase.executeClearHistory();
-    _historyItems = [];
-    notifyListeners();
+    _clearError();
+    try {
+      await _usecase.executeClearHistory();
+      _historyItems = [];
+      notifyListeners();
+    } catch (e) {
+      _setError('Failed to clear history');
+    }
   }
 }

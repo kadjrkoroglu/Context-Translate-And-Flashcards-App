@@ -26,7 +26,6 @@ class AuthViewModel extends ChangeNotifier {
       }
       notifyListeners();
 
-      // Run sync operations after UI is updated
       if (isLogin) {
         try {
           await _syncService.syncAll();
@@ -42,19 +41,65 @@ class AuthViewModel extends ChangeNotifier {
   String? get error => _error;
   bool get isAuthenticated => _user != null;
 
-  // Directly check the current firebase user for the most up-to-date status
   bool get isEmailVerified => _user?.emailVerified ?? false;
+
+  void _setLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
+  void _setError(String? message) {
+    _error = message;
+    notifyListeners();
+  }
+
+  void _clearError() {
+    _error = null;
+  }
+
+  void clearError() {
+    _error = null;
+    notifyListeners();
+  }
+
+  String _parseFirebaseError(dynamic e) {
+    if (e is FirebaseAuthException) {
+      switch (e.code) {
+        case 'email-already-in-use':
+          return 'Email is already registered.';
+        case 'invalid-email':
+          return 'Please enter a valid email address.';
+        case 'weak-password':
+          return 'Password too weak (min 6 chars).';
+        case 'user-not-found':
+        case 'wrong-password':
+          return 'Invalid email or password.';
+        case 'network-request-failed':
+          return 'Network error. Check your connection.';
+        default:
+          return e.message ?? 'Authentication failed.';
+      }
+    }
+    String raw = e.toString();
+    if (raw.contains('pigeon') || raw.contains('Fire') || raw.contains('fail')) {
+      return 'Invalid input. Please check your details.';
+    }
+    if (raw.contains('FirebaseException') || raw.contains(']')) {
+      return raw.split(']').last.trim();
+    }
+    return raw;
+  }
 
   Future<bool> signIn(String email, String password) async {
     _setLoading(true);
-    clearError();
+    _clearError();
     try {
       await _authUsecase.executeSignIn(email, password);
       _setLoading(false);
       return true;
     } catch (e) {
-      _setError(e);
       _setLoading(false);
+      _setError(e is String ? e : _parseFirebaseError(e));
       return false;
     }
   }
@@ -74,11 +119,10 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     _setLoading(true);
-    clearError();
+    _clearError();
     try {
       await _authUsecase.executeRegister(email, password);
 
-      // Wait for Firebase to settle, then force a reload to get fresh verification status
       await Future.delayed(const Duration(milliseconds: 500));
       await _authUsecase.executeReloadUser();
       _user = _authUsecase.currentUser;
@@ -87,22 +131,22 @@ class AuthViewModel extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _setError(e);
       _setLoading(false);
+      _setError(e is String ? e : _parseFirebaseError(e));
       return false;
     }
   }
 
   Future<bool> signInWithGoogle() async {
     _setLoading(true);
-    clearError();
+    _clearError();
     try {
       await _authUsecase.executeSignInWithGoogle();
       _setLoading(false);
       return true;
     } catch (e) {
-      _setError(e);
       _setLoading(false);
+      _setError(e is String ? e : _parseFirebaseError(e));
       return false;
     }
   }
@@ -113,8 +157,8 @@ class AuthViewModel extends ChangeNotifier {
       await _authUsecase.executeSignOut();
       _setLoading(false);
     } catch (e) {
-      _setError(e);
       _setLoading(false);
+      _setError(_parseFirebaseError(e));
     }
   }
 
@@ -122,7 +166,7 @@ class AuthViewModel extends ChangeNotifier {
     try {
       await _authUsecase.executeSendEmailVerification();
     } catch (e) {
-      _setError(e);
+      _setError(_parseFirebaseError(e));
     }
   }
 
@@ -135,65 +179,7 @@ class AuthViewModel extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      _setError(e);
+      _setError(_parseFirebaseError(e));
     }
-  }
-
-  void _setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
-  }
-
-  void _setError(dynamic e) {
-    _isLoading = false;
-    String message = 'An unexpected error occurred.';
-
-    if (e is String) {
-      message = e;
-    } else if (e is FirebaseAuthException) {
-      switch (e.code) {
-        case 'email-already-in-use':
-          message = 'Email is already registered.';
-          break;
-        case 'invalid-email':
-          message = 'Please enter a valid email address.';
-          break;
-        case 'weak-password':
-          message = 'Password too weak (min 6 chars).';
-          break;
-        case 'user-not-found':
-        case 'wrong-password':
-          message = 'Invalid email or password.';
-          break;
-        case 'network-request-failed':
-          message = 'Network error. Check your connection.';
-          break;
-        default:
-          message = e.message ?? 'Authentication failed.';
-      }
-    } else {
-      // Clean up technical platform strings (like pigeon errors)
-      String raw = e.toString();
-      if (raw.contains('pigeon') ||
-          raw.contains('Fire') ||
-          raw.contains('fail')) {
-        message = 'Invalid input. Please check your details.';
-      } else {
-        message = raw;
-      }
-    }
-
-    // Double check to ensure no technical prefixes
-    if (message.contains('FirebaseException') || message.contains(']')) {
-      message = message.split(']').last.trim();
-    }
-
-    _error = message;
-    notifyListeners();
-  }
-
-  void clearError() {
-    _error = null;
-    notifyListeners();
   }
 }
