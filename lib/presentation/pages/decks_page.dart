@@ -70,6 +70,19 @@ class _DecksPageState extends State<DecksPage> {
                       child: CircularProgressIndicator(color: Colors.white),
                     ),
                   )
+                else if (vm.error != null)
+                  SliverFillRemaining(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          vm.error!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.redAccent),
+                        ),
+                      ),
+                    ),
+                  )
                 else if (vm.decks.isEmpty)
                   SliverFillRemaining(child: _buildEmptyState(context, ip))
                 else

@@ -1,6 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:translate_app/core/errors/app_exception.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -15,8 +16,8 @@ class AuthService {
         email: email,
         password: password,
       );
-    } catch (e) {
-      rethrow;
+    } on FirebaseAuthException catch (e) {
+      throw AuthException('Authentication failed', details: e.message, code: e.code);
     }
   }
 
@@ -31,24 +32,31 @@ class AuthService {
       );
       if (credential.user != null) {
         await credential.user!.sendEmailVerification();
-        debugPrint('Verification email sent to: ${credential.user!.email}');
       }
       return credential;
-    } catch (e) {
-      rethrow;
+    } on FirebaseAuthException catch (e) {
+      throw AuthException('Registration failed', details: e.message, code: e.code);
     }
   }
 
   Future<void> sendEmailVerification() async {
     try {
       await _auth.currentUser?.sendEmailVerification();
-    } catch (e) {
-      rethrow;
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(
+        'Failed to send verification email',
+        details: e.message,
+        code: e.code,
+      );
     }
   }
 
   Future<void> reloadUser() async {
-    await _auth.currentUser?.reload();
+    try {
+      await _auth.currentUser?.reload();
+    } on FirebaseAuthException catch (e) {
+      throw AuthException('Failed to reload user', details: e.message, code: e.code);
+    }
   }
 
   Future<UserCredential?> signInWithGoogle() async {
@@ -64,8 +72,13 @@ class AuthService {
       );
 
       return await _auth.signInWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      throw AuthException('Google sign-in failed', details: e.message, code: e.code);
+    } on PlatformException catch (e) {
+      throw AuthException('Google sign-in failed', details: e.message, code: e.code);
     } catch (e) {
-      rethrow;
+      if (e is AppException) rethrow;
+      throw GeneralException('Google sign-in failed', details: e.toString());
     }
   }
 
@@ -73,7 +86,8 @@ class AuthService {
     try {
       await Future.wait([_auth.signOut(), _googleSignIn.signOut()]);
     } catch (e) {
-      rethrow;
+      if (e is AppException) rethrow;
+      throw GeneralException('Failed to sign out', details: e.toString());
     }
   }
 }

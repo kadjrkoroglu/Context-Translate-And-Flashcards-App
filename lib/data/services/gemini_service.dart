@@ -1,7 +1,9 @@
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'dart:developer' as developer;
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:translate_app/core/errors/app_exception.dart';
 
 class GeminiService {
   final String _apiKey;
@@ -83,6 +85,12 @@ class GeminiService {
 
       _activeModel = selected ?? 'gemini-flash-lite-latest';
       developer.log('Selected model: $_activeModel');
+    } on SocketException catch (e) {
+      developer.log('Network error fetching models: $e');
+      _activeModel = 'gemini-flash-lite-latest';
+    } on http.ClientException catch (e) {
+      developer.log('Network error fetching models: $e');
+      _activeModel = 'gemini-flash-lite-latest';
     } catch (e) {
       developer.log('Error fetching models: $e');
       _activeModel = 'gemini-flash-lite-latest';
@@ -119,20 +127,25 @@ Format: standard_translation|formal_translation|slang_translation
       developer.log('API Response: $responseText');
 
       if (responseText == null || responseText.isEmpty) {
-        throw Exception('AI returned empty response');
+        throw const GeneralException('AI returned empty response');
       }
 
       List<String> translations = responseText.split('|');
       bool isLongText = text.trim().contains(' ');
 
       if (isLongText && translations.length < 3) {
-        throw Exception('Invalid response format');
+        throw const GeneralException('Invalid response format');
       }
 
       return translations.map((t) => t.trim()).take(3).toList();
+    } on SocketException catch (e) {
+      throw NetworkException('No internet connection', details: e.toString());
+    } on http.ClientException catch (e) {
+      throw NetworkException('Network error while translating', details: e.toString());
     } catch (e) {
+      if (e is AppException) rethrow;
       developer.log('Error: $e');
-      throw Exception('Translation failed: $e');
+      throw GeneralException('Translation failed', details: e.toString());
     }
   }
 }

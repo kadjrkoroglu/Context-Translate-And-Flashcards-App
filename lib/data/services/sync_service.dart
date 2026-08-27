@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/data/models/card_model.dart';
 import 'package:translate_app/data/models/deck_model.dart';
 import 'package:translate_app/data/models/favorite_word_model.dart';
@@ -53,14 +54,19 @@ class SyncService extends ChangeNotifier {
 
       await _verifyTimestampSync();
     } catch (e) {
-      _syncError = e.toString();
-      debugPrint('SyncService.syncAll failed: $e');
+      _syncError = _friendlyError(e);
     } finally {
       _isSyncing = false;
       notifyListeners();
     }
 
     return _syncError;
+  }
+
+  String _friendlyError(Object e) {
+    if (e is AppException) return e.message;
+    if (e is FirebaseException) return e.message ?? 'Sync error occurred';
+    return 'Sync failed. Please check your connection and try again.';
   }
 
   // ────────────────────────────────────────────
@@ -201,8 +207,11 @@ class SyncService extends ChangeNotifier {
     try {
       remoteCardsData = await _firestore.getCollection(cardsPath);
     } catch (e) {
-      debugPrint('Failed to fetch cards for deck $deckRemoteId: $e');
-      return;
+      if (e is AppException) rethrow;
+      throw GeneralException(
+        'Failed to fetch cards for deck $deckRemoteId',
+        details: e.toString(),
+      );
     }
 
     // Build lookup maps
@@ -396,7 +405,11 @@ class SyncService extends ChangeNotifier {
         await _local.addCardToDeck(deck.id, newCard);
       }
     } catch (e) {
-      debugPrint('Pull cards for deck $deckRemoteId failed: $e');
+      if (e is AppException) rethrow;
+      throw GeneralException(
+        'Failed to pull cards for deck $deckRemoteId',
+        details: e.toString(),
+      );
     }
   }
 

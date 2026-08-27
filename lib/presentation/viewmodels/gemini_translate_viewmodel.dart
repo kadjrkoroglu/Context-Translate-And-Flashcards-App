@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/domain/usecases/translate_usecase.dart';
 import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/data/services/settings_service.dart';
@@ -196,8 +197,15 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   }
 
   String _handleError(dynamic e) {
-    String message = e.toString().toLowerCase();
+    final String raw =
+        e is AppException
+            ? '${e.message} ${e.details ?? ''}'
+            : e.toString();
+    String message = raw.toLowerCase();
 
+    if (e is NetworkException) {
+      return 'No internet connection. Please check your network and try again.';
+    }
     if (message.contains('503') || message.contains('service unavailable')) {
       return 'AI servers are currently overloaded. Please wait a few seconds and try again.';
     }
@@ -208,7 +216,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
       return 'Daily AI limit reached. Please try again tomorrow or use Basic mode.';
     }
 
-    return 'An error occurred: $e';
+    return 'An error occurred: ${e is AppException ? e.message : e}';
   }
 
   void clear(TextEditingController outputController) {

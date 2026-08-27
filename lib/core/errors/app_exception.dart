@@ -23,3 +23,9 @@ class StorageException extends AppException {
 class GeneralException extends AppException {
   const GeneralException(super.message, {super.details});
 }
+
+class AuthException extends AppException {
+  const AuthException(super.message, {super.details, this.code});
+
+  final String? code;
+}

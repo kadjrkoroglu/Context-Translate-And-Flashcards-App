@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/domain/entities/auth_entity.dart';
 import 'package:translate_app/domain/usecases/auth_usecase.dart';
 
@@ -63,7 +63,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   String _parseFirebaseError(dynamic e) {
-    if (e is FirebaseAuthException) {
+    if (e is AuthException) {
       switch (e.code) {
         case 'email-already-in-use':
           return 'Email is already registered.';
@@ -77,7 +77,7 @@ class AuthViewModel extends ChangeNotifier {
         case 'network-request-failed':
           return 'Network error. Check your connection.';
         default:
-          return e.message ?? 'Authentication failed.';
+          return e.message;
       }
     }
     String raw = e.toString();
