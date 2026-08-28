@@ -10,10 +10,19 @@ import '../services/firestore_service.dart';
 class FavoriteRepositoryImpl implements FavoriteRepository {
   final LocalStorageService _local;
   final FirestoreService _firestore;
+  // Test-only seam: lets unit tests run without Firebase.
+  final String? Function() _currentUserIdProvider;
 
-  FavoriteRepositoryImpl(this._local, this._firestore);
+  FavoriteRepositoryImpl(
+    this._local,
+    this._firestore, {
+    String? Function()? currentUserId,
+  }) : _currentUserIdProvider = currentUserId ?? _defaultCurrentUserId;
 
-  String? get currentUserId => FirebaseAuth.instance.currentUser?.uid;
+  static String? _defaultCurrentUserId() =>
+      FirebaseAuth.instance.currentUser?.uid;
+
+  String? get currentUserId => _currentUserIdProvider();
 
   String get _collection =>
       currentUserId != null ? 'users/$currentUserId/favorites' : '';
@@ -118,6 +127,7 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
 
   FavoriteWord _toModel(FavoriteWordEntity e) {
     final item = FavoriteWord();
+    // id 0 = new item; keep autoIncrement to avoid overwriting row 0.
     if (e.id != 0) {
       item.id = e.id;
     }

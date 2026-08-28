@@ -12,10 +12,19 @@ import '../services/firestore_service.dart';
 class DeckRepositoryImpl implements DeckRepository {
   final LocalStorageService _local;
   final FirestoreService _firestore;
+  // Test-only seam: lets unit tests run without Firebase.
+  final String? Function() _currentUserIdProvider;
 
-  DeckRepositoryImpl(this._local, this._firestore);
+  DeckRepositoryImpl(
+    this._local,
+    this._firestore, {
+    String? Function()? currentUserId,
+  }) : _currentUserIdProvider = currentUserId ?? _defaultCurrentUserId;
 
-  String? get currentUserId => FirebaseAuth.instance.currentUser?.uid;
+  static String? _defaultCurrentUserId() =>
+      FirebaseAuth.instance.currentUser?.uid;
+
+  String? get currentUserId => _currentUserIdProvider();
 
   String get _collection =>
       currentUserId != null ? 'users/$currentUserId/decks' : '';
@@ -221,6 +230,7 @@ class DeckRepositoryImpl implements DeckRepository {
 
   DeckItem _toDeckItem(DeckEntity d) {
     final item = DeckItem();
+    // id 0 = new item; keep autoIncrement to avoid overwriting row 0.
     if (d.id != 0) {
       item.id = d.id;
     }
@@ -265,6 +275,7 @@ class DeckRepositoryImpl implements DeckRepository {
 
   CardItem _toCardItem(CardEntity c) {
     final item = CardItem();
+    // Same as _toDeckItem: id 0 = new item -> autoIncrement.
     if (c.id != 0) {
       item.id = c.id;
     }
