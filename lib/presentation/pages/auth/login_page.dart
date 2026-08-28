@@ -194,7 +194,7 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "Don't have an account? ",
+                      "Don't have an account?",
                       style: TextStyle(color: ip.withValues(alpha: 0.7)),
                     ),
                     TextButton(
@@ -206,10 +206,13 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         );
                       },
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                      ),
                       child: const Text(
                         'Register',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Colors.blue,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -276,10 +279,7 @@ class _LoginPageState extends State<LoginPage> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         gradient: LinearGradient(
-          colors: [
-            Colors.white.withValues(alpha: 0.2),
-            Colors.white.withValues(alpha: 0.1),
-          ],
+          colors: [Colors.blue.shade600, Colors.blue.shade800],
         ),
       ),
       child: ElevatedButton(
@@ -308,10 +308,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
       child: OutlinedButton.icon(
         onPressed: onPressed,
-        icon: Image.asset(
-          'assets/images/google.png',
-          height: 24,
-        ),
+        icon: Image.asset('assets/images/google.png', height: 24),
         label: const Text(
           'Continue with Google',
           style: TextStyle(

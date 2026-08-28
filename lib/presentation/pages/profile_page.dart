@@ -11,8 +11,23 @@ import 'package:translate_app/presentation/pages/auth/login_page.dart';
 import 'package:translate_app/theme/theme_provider.dart';
 import 'package:translate_app/theme/theme.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.read<SyncService>().checkUnsyncedChanges();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -203,6 +218,42 @@ class ProfilePage extends StatelessWidget {
     Color subTextColor,
     SyncService syncService,
   ) {
+    final bool isSyncedState = !syncService.isSyncing && !syncService.hasUnsyncedChanges;
+
+    // Define values dynamically for the button
+    VoidCallback? buttonOnPressed;
+    Widget buttonIcon;
+    String buttonText;
+    Color buttonBgColor;
+    Color buttonFgColor;
+
+    if (syncService.isSyncing) {
+      buttonOnPressed = null;
+      buttonIcon = const SizedBox(
+        width: 18,
+        height: 18,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          color: Colors.white,
+        ),
+      );
+      buttonText = 'Syncing...';
+      buttonBgColor = Colors.white24;
+      buttonFgColor = Colors.white70;
+    } else if (isSyncedState) {
+      buttonOnPressed = null; // Disabled when synced
+      buttonIcon = const Icon(Icons.check_rounded, size: 20);
+      buttonText = 'Synced';
+      buttonBgColor = Colors.white.withValues(alpha: 0.15);
+      buttonFgColor = Colors.white70;
+    } else {
+      buttonOnPressed = () => _handleSync(context, syncService);
+      buttonIcon = const Icon(Icons.sync_rounded, size: 20);
+      buttonText = 'Sync Now';
+      buttonBgColor = Colors.white;
+      buttonFgColor = Colors.black87;
+    }
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(24),
       child: BackdropFilter(
@@ -219,8 +270,8 @@ class ProfilePage extends StatelessWidget {
               Row(
                 children: [
                   _buildIconCircle(
-                    Icons.cloud_done_rounded,
-                    Colors.greenAccent,
+                    isSyncedState ? Icons.cloud_done_rounded : Icons.cloud_rounded,
+                    isSyncedState ? Colors.greenAccent : textColor.withValues(alpha: 0.7),
                     glass,
                   ),
                   const SizedBox(width: 16),
@@ -251,32 +302,17 @@ class ProfilePage extends StatelessWidget {
                 width: double.infinity,
                 height: 46,
                 child: ElevatedButton.icon(
-                  onPressed: syncService.isSyncing
-                      ? null
-                      : () => _handleSync(context, syncService),
-                  icon: syncService.isSyncing
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.sync_rounded, size: 20),
+                  onPressed: buttonOnPressed,
+                  icon: buttonIcon,
                   label: Text(
-                    syncService.isSyncing ? 'Syncing...' : 'Sync Now',
+                    buttonText,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: syncService.isSyncing
-                        ? Colors.white24
-                        : Colors.white,
-                    foregroundColor: syncService.isSyncing
-                        ? Colors.white70
-                        : Colors.black87,
-                    disabledBackgroundColor: Colors.white24,
-                    disabledForegroundColor: Colors.white70,
+                    backgroundColor: buttonBgColor,
+                    foregroundColor: buttonFgColor,
+                    disabledBackgroundColor: buttonBgColor,
+                    disabledForegroundColor: buttonFgColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -344,29 +380,7 @@ class ProfilePage extends StatelessWidget {
     context.read<FavoriteViewModel>().loadFavorites();
     context.read<HistoryViewModel>().loadHistory();
 
-    if (syncService.syncError == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Row(
-            children: [
-              Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-              SizedBox(width: 10),
-              Text(
-                'Sync completed successfully!',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.green.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          margin: const EdgeInsets.all(16),
-          duration: const Duration(seconds: 3),
-        ),
-      );
-    } else {
+    if (syncService.syncError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Row(
@@ -440,8 +454,8 @@ class ProfilePage extends StatelessWidget {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black87,
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

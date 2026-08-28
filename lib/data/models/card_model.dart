@@ -6,7 +6,7 @@ part 'card_model.g.dart';
 class CardItem {
   Id id = Isar.autoIncrement;
 
-  @Index(unique: true, replace: true)
+  @Index()
   late String syncId;
 
   late String word;

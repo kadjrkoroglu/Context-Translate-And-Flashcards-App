@@ -6,7 +6,7 @@ part 'favorite_word_model.g.dart';
 class FavoriteWord {
   Id id = Isar.autoIncrement;
 
-  @Index(unique: true, replace: true)
+  @Index()
   late String syncId;
 
   @Index()

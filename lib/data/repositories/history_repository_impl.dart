@@ -147,8 +147,11 @@ class HistoryRepositoryImpl implements HistoryRepository {
   }
 
   HistoryItem _toModel(HistoryItemEntity e) {
-    return HistoryItem()
-      ..id = e.id
+    final item = HistoryItem();
+    if (e.id != 0) {
+      item.id = e.id;
+    }
+    return item
       ..syncId = e.syncId
       ..word = e.word
       ..translation = e.translation

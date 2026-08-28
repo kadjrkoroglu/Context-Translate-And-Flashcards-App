@@ -7,7 +7,7 @@ part 'deck_model.g.dart';
 class DeckItem {
   Id id = Isar.autoIncrement;
 
-  @Index(unique: true, replace: true)
+  @Index()
   late String syncId;
 
   late String name;

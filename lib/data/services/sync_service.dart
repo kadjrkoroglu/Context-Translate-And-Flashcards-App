@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:isar/isar.dart';
 import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/data/models/card_model.dart';
 import 'package:translate_app/data/models/deck_model.dart';
@@ -14,11 +15,95 @@ class SyncService extends ChangeNotifier {
 
   bool _isSyncing = false;
   String? _syncError;
+  bool _hasUnsyncedChanges = false;
+  bool _mutationDuringSync = false;
 
   bool get isSyncing => _isSyncing;
   String? get syncError => _syncError;
+  bool get hasUnsyncedChanges => _hasUnsyncedChanges;
 
-  SyncService(this._local, this._firestore);
+  SyncService(this._local, this._firestore) {
+    _setupChangeListeners();
+  }
+
+  /// Marks local data as changed so the UI can show the "Sync Now" button.
+  /// Called either from Isar watches or from [LocalStorageService.onLocalMutation].
+  void markUnsynced() {
+    if (_isSyncing) {
+      // A change arrived while sync is running: remember it and re-evaluate
+      // the real unsynced state once sync finishes.
+      _mutationDuringSync = true;
+      return;
+    }
+    if (!_hasUnsyncedChanges) {
+      _hasUnsyncedChanges = true;
+      notifyListeners();
+    }
+  }
+
+  void _setupChangeListeners() {
+    _local.isar.favoriteWords.watchLazy().listen((_) => _onLocalWrite());
+    _local.isar.historyItems.watchLazy().listen((_) => _onLocalWrite());
+    _local.isar.deckItems.watchLazy().listen((_) => _onLocalWrite());
+    _local.isar.cardItems.watchLazy().listen((_) => _onLocalWrite());
+    _local.onLocalMutation = markUnsynced;
+    checkUnsyncedChanges();
+  }
+
+  void _onLocalWrite() {
+    debugPrint('SyncService: Local write detected. Setting hasUnsyncedChanges to true.');
+    markUnsynced();
+  }
+
+  Future<bool> checkUnsyncedChanges() async {
+    debugPrint('SyncService: checkUnsyncedChanges started. User: $_userId');
+    if (_userId == null) {
+      if (_hasUnsyncedChanges) {
+        _hasUnsyncedChanges = false;
+        notifyListeners();
+      }
+      return false;
+    }
+    try {
+      final decks = await _local.getAllDecks();
+      final unsyncedDecks = decks.where((d) => (d.userId == _userId || d.userId == null) && !d.isSynced).toList();
+      if (unsyncedDecks.isNotEmpty) {
+        _hasUnsyncedChanges = true;
+        notifyListeners();
+        return true;
+      }
+
+      final cards = await _local.isar.cardItems.where().findAll();
+      final unsyncedCards = cards.where((c) => (c.userId == _userId || c.userId == null) && !c.isSynced).toList();
+      if (unsyncedCards.isNotEmpty) {
+        _hasUnsyncedChanges = true;
+        notifyListeners();
+        return true;
+      }
+
+      final favs = await _local.getAllFavorites();
+      final unsyncedFavs = favs.where((f) => (f.userId == _userId || f.userId == null) && !f.isSynced).toList();
+      if (unsyncedFavs.isNotEmpty) {
+        _hasUnsyncedChanges = true;
+        notifyListeners();
+        return true;
+      }
+
+      final history = await _local.getAllHistory();
+      final unsyncedHistory = history.where((h) => (h.userId == _userId || h.userId == null) && !h.isSynced).toList();
+      if (unsyncedHistory.isNotEmpty) {
+        _hasUnsyncedChanges = true;
+        notifyListeners();
+        return true;
+      }
+
+      // If no unsynced changes exist at startup or check time, keep/set to false
+      return _hasUnsyncedChanges;
+    } catch (e) {
+      debugPrint('SyncService: Error checking unsynced changes: $e');
+      return false;
+    }
+  }
 
   String? get _userId => FirebaseAuth.instance.currentUser?.uid;
 
@@ -55,8 +140,19 @@ class SyncService extends ChangeNotifier {
       await _verifyTimestampSync();
     } catch (e) {
       _syncError = _friendlyError(e);
-    } finally {
+} finally {
+      // Delay disabling _isSyncing so that any asynchronous Isar stream events
+      // triggered by remote updates are ignored and don't reset the button to "Sync Now".
+      await Future.delayed(const Duration(milliseconds: 400));
       _isSyncing = false;
+      _hasUnsyncedChanges = false;
+      if (_mutationDuringSync) {
+        // A change happened while syncing (e.g. delete deck, delete favorite,
+        // deck settings). Re-evaluate ground truth with the local db so the
+        // change is not silently lost.
+        _mutationDuringSync = false;
+        await checkUnsyncedChanges();
+      }
       notifyListeners();
     }
 

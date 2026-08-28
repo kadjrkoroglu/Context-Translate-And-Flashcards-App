@@ -220,8 +220,11 @@ class DeckRepositoryImpl implements DeckRepository {
   }
 
   DeckItem _toDeckItem(DeckEntity d) {
-    final item = DeckItem()
-      ..id = d.id
+    final item = DeckItem();
+    if (d.id != 0) {
+      item.id = d.id;
+    }
+    item
       ..syncId = d.syncId
       ..name = d.name
       ..createdAt = d.createdAt
@@ -261,8 +264,11 @@ class DeckRepositoryImpl implements DeckRepository {
   }
 
   CardItem _toCardItem(CardEntity c) {
-    return CardItem()
-      ..id = c.id
+    final item = CardItem();
+    if (c.id != 0) {
+      item.id = c.id;
+    }
+    return item
       ..syncId = c.syncId
       ..word = c.word
       ..translation = c.translation

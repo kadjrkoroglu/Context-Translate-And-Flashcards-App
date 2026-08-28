@@ -1,4 +1,5 @@
 import 'package:isar/isar.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:translate_app/core/errors/app_exception.dart';
 import '../models/favorite_word_model.dart';
@@ -8,6 +9,14 @@ import '../models/deck_model.dart';
 
 class LocalStorageService {
   late Isar isar;
+
+  /// Called after every successful local mutation so consumers
+  /// (e.g. SyncService) can detect unsynced changes deterministically.
+  VoidCallback? onLocalMutation;
+
+  void _notifyMutation() {
+    onLocalMutation?.call();
+  }
 
   Future<void> init() async {
     try {
@@ -31,6 +40,7 @@ class LocalStorageService {
         await isar.cardItems.clear();
         await isar.deckItems.clear();
       });
+      _notifyMutation();
     } catch (e) {
       throw StorageException('Failed to clear data', details: e.toString());
     }
@@ -41,6 +51,7 @@ class LocalStorageService {
       await isar.writeTxn(() async {
         await isar.favoriteWords.put(favorite);
       });
+      _notifyMutation();
     } catch (e) {
       throw StorageException('Failed to add favorite', details: e.toString());
     }
@@ -59,6 +70,7 @@ class LocalStorageService {
       await isar.writeTxn(() async {
         await isar.favoriteWords.delete(id);
       });
+      _notifyMutation();
     } catch (e) {
       throw StorageException('Failed to delete favorite', details: e.toString());
     }
@@ -69,6 +81,7 @@ class LocalStorageService {
       await isar.writeTxn(() async {
         await isar.historyItems.put(item);
       });
+      _notifyMutation();
     } catch (e) {
       throw StorageException('Failed to save history', details: e.toString());
     }
@@ -87,6 +100,7 @@ class LocalStorageService {
       await isar.writeTxn(() async {
         await isar.historyItems.delete(id);
       });
+      _notifyMutation();
     } catch (e) {
       throw StorageException('Failed to delete history item', details: e.toString());
     }
@@ -97,6 +111,7 @@ class LocalStorageService {
       await isar.writeTxn(() async {
         await isar.historyItems.clear();
       });
+      _notifyMutation();
     } catch (e) {
       throw StorageException('Failed to clear history', details: e.toString());
     }
@@ -115,6 +130,7 @@ class LocalStorageService {
       await isar.writeTxn(() async {
         await isar.deckItems.put(deck);
       });
+      _notifyMutation();
     } catch (e) {
       throw StorageException('Failed to save deck', details: e.toString());
     }
@@ -133,6 +149,7 @@ class LocalStorageService {
           await isar.deckItems.delete(id);
         });
       }
+      _notifyMutation();
     } catch (e) {
       throw StorageException('Failed to delete deck', details: e.toString());
     }
@@ -148,6 +165,7 @@ class LocalStorageService {
           await deck.cards.save();
         }
       });
+      _notifyMutation();
     } catch (e) {
       throw StorageException('Failed to add card', details: e.toString());
     }
@@ -158,6 +176,7 @@ class LocalStorageService {
       await isar.writeTxn(() async {
         await isar.cardItems.deleteAll(cardIds);
       });
+      _notifyMutation();
     } catch (e) {
       throw StorageException('Failed to delete cards', details: e.toString());
     }
@@ -168,6 +187,7 @@ class LocalStorageService {
       await isar.writeTxn(() async {
         await isar.cardItems.put(card);
       });
+      _notifyMutation();
     } catch (e) {
       throw StorageException('Failed to update card', details: e.toString());
     }
@@ -195,6 +215,7 @@ class LocalStorageService {
           await isar.deckItems.put(deck);
         }
       });
+      _notifyMutation();
     } catch (e) {
       throw StorageException('Failed to update deck limits', details: e.toString());
     }

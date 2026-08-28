@@ -117,8 +117,11 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
   }
 
   FavoriteWord _toModel(FavoriteWordEntity e) {
-    return FavoriteWord()
-      ..id = e.id
+    final item = FavoriteWord();
+    if (e.id != 0) {
+      item.id = e.id;
+    }
+    return item
       ..syncId = e.syncId
       ..word = e.word
       ..translation = e.translation

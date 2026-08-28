@@ -6,7 +6,7 @@ part 'history_model.g.dart';
 class HistoryItem {
   Id id = Isar.autoIncrement;
 
-  @Index(unique: true, replace: true)
+  @Index()
   late String syncId;
 
   late String word;
