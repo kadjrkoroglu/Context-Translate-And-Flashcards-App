@@ -1,33 +1,23 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
-import '../../core/errors/app_exception.dart';
 import '../../domain/entities/card_entity.dart';
 import '../../domain/entities/deck_entity.dart';
 import '../../domain/repositories/deck_repository.dart';
 import '../models/deck_model.dart';
 import '../models/card_model.dart';
 import '../services/local_storage_service.dart';
-import '../services/firestore_service.dart';
 
 class DeckRepositoryImpl implements DeckRepository {
   final LocalStorageService _local;
-  final FirestoreService _firestore;
   // Test-only seam: lets unit tests run without Firebase.
   final String? Function() _currentUserIdProvider;
 
-  DeckRepositoryImpl(
-    this._local,
-    this._firestore, {
-    String? Function()? currentUserId,
-  }) : _currentUserIdProvider = currentUserId ?? _defaultCurrentUserId;
+  DeckRepositoryImpl(this._local, {String? Function()? currentUserId})
+    : _currentUserIdProvider = currentUserId ?? _defaultCurrentUserId;
 
   static String? _defaultCurrentUserId() =>
       FirebaseAuth.instance.currentUser?.uid;
 
   String? get currentUserId => _currentUserIdProvider();
-
-  String get _collection =>
-      currentUserId != null ? 'users/$currentUserId/decks' : '';
 
   @override
   Future<List<DeckEntity>> getAllDecks() async {
@@ -40,8 +30,7 @@ class DeckRepositoryImpl implements DeckRepository {
       filtered = allDecks
           .where(
             (d) =>
-                (d.userId == currentUserId || d.userId == null) &&
-                !d.isDeleted,
+                (d.userId == currentUserId || d.userId == null) && !d.isDeleted,
           )
           .toList();
     }
@@ -68,36 +57,9 @@ class DeckRepositoryImpl implements DeckRepository {
       deck.syncId = _generateSyncId();
     }
 
-    // Save locally
+    // Local write only; the profile "Sync Now" button pushes to the cloud.
+    deck.isSynced = false;
     await _local.saveDeck(deck);
-
-    // Push to firebase if logged in
-    if (currentUserId != null) {
-      try {
-        final collectionDir = _collection;
-        if (collectionDir.isEmpty) return;
-
-        if (deck.remoteId != null) {
-          await _firestore.setDocument(
-            '$collectionDir/${deck.remoteId}',
-            deck.toMap(),
-          );
-          deck.isSynced = true;
-          await _local.saveDeck(deck);
-        } else {
-          final remoteId = await _firestore.addDocument(
-            collectionDir,
-            deck.toMap(),
-          );
-          deck.remoteId = remoteId;
-          deck.isSynced = true;
-          await _local.saveDeck(deck);
-        }
-      } catch (e) {
-        if (e is AppException) rethrow;
-        debugPrint('Deck save sync failed: $e');
-      }
-    }
   }
 
   @override
@@ -108,22 +70,10 @@ class DeckRepositoryImpl implements DeckRepository {
     if (deck != null) {
       // Soft delete: mark as deleted, update timestamp
       deck.isDeleted = true;
+      // Keep it flagged so the pending delete survives an app restart.
+      deck.isSynced = false;
       deck.lastModified = DateTime.now();
       await _local.saveDeck(deck);
-
-      if (deck.remoteId != null && currentUserId != null) {
-        try {
-          final collectionDir = _collection;
-          if (collectionDir.isEmpty) return;
-          await _firestore.setDocument(
-            '$collectionDir/${deck.remoteId}',
-            deck.toMap(),
-          );
-      } catch (e) {
-        if (e is AppException) rethrow;
-        debugPrint('Deck soft-delete sync failed: $e');
-      }
-      }
     }
   }
 
@@ -131,6 +81,7 @@ class DeckRepositoryImpl implements DeckRepository {
   Future<void> addCardToDeck(int deckId, CardEntity card) async {
     final cardItem = _toCardItem(card);
     cardItem.userId = currentUserId;
+    cardItem.isSynced = false;
     cardItem.lastModified = DateTime.now();
 
     if (cardItem.syncId.isEmpty) {
@@ -144,33 +95,8 @@ class DeckRepositoryImpl implements DeckRepository {
       cardItem.deckSyncId = deck.syncId;
     }
 
+    // Local write only; the profile "Sync Now" button pushes to the cloud.
     await _local.addCardToDeck(deckId, cardItem);
-
-    if (deck != null && deck.remoteId != null && currentUserId != null) {
-      try {
-        final collectionDir = _collection;
-        if (collectionDir.isEmpty) return;
-
-        final cardsCollection = '$collectionDir/${deck.remoteId}/cards';
-        if (cardItem.remoteId != null) {
-          await _firestore.setDocument(
-            '$cardsCollection/${cardItem.remoteId}',
-            cardItem.toMap(),
-          );
-        } else {
-          final remoteId = await _firestore.addDocument(
-            cardsCollection,
-            cardItem.toMap(),
-          );
-          cardItem.remoteId = remoteId;
-        }
-        cardItem.isSynced = true;
-        await _local.updateCard(cardItem);
-      } catch (e) {
-        if (e is AppException) rethrow;
-        debugPrint('Card add sync failed: $e');
-      }
-    }
   }
 
   @override
@@ -180,6 +106,8 @@ class DeckRepositoryImpl implements DeckRepository {
       final card = await _local.getCardById(cardId);
       if (card != null) {
         card.isDeleted = true;
+        // Keep it flagged so the pending delete survives an app restart.
+        card.isSynced = false;
         card.lastModified = DateTime.now();
         await _local.updateCard(card);
       }
@@ -190,6 +118,7 @@ class DeckRepositoryImpl implements DeckRepository {
   Future<void> updateCard(CardEntity card) async {
     final cardItem = _toCardItem(card);
     cardItem.userId = currentUserId;
+    cardItem.isSynced = false;
     cardItem.lastModified = DateTime.now();
     await _local.updateCard(cardItem);
   }

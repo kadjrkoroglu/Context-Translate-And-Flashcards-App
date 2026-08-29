@@ -1,31 +1,21 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
-import '../../core/errors/app_exception.dart';
 import '../../domain/entities/history_item_entity.dart';
 import '../../domain/repositories/history_repository.dart';
 import '../models/history_model.dart';
 import '../services/local_storage_service.dart';
-import '../services/firestore_service.dart';
 
 class HistoryRepositoryImpl implements HistoryRepository {
   final LocalStorageService _local;
-  final FirestoreService _firestore;
   // Test-only seam: lets unit tests run without Firebase.
   final String? Function() _currentUserIdProvider;
 
-  HistoryRepositoryImpl(
-    this._local,
-    this._firestore, {
-    String? Function()? currentUserId,
-  }) : _currentUserIdProvider = currentUserId ?? _defaultCurrentUserId;
+  HistoryRepositoryImpl(this._local, {String? Function()? currentUserId})
+    : _currentUserIdProvider = currentUserId ?? _defaultCurrentUserId;
 
   static String? _defaultCurrentUserId() =>
       FirebaseAuth.instance.currentUser?.uid;
 
   String? get currentUserId => _currentUserIdProvider();
-
-  String get _collection =>
-      currentUserId != null ? 'users/$currentUserId/history' : '';
 
   @override
   Future<List<HistoryItemEntity>> getAllHistory() async {
@@ -37,8 +27,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
       filtered = allItems
           .where(
             (i) =>
-                (i.userId == currentUserId || i.userId == null) &&
-                !i.isDeleted,
+                (i.userId == currentUserId || i.userId == null) && !i.isDeleted,
           )
           .toList();
     }
@@ -49,38 +38,15 @@ class HistoryRepositoryImpl implements HistoryRepository {
   Future<void> addHistory(HistoryItemEntity item) async {
     final historyItem = _toModel(item);
     historyItem.userId = currentUserId;
+    historyItem.isSynced = false;
     historyItem.lastModified = DateTime.now();
 
     if (historyItem.syncId.isEmpty) {
       historyItem.syncId = _generateSyncId();
     }
 
+    // Local write only; the profile "Sync Now" button pushes to the cloud.
     await _local.addHistory(historyItem);
-
-    if (currentUserId != null) {
-      try {
-        final collectionDir = _collection;
-        if (collectionDir.isEmpty) return;
-
-        if (historyItem.remoteId != null) {
-          await _firestore.setDocument(
-            '$collectionDir/${historyItem.remoteId}',
-            historyItem.toMap(),
-          );
-        } else {
-          final remoteId = await _firestore.addDocument(
-            collectionDir,
-            historyItem.toMap(),
-          );
-          historyItem.remoteId = remoteId;
-        }
-        historyItem.isSynced = true;
-        await _local.addHistory(historyItem);
-      } catch (e) {
-        if (e is AppException) rethrow;
-        debugPrint('History add sync failed: $e');
-      }
-    }
   }
 
   @override
@@ -90,22 +56,10 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
     if (item != null) {
       item.isDeleted = true;
+      // Keep it flagged so the pending delete survives an app restart.
+      item.isSynced = false;
       item.lastModified = DateTime.now();
       await _local.addHistory(item);
-
-      if (item.remoteId != null && currentUserId != null) {
-        try {
-          final collectionDir = _collection;
-          if (collectionDir.isEmpty) return;
-          await _firestore.setDocument(
-            '$collectionDir/${item.remoteId}',
-            item.toMap(),
-          );
-      } catch (e) {
-        if (e is AppException) rethrow;
-        debugPrint('History soft-delete sync failed: $e');
-      }
-      }
     }
   }
 
@@ -115,27 +69,9 @@ class HistoryRepositoryImpl implements HistoryRepository {
 
     for (final item in historyList) {
       item.isDeleted = true;
+      item.isSynced = false;
       item.lastModified = DateTime.now();
       await _local.addHistory(item);
-    }
-
-    if (currentUserId != null) {
-      try {
-        final collectionDir = _collection;
-        if (collectionDir.isEmpty) return;
-
-        for (var item in historyList) {
-          if (item.remoteId != null) {
-            await _firestore.setDocument(
-              '$collectionDir/${item.remoteId}',
-              item.toMap(),
-            );
-          }
-        }
-      } catch (e) {
-        if (e is AppException) rethrow;
-        debugPrint('History clear sync failed: $e');
-      }
     }
   }
 

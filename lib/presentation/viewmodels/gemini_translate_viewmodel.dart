@@ -151,6 +151,11 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   }
 
   Future<void> translate(TextEditingController outputController) async {
+    // Stop the mic first so it never conflicts with the translation call.
+    if (isListening) {
+      await _speechToText.stop();
+    }
+
     if (_textController.text.isEmpty || _targetLanguage == '-') {
       if (_textController.text.isEmpty) {
         outputController.text = '';

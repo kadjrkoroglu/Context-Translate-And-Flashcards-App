@@ -57,12 +57,9 @@ void main() async {
   await geminiService.initialize();
 
   final firestoreService = FirestoreService();
-  final historyRepository = HistoryRepositoryImpl(localStorage, firestoreService);
-  final favoriteRepository = FavoriteRepositoryImpl(
-    localStorage,
-    firestoreService,
-  );
-  final deckRepository = DeckRepositoryImpl(localStorage, firestoreService);
+  final historyRepository = HistoryRepositoryImpl(localStorage);
+  final favoriteRepository = FavoriteRepositoryImpl(localStorage);
+  final deckRepository = DeckRepositoryImpl(localStorage);
   final syncService = SyncService(localStorage, firestoreService);
 
   final historyUsecase = HistoryUsecase(historyRepository);
@@ -86,9 +83,8 @@ void main() async {
         Provider<FavoriteUsecase>.value(value: favoriteUsecase),
         Provider<DeckUsecase>.value(value: deckUsecase),
         ChangeNotifierProvider(
-          create: (context) => FavoriteViewModel(
-            context.read<FavoriteUsecase>(),
-          ),
+          create: (context) =>
+              FavoriteViewModel(context.read<FavoriteUsecase>()),
         ),
         ChangeNotifierProvider(
           create: (context) => HistoryViewModel(context.read<HistoryUsecase>()),

@@ -7,7 +7,6 @@ import 'package:translate_app/data/models/history_model.dart';
 import 'package:translate_app/data/repositories/deck_repository_impl.dart';
 import 'package:translate_app/data/repositories/favorite_repository_impl.dart';
 import 'package:translate_app/data/repositories/history_repository_impl.dart';
-import 'package:translate_app/data/services/firestore_service.dart';
 import 'package:translate_app/data/services/local_storage_service.dart';
 import 'package:translate_app/domain/entities/card_entity.dart';
 import 'package:translate_app/domain/entities/deck_entity.dart';
@@ -50,24 +49,16 @@ class FakeLocalStorageService extends Fake implements LocalStorageService {
   Future<List<DeckItem>> getAllDecks() async => [];
 }
 
-class FakeFirestoreService extends Fake implements FirestoreService {}
-
 void main() {
   late FakeLocalStorageService fakeStorage;
-  late FakeFirestoreService fakeFirestore;
 
   setUp(() {
     fakeStorage = FakeLocalStorageService();
-    fakeFirestore = FakeFirestoreService();
   });
 
   group('new items must not be persisted with id 0', () {
     test('saveDeck passes Isar.autoIncrement for a brand-new deck', () async {
-      final repo = DeckRepositoryImpl(
-        fakeStorage,
-        fakeFirestore,
-        currentUserId: () => null,
-      );
+      final repo = DeckRepositoryImpl(fakeStorage, currentUserId: () => null);
       final newDeck = DeckEntity(
         id: 0,
         syncId: 'sync-new-1',
@@ -85,11 +76,7 @@ void main() {
     });
 
     test('saveDeck preserves the id of an existing deck', () async {
-      final repo = DeckRepositoryImpl(
-        fakeStorage,
-        fakeFirestore,
-        currentUserId: () => null,
-      );
+      final repo = DeckRepositoryImpl(fakeStorage, currentUserId: () => null);
       final existingDeck = DeckEntity(
         id: 5,
         syncId: 'sync-existing-1',
@@ -103,35 +90,29 @@ void main() {
       expect(fakeStorage.savedDeck!.id, 5);
     });
 
-    test('addCardToDeck passes Isar.autoIncrement for a brand-new card',
-        () async {
-      final repo = DeckRepositoryImpl(
-        fakeStorage,
-        fakeFirestore,
-        currentUserId: () => null,
-      );
-      final newCard = CardEntity(
-        id: 0,
-        syncId: 'sync-card-new',
-        word: 'hello',
-        translation: 'merhaba',
-        createdAt: DateTime(2025),
-        lastModified: DateTime(2025),
-      );
+    test(
+      'addCardToDeck passes Isar.autoIncrement for a brand-new card',
+      () async {
+        final repo = DeckRepositoryImpl(fakeStorage, currentUserId: () => null);
+        final newCard = CardEntity(
+          id: 0,
+          syncId: 'sync-card-new',
+          word: 'hello',
+          translation: 'merhaba',
+          createdAt: DateTime(2025),
+          lastModified: DateTime(2025),
+        );
 
-      await repo.addCardToDeck(1, newCard);
+        await repo.addCardToDeck(1, newCard);
 
-      expect(fakeStorage.addedCard, isNotNull);
-      expect(fakeStorage.addedCard!.id, isNot(0));
-      expect(fakeStorage.addedCard!.id, Isar.autoIncrement);
-    });
+        expect(fakeStorage.addedCard, isNotNull);
+        expect(fakeStorage.addedCard!.id, isNot(0));
+        expect(fakeStorage.addedCard!.id, Isar.autoIncrement);
+      },
+    );
 
     test('updateCard preserves the id of an existing card', () async {
-      final repo = DeckRepositoryImpl(
-        fakeStorage,
-        fakeFirestore,
-        currentUserId: () => null,
-      );
+      final repo = DeckRepositoryImpl(fakeStorage, currentUserId: () => null);
       final existingCard = CardEntity(
         id: 7,
         syncId: 'sync-card-existing',
@@ -149,7 +130,6 @@ void main() {
     test('addFavorite passes Isar.autoIncrement for a new favorite', () async {
       final repo = FavoriteRepositoryImpl(
         fakeStorage,
-        fakeFirestore,
         currentUserId: () => null,
       );
       final favorite = FavoriteWordEntity(
@@ -168,27 +148,28 @@ void main() {
       expect(fakeStorage.addedFavorite!.id, Isar.autoIncrement);
     });
 
-    test('addHistory passes Isar.autoIncrement for a new history item',
-        () async {
-      final repo = HistoryRepositoryImpl(
-        fakeStorage,
-        fakeFirestore,
-        currentUserId: () => null,
-      );
-      final item = HistoryItemEntity(
-        id: 0,
-        syncId: 'sync-history-new',
-        word: 'hello',
-        translation: 'merhaba',
-        createdAt: DateTime(2025),
-        lastModified: DateTime(2025),
-      );
+    test(
+      'addHistory passes Isar.autoIncrement for a new history item',
+      () async {
+        final repo = HistoryRepositoryImpl(
+          fakeStorage,
+          currentUserId: () => null,
+        );
+        final item = HistoryItemEntity(
+          id: 0,
+          syncId: 'sync-history-new',
+          word: 'hello',
+          translation: 'merhaba',
+          createdAt: DateTime(2025),
+          lastModified: DateTime(2025),
+        );
 
-      await repo.addHistory(item);
+        await repo.addHistory(item);
 
-      expect(fakeStorage.addedHistory, isNotNull);
-      expect(fakeStorage.addedHistory!.id, isNot(0));
-      expect(fakeStorage.addedHistory!.id, Isar.autoIncrement);
-    });
+        expect(fakeStorage.addedHistory, isNotNull);
+        expect(fakeStorage.addedHistory!.id, isNot(0));
+        expect(fakeStorage.addedHistory!.id, Isar.autoIncrement);
+      },
+    );
   });
 }

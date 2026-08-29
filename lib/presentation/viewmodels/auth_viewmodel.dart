@@ -12,14 +12,15 @@ class AuthViewModel extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
 
-  AuthViewModel(this._authUsecase, this._syncService) {
-    var isFirstAuthEvent = true;
+  AuthViewModel(AuthUsecase authUsecase, SyncService syncService)
+    : _authUsecase = authUsecase,
+      _syncService = syncService,
+      // Seed the session so a cold-start restore isn't treated as a login.
+      _user = authUsecase.currentUser {
     _authUsecase.user.listen((AuthEntity? user) async {
-      final bool isLogin = user != null && _user == null && !isFirstAuthEvent;
-      isFirstAuthEvent = false;
-
       _user = user;
 
+      // Reload a restored account that hasn't verified its email yet.
       if (user != null && !user.emailVerified) {
         _authUsecase.executeReloadUser().then((_) {
           _user = _authUsecase.currentUser;
@@ -27,14 +28,6 @@ class AuthViewModel extends ChangeNotifier {
         });
       }
       notifyListeners();
-
-      if (isLogin) {
-        try {
-          await _syncService.syncAll();
-        } catch (e) {
-          debugPrint('Sync on login failed: $e');
-        }
-      }
     });
   }
 
@@ -99,6 +92,7 @@ class AuthViewModel extends ChangeNotifier {
     _clearError();
     try {
       await _authUsecase.executeSignIn(email, password);
+      _syncAfterAuth();
       _setLoading(false);
       return true;
     } catch (e) {
@@ -106,6 +100,18 @@ class AuthViewModel extends ChangeNotifier {
       _setError(e is String ? e : _parseFirebaseError(e));
       return false;
     }
+  }
+
+  // Sync only on an explicit login, never on a cold-start restore.
+  void _syncAfterAuth() {
+    _syncService
+        .syncAll()
+        .then((authError) {
+          if (authError != null) debugPrint('Sync after auth: $authError');
+        })
+        .catchError((e) {
+          debugPrint('Sync after auth failed: $e');
+        });
   }
 
   Future<bool> register(
@@ -131,6 +137,7 @@ class AuthViewModel extends ChangeNotifier {
       await _authUsecase.executeReloadUser();
       _user = _authUsecase.currentUser;
 
+      _syncAfterAuth();
       _setLoading(false);
       notifyListeners();
       return true;
@@ -146,6 +153,7 @@ class AuthViewModel extends ChangeNotifier {
     _clearError();
     try {
       await _authUsecase.executeSignInWithGoogle();
+      _syncAfterAuth();
       _setLoading(false);
       return true;
     } catch (e) {

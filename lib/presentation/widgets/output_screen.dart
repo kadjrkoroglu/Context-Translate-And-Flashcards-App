@@ -92,7 +92,7 @@ class OutputScreen extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       child: Container(
         height: 38,
-        padding: const EdgeInsets.symmetric(horizontal: 9),
+        padding: const EdgeInsets.symmetric(horizontal: 7),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
@@ -124,7 +124,7 @@ class _ToneDropdown extends StatelessWidget {
       builder: (context, viewModel, child) {
         return Container(
           height: 38,
-          padding: const EdgeInsets.symmetric(horizontal: 11),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
@@ -181,7 +181,7 @@ class _DeckAddButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 40),
+      constraints: const BoxConstraints(minWidth: 36),
       onPressed: () {
         final word = mainVM.isMLPage
             ? Provider.of<MLTranslateViewModel>(
@@ -223,7 +223,7 @@ class _FavoriteButton extends StatelessWidget {
 
         return IconButton(
           padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 40),
+          constraints: const BoxConstraints(minWidth: 36),
           onPressed: () {
             if (word.isNotEmpty && translation.isNotEmpty) {
               favVM.toggleFavorite(
@@ -255,7 +255,7 @@ class _TtsButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 40),
+      constraints: const BoxConstraints(minWidth: 36),
       onPressed: () {
         final tts = context.read<TtsService>();
         final language = mainVM.isMLPage

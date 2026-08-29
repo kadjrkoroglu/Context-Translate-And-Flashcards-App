@@ -1,31 +1,21 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
-import '../../core/errors/app_exception.dart';
 import '../../domain/entities/favorite_word_entity.dart';
 import '../../domain/repositories/favorite_repository.dart';
 import '../models/favorite_word_model.dart';
 import '../services/local_storage_service.dart';
-import '../services/firestore_service.dart';
 
 class FavoriteRepositoryImpl implements FavoriteRepository {
   final LocalStorageService _local;
-  final FirestoreService _firestore;
   // Test-only seam: lets unit tests run without Firebase.
   final String? Function() _currentUserIdProvider;
 
-  FavoriteRepositoryImpl(
-    this._local,
-    this._firestore, {
-    String? Function()? currentUserId,
-  }) : _currentUserIdProvider = currentUserId ?? _defaultCurrentUserId;
+  FavoriteRepositoryImpl(this._local, {String? Function()? currentUserId})
+    : _currentUserIdProvider = currentUserId ?? _defaultCurrentUserId;
 
   static String? _defaultCurrentUserId() =>
       FirebaseAuth.instance.currentUser?.uid;
 
   String? get currentUserId => _currentUserIdProvider();
-
-  String get _collection =>
-      currentUserId != null ? 'users/$currentUserId/favorites' : '';
 
   @override
   Future<List<FavoriteWordEntity>> getAllFavorites() async {
@@ -37,8 +27,7 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
       filtered = allItems
           .where(
             (i) =>
-                (i.userId == currentUserId || i.userId == null) &&
-                !i.isDeleted,
+                (i.userId == currentUserId || i.userId == null) && !i.isDeleted,
           )
           .toList();
     }
@@ -49,38 +38,15 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
   Future<void> addFavorite(FavoriteWordEntity favorite) async {
     final item = _toModel(favorite);
     item.userId = currentUserId;
+    item.isSynced = false;
     item.lastModified = DateTime.now();
 
     if (item.syncId.isEmpty) {
       item.syncId = _generateSyncId();
     }
 
+    // Local write only; the profile "Sync Now" button pushes to the cloud.
     await _local.addFavorite(item);
-
-    if (currentUserId != null) {
-      try {
-        final collectionDir = _collection;
-        if (collectionDir.isEmpty) return;
-
-        if (item.remoteId != null) {
-          await _firestore.setDocument(
-            '$collectionDir/${item.remoteId}',
-            item.toMap(),
-          );
-        } else {
-          final remoteId = await _firestore.addDocument(
-            collectionDir,
-            item.toMap(),
-          );
-          item.remoteId = remoteId;
-        }
-        item.isSynced = true;
-        await _local.addFavorite(item);
-      } catch (e) {
-        if (e is AppException) rethrow;
-        debugPrint('Favorite add sync failed: $e');
-      }
-    }
   }
 
   @override
@@ -90,22 +56,10 @@ class FavoriteRepositoryImpl implements FavoriteRepository {
 
     if (favorite != null) {
       favorite.isDeleted = true;
+      // Keep it flagged so the pending delete survives an app restart.
+      favorite.isSynced = false;
       favorite.lastModified = DateTime.now();
       await _local.addFavorite(favorite);
-
-      if (favorite.remoteId != null && currentUserId != null) {
-        try {
-          final collectionDir = _collection;
-          if (collectionDir.isEmpty) return;
-          await _firestore.setDocument(
-            '$collectionDir/${favorite.remoteId}',
-            favorite.toMap(),
-          );
-      } catch (e) {
-        if (e is AppException) rethrow;
-        debugPrint('Favorite soft-delete sync failed: $e');
-      }
-      }
     }
   }
 
