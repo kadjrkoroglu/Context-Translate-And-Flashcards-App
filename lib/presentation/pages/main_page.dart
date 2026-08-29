@@ -41,149 +41,156 @@ class MainPage extends StatelessWidget {
       backgroundColor: Colors.transparent,
       extendBody: true,
       resizeToAvoidBottomInset: false,
-      body: AppBackground(
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 0, bottom: 0),
-                child: Center(
-                  child: Text(
-                    'Context Translate & Flashcards',
-                    style: GoogleFonts.caveat(
-                      color: inversePrimary,
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
+      body: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: AppBackground(
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 0, bottom: 0),
+                  child: Center(
+                    child: Text(
+                      'Context Translate & Flashcards',
+                      style: GoogleFonts.caveat(
+                        color: inversePrimary,
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              _buildPageSelector(context, viewModel, inversePrimary),
-              const SizedBox(height: 12),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    left: 20,
-                    right: 20,
-                    bottom: math.max(totalBottomPadding, keyboardHeight + 8),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Color.alphaBlend(
-                            glassTheme?.baseGlassColor ??
-                                Colors.white.withValues(
-                                  alpha: 0.12,
-                                ), // Kök temadaki parlak cam rengini kullanıyoruz
-                            glassTheme?.backgroundGradient.first ??
-                                (Theme.of(context).brightness == Brightness.dark
-                                    ? const Color(0xFF2D3436)
-                                    : const Color(0xFF7A8386)),
-                          ),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.1),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.2),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
+                _buildPageSelector(context, viewModel, inversePrimary),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      bottom: math.max(totalBottomPadding, keyboardHeight + 8),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Color.alphaBlend(
+                              glassTheme?.baseGlassColor ??
+                                  Colors.white.withValues(
+                                    alpha: 0.12,
+                                  ), // Bright glass tint from the root theme
+                              glassTheme?.backgroundGradient.first ??
+                                  (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? const Color(0xFF2D3436)
+                                      : const Color(0xFF7A8386)),
                             ),
-                          ],
-                        ),
-                        child: Column(
-                          children: [
-                            Flexible(
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxHeight:
-                                      screenHeight *
-                                      0.38, // Dynamic max height for input area
-                                ),
-                                child: PageView(
-                                  controller: viewModel.pageController,
-                                  onPageChanged: (index) {
-                                    geminiViewModel.clear(
-                                      viewModel.outputController,
-                                    );
-                                    mlViewModel.clear(
-                                      viewModel.outputController,
-                                    );
-                                  },
-                                  children: [
-                                    GeminiTranslatePage(
-                                      outputController:
-                                          viewModel.outputController,
-                                    ),
-                                    MLTranslatePage(
-                                      outputController:
-                                          viewModel.outputController,
-                                    ),
-                                  ],
-                                ),
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.1),
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.2),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
                               ),
-                            ),
-                            ValueListenableBuilder<TextEditingValue>(
-                              valueListenable: viewModel.outputController,
-                              builder: (context, value, _) {
-                                final bool hasOutput = value.text.isNotEmpty;
-                                return Expanded(
-                                  child: Column(
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Flexible(
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxHeight:
+                                        screenHeight *
+                                        0.38, // Dynamic max height for input area
+                                  ),
+                                  child: PageView(
+                                    controller: viewModel.pageController,
+                                    onPageChanged: (index) {
+                                      geminiViewModel.clear(
+                                        viewModel.outputController,
+                                      );
+                                      mlViewModel.clear(
+                                        viewModel.outputController,
+                                      );
+                                    },
                                     children: [
-                                      if (!hasOutput) const Spacer(),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          bottom: 15,
-                                        ),
-                                        child: Stack(
-                                          alignment: Alignment.center,
-                                          children: [
-                                            if (hasOutput)
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 12,
-                                                    ),
-                                                child: Divider(
-                                                  color: Colors.white
-                                                      .withValues(alpha: 0.15),
-                                                  thickness: 0.5,
-                                                ),
-                                              ),
-                                            if (!hasOutput)
-                                              _buildTranslateButton(
-                                                viewModel,
-                                                geminiViewModel,
-                                              ),
-                                          ],
-                                        ),
+                                      GeminiTranslatePage(
+                                        outputController:
+                                            viewModel.outputController,
                                       ),
-                                      if (hasOutput)
-                                        Expanded(
-                                          child: OutputScreen(
-                                            controller:
-                                                viewModel.outputController,
-                                          ),
-                                        ),
+                                      MLTranslatePage(
+                                        outputController:
+                                            viewModel.outputController,
+                                      ),
                                     ],
                                   ),
-                                );
-                              },
-                            ),
-                          ],
+                                ),
+                              ),
+                              ValueListenableBuilder<TextEditingValue>(
+                                valueListenable: viewModel.outputController,
+                                builder: (context, value, _) {
+                                  final bool hasOutput = value.text.isNotEmpty;
+                                  return Expanded(
+                                    child: Column(
+                                      children: [
+                                        if (!hasOutput) const Spacer(),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 15,
+                                          ),
+                                          child: Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              if (hasOutput)
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 12,
+                                                      ),
+                                                  child: Divider(
+                                                    color: Colors.white
+                                                        .withValues(
+                                                          alpha: 0.15,
+                                                        ),
+                                                    thickness: 0.5,
+                                                  ),
+                                                ),
+                                              if (!hasOutput)
+                                                _buildTranslateButton(
+                                                  viewModel,
+                                                  geminiViewModel,
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                        if (hasOutput)
+                                          Expanded(
+                                            child: OutputScreen(
+                                              controller:
+                                                  viewModel.outputController,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

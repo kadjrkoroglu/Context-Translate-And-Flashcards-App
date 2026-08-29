@@ -14,6 +14,7 @@ class MockGeminiTranslateViewModel extends ChangeNotifier
 class MockTtsService extends Mock implements TtsService {}
 
 class FakeTextEditingController extends Fake implements TextEditingController {}
+
 class FakeTtsService extends Fake implements TtsService {}
 
 void main() {
@@ -96,8 +97,9 @@ void main() {
     expect(find.byIcon(Icons.clear_rounded), findsOneWidget);
   });
 
-  testWidgets('does not display clear button when output is empty',
-      (tester) async {
+  testWidgets('does not display clear button when output is empty', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildSubject());
     expect(find.byIcon(Icons.clear_rounded), findsNothing);
   });

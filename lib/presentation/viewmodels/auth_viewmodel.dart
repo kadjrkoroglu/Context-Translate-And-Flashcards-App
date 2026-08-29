@@ -13,8 +13,10 @@ class AuthViewModel extends ChangeNotifier {
   String? _error;
 
   AuthViewModel(this._authUsecase, this._syncService) {
+    var isFirstAuthEvent = true;
     _authUsecase.user.listen((AuthEntity? user) async {
-      final bool isLogin = user != null && _user == null;
+      final bool isLogin = user != null && _user == null && !isFirstAuthEvent;
+      isFirstAuthEvent = false;
 
       _user = user;
 
@@ -81,7 +83,9 @@ class AuthViewModel extends ChangeNotifier {
       }
     }
     String raw = e.toString();
-    if (raw.contains('pigeon') || raw.contains('Fire') || raw.contains('fail')) {
+    if (raw.contains('pigeon') ||
+        raw.contains('Fire') ||
+        raw.contains('fail')) {
       return 'Invalid input. Please check your details.';
     }
     if (raw.contains('FirebaseException') || raw.contains(']')) {

@@ -169,10 +169,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
         _sourceLanguage,
         _targetLanguage,
       );
-      _results = entity.translatedText
-          .split('|')
-          .map((t) => t.trim())
-          .toList();
+      _results = entity.translatedText.split('|').map((t) => t.trim()).toList();
       _updateOutputText(outputController);
 
       if (outputController.text.isNotEmpty) {
@@ -197,10 +194,9 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   }
 
   String _handleError(dynamic e) {
-    final String raw =
-        e is AppException
-            ? '${e.message} ${e.details ?? ''}'
-            : e.toString();
+    final String raw = e is AppException
+        ? '${e.message} ${e.details ?? ''}'
+        : e.toString();
     String message = raw.toLowerCase();
 
     if (e is NetworkException) {
