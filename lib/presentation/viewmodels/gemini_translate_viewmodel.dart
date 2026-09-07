@@ -21,7 +21,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   final TextEditingController _textController = TextEditingController();
   List<String> _results = [];
   int _selectedToneIndex = 0;
-  String _lastText = '';
+  String _lastTranslateKey = '';
   bool get isLoading => _isLoading;
   String? get error => _error;
   String get sourceLanguage => _sourceLanguage;
@@ -56,18 +56,54 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     _error = null;
   }
 
-  void setSourceLanguage(String language) {
-    _sourceLanguage = language;
-    _settingsService.setGeminiSourceLang(language);
-    _settingsService.addRecentLanguage(language);
-    notifyListeners();
+  void setSourceLanguage(
+    String language, [
+    TextEditingController? outputController,
+  ]) {
+    if (language == _targetLanguage) {
+      if (outputController != null) {
+        swapLanguages(outputController);
+      } else {
+        final temp = _sourceLanguage;
+        _sourceLanguage = _targetLanguage;
+        _targetLanguage = temp;
+        _settingsService.setGeminiSourceLang(_sourceLanguage);
+        _settingsService.setGeminiTargetLang(_targetLanguage);
+        _settingsService.addRecentLanguage(_sourceLanguage);
+        _settingsService.addRecentLanguage(_targetLanguage);
+        notifyListeners();
+      }
+    } else {
+      _sourceLanguage = language;
+      _settingsService.setGeminiSourceLang(language);
+      _settingsService.addRecentLanguage(language);
+      notifyListeners();
+    }
   }
 
-  void setTargetLanguage(String language) {
-    _targetLanguage = language;
-    _settingsService.setGeminiTargetLang(language);
-    _settingsService.addRecentLanguage(language);
-    notifyListeners();
+  void setTargetLanguage(
+    String language, [
+    TextEditingController? outputController,
+  ]) {
+    if (language == _sourceLanguage) {
+      if (outputController != null) {
+        swapLanguages(outputController);
+      } else {
+        final temp = _sourceLanguage;
+        _sourceLanguage = _targetLanguage;
+        _targetLanguage = temp;
+        _settingsService.setGeminiSourceLang(_sourceLanguage);
+        _settingsService.setGeminiTargetLang(_targetLanguage);
+        _settingsService.addRecentLanguage(_sourceLanguage);
+        _settingsService.addRecentLanguage(_targetLanguage);
+        notifyListeners();
+      }
+    } else {
+      _targetLanguage = language;
+      _settingsService.setGeminiTargetLang(language);
+      _settingsService.addRecentLanguage(language);
+      notifyListeners();
+    }
   }
 
   void swapLanguages(TextEditingController outputController) {
@@ -163,7 +199,9 @@ class GeminiTranslateViewModel extends ChangeNotifier {
       return;
     }
 
-    if (_textController.text.trim() == _lastText) return;
+    final translateKey =
+        '${_textController.text.trim()}|$_sourceLanguage|$_targetLanguage';
+    if (translateKey == _lastTranslateKey) return;
 
     _setLoading(true);
     _clearError();
@@ -189,11 +227,12 @@ class GeminiTranslateViewModel extends ChangeNotifier {
           );
         }
       }
+
+      _lastTranslateKey = translateKey;
     } catch (e) {
       _setError(_handleError(e));
       _results = [];
     } finally {
-      _lastText = _textController.text.trim();
       _setLoading(false);
     }
   }

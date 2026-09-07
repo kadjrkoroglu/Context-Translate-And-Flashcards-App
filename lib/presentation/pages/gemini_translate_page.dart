@@ -115,7 +115,8 @@ class GeminiTranslatePage extends StatelessWidget {
                   value: geminiVM.sourceLanguage,
                   recentLanguages: geminiVM.recentLanguages,
                   showIcons: false,
-                  onChanged: (v) => geminiVM.setSourceLanguage(v!),
+                  onChanged: (v) =>
+                      geminiVM.setSourceLanguage(v!, outputController),
                 ),
               ),
               IconButton(
@@ -127,7 +128,8 @@ class GeminiTranslatePage extends StatelessWidget {
                   value: geminiVM.targetLanguage,
                   recentLanguages: geminiVM.recentLanguages,
                   showIcons: false,
-                  onChanged: (v) => geminiVM.setTargetLanguage(v!),
+                  onChanged: (v) =>
+                      geminiVM.setTargetLanguage(v!, outputController),
                 ),
               ),
             ],
