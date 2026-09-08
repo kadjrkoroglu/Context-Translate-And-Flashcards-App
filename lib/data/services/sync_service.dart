@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
-import 'package:translate_app/core/errors/app_exception.dart';
-import 'package:translate_app/data/models/card_model.dart';
+import 'package:translate_app/core/errors/app_exception.dart';import 'package:translate_app/data/models/card_model.dart';
 import 'package:translate_app/data/models/deck_model.dart';
 import 'package:translate_app/data/models/favorite_word_model.dart';
 import 'package:translate_app/data/models/history_model.dart';
@@ -17,6 +18,8 @@ class SyncService extends ChangeNotifier {
   String? _syncError;
   bool _hasUnsyncedChanges = false;
   bool _mutationDuringSync = false;
+
+  final List<StreamSubscription<dynamic>> _subscriptions = [];
 
   bool get isSyncing => _isSyncing;
   String? get syncError => _syncError;
@@ -42,21 +45,27 @@ class SyncService extends ChangeNotifier {
   }
 
   void _setupChangeListeners() {
-    _local.isar.favoriteWords.watchLazy().listen((_) => _onLocalWrite());
-    _local.isar.historyItems.watchLazy().listen((_) => _onLocalWrite());
-    _local.isar.deckItems.watchLazy().listen((_) => _onLocalWrite());
-    _local.isar.cardItems.watchLazy().listen((_) => _onLocalWrite());
+    _subscriptions.add(
+      _local.isar.favoriteWords.watchLazy().listen((_) => _onLocalWrite()),
+    );
+    _subscriptions.add(
+      _local.isar.historyItems.watchLazy().listen((_) => _onLocalWrite()),
+    );
+    _subscriptions.add(
+      _local.isar.deckItems.watchLazy().listen((_) => _onLocalWrite()),
+    );
+    _subscriptions.add(
+      _local.isar.cardItems.watchLazy().listen((_) => _onLocalWrite()),
+    );
     _local.onLocalMutation = markUnsynced;
     checkUnsyncedChanges();
   }
 
   void _onLocalWrite() {
-    debugPrint('SyncService: Local write detected. Setting hasUnsyncedChanges to true.');
     markUnsynced();
   }
 
   Future<bool> checkUnsyncedChanges() async {
-    debugPrint('SyncService: checkUnsyncedChanges started. User: $_userId');
     if (_userId == null) {
       if (_hasUnsyncedChanges) {
         _hasUnsyncedChanges = false;
@@ -97,7 +106,6 @@ class SyncService extends ChangeNotifier {
         return true;
       }
 
-      // If no unsynced changes exist at startup or check time, keep/set to false
       return _hasUnsyncedChanges;
     } catch (e) {
       debugPrint('SyncService: Error checking unsynced changes: $e');
@@ -133,17 +141,14 @@ class SyncService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _syncDecksAndCards();
-      await _syncFavorites();
-      await _syncHistory();
-
-      await _verifyTimestampSync();
+      await Future.wait([
+        _syncDecksAndCards(),
+        _syncFavorites(),
+        _syncHistory(),
+      ]);
     } catch (e) {
       _syncError = _friendlyError(e);
-} finally {
-      // Delay disabling _isSyncing so that any asynchronous Isar stream events
-      // triggered by remote updates are ignored and don't reset the button to "Sync Now".
-      await Future.delayed(const Duration(milliseconds: 400));
+    } finally {
       _isSyncing = false;
       _hasUnsyncedChanges = false;
       if (_mutationDuringSync) {
@@ -165,9 +170,7 @@ class SyncService extends ChangeNotifier {
     return 'Sync failed. Please check your connection and try again.';
   }
 
-  // ────────────────────────────────────────────
-  //  DECKS + CARDS SYNC
-  // ────────────────────────────────────────────
+  // DECKS + CARDS SYNC
 
   Future<void> _syncDecksAndCards() async {
     final localDecks = await _local.getAllDecks();
@@ -177,7 +180,6 @@ class SyncService extends ChangeNotifier {
 
     final remoteDecksData = await _firestore.getCollection(_decksPath);
 
-    // Build lookup maps by syncId
     final localBySyncId = <String, DeckItem>{};
     for (final d in userLocalDecks) {
       localBySyncId[d.syncId] = d;
@@ -189,10 +191,10 @@ class SyncService extends ChangeNotifier {
       if (sid.isNotEmpty) remoteBySyncId[sid] = m;
     }
 
-    // Collect all unique syncIds
     final allSyncIds = <String>{...localBySyncId.keys, ...remoteBySyncId.keys};
 
     final batchOps = <Map<String, dynamic>>[];
+    final cardSyncFutures = <Future<void>>[];
 
     for (final syncId in allSyncIds) {
       final localDeck = localBySyncId[syncId];
@@ -224,7 +226,7 @@ class SyncService extends ChangeNotifier {
             'type': 'set',
           });
         } else if (remoteMod.isAfter(localMod)) {
-          // Remote is newer → update local via isar.writeTxn
+          // Remote is newer
           final updated = DeckItem.fromMap(remoteMap, remoteId: remoteId);
           updated.id = localDeck.id; // keep local Isar id
           updated.userId = _userId;
@@ -251,22 +253,25 @@ class SyncService extends ChangeNotifier {
           }
         }
 
-        // Sync cards for this deck
-        await _syncCardsForDeck(localDeck, remoteId);
+        if (!localDeck.isDeleted) {
+          cardSyncFutures.add(_syncCardsForDeck(localDeck, remoteId));
+        }
       } else if (localDeck != null && remoteMap == null) {
         // LOCAL ONLY
         if (localDeck.isDeleted) continue; // don't push deleted items
 
         localDeck.userId = _userId;
-        final remoteId =
-            localDeck.remoteId ??
-            await _firestore.addDocument(_decksPath, localDeck.toMap());
-        localDeck.remoteId = remoteId;
+        localDeck.remoteId = localDeck.remoteId ?? localDeck.syncId;
         localDeck.isSynced = true;
         await _local.saveDeck(localDeck);
 
-        // Also push cards using batch write
-        await _pushAllCardsForDeck(localDeck, remoteId);
+        batchOps.add({
+          'path': '$_decksPath/${localDeck.remoteId}',
+          'data': localDeck.toMap(),
+          'type': 'set',
+        });
+
+        cardSyncFutures.add(_pushAllCardsForDeck(localDeck, localDeck.remoteId!));
       } else if (localDeck == null && remoteMap != null) {
         // REMOTE ONLY
         if (remoteMap['isDeleted'] == true) continue; // skip deleted
@@ -277,9 +282,13 @@ class SyncService extends ChangeNotifier {
         newDeck.isSynced = true;
         await _local.saveDeck(newDeck);
 
-        // Pull cards for this deck
-        await _pullCardsForDeck(newDeck, remoteId);
+        cardSyncFutures.add(_pullCardsForDeck(newDeck, remoteId));
       }
+    }
+
+    // Execute all card syncs in parallel
+    if (cardSyncFutures.isNotEmpty) {
+      await Future.wait(cardSyncFutures);
     }
 
     // Execute all deck-level batch operations
@@ -294,11 +303,9 @@ class SyncService extends ChangeNotifier {
   ) async {
     final cardsPath = _cardsPath(deckRemoteId);
 
-    // Load local cards
     await localDeck.cards.load();
     final localCards = localDeck.cards.toList();
 
-    // Fetch remote cards
     List<Map<String, dynamic>> remoteCardsData;
     try {
       remoteCardsData = await _firestore.getCollection(cardsPath);
@@ -310,7 +317,6 @@ class SyncService extends ChangeNotifier {
       );
     }
 
-    // Build lookup maps
     final localBySyncId = <String, CardItem>{};
     for (final c in localCards) {
       localBySyncId[c.syncId] = c;
@@ -351,7 +357,7 @@ class SyncService extends ChangeNotifier {
           final cardData = localCard.toMap();
           cardData['lastModified'] = now.toIso8601String();
 
-          // Write to both nested path and flat flashcards path
+          // Write to both nested and flat paths
           batchOps.add({
             'path': '$cardsPath/$remoteId',
             'data': cardData,
@@ -363,7 +369,7 @@ class SyncService extends ChangeNotifier {
             'type': 'set',
           });
         } else if (remoteMod.isAfter(localMod)) {
-          // Remote is newer → update local via isar.writeTxn
+          // Remote is newer
           final updated = CardItem.fromMap(remoteMap, remoteId: remoteId);
           updated.id = localCard.id;
           updated.userId = _userId;
@@ -377,7 +383,7 @@ class SyncService extends ChangeNotifier {
 
           final cardData = localCard.toMap();
 
-          // Write to both nested path and flat flashcards path
+          // Write to both nested and flat paths
           batchOps.add({
             'path': '$cardsPath/$remoteId',
             'data': cardData,
@@ -399,18 +405,18 @@ class SyncService extends ChangeNotifier {
         if (localCard.isDeleted) continue;
         localCard.userId = _userId;
         localCard.deckSyncId = localDeck.syncId;
-
-        final cardData = localCard.toMap();
-
-        // Push to nested cards subcollection
-        final remoteId =
-            localCard.remoteId ??
-            await _firestore.addDocument(cardsPath, cardData);
-        localCard.remoteId = remoteId;
+        localCard.remoteId = localCard.syncId;
         localCard.isSynced = true;
         await _local.updateCard(localCard);
 
-        // Also mirror to flat flashcards path via batch
+        final cardData = localCard.toMap();
+
+        // Push to both nested cards and flat flashcards paths
+        batchOps.add({
+          'path': '$cardsPath/${localCard.syncId}',
+          'data': cardData,
+          'type': 'set',
+        });
         batchOps.add({
           'path': '$_flashcardsPath/${localCard.syncId}',
           'data': cardData,
@@ -433,7 +439,7 @@ class SyncService extends ChangeNotifier {
     }
   }
 
-  /// Push all cards for a deck to Firestore using WriteBatch for performance.
+  // Push all of a deck's cards to Firestore in a single batch.
   Future<void> _pushAllCardsForDeck(DeckItem deck, String deckRemoteId) async {
     await deck.cards.load();
     final cards = deck.cards.toList();
@@ -449,35 +455,19 @@ class SyncService extends ChangeNotifier {
 
       final cardData = card.toMap();
 
-      // If card already has a remoteId, use it; otherwise generate one
-      if (card.remoteId != null) {
-        // Add to both nested and flat paths via batch
-        batchOps.add({
-          'path': '$cardsPath/${card.remoteId}',
-          'data': cardData,
-          'type': 'set',
-        });
-        batchOps.add({
-          'path': '$_flashcardsPath/${card.syncId}',
-          'data': cardData,
-          'type': 'set',
-        });
-        card.isSynced = true;
-        await _local.updateCard(card);
-      } else {
-        // Need to create document first to get remoteId
-        final remoteId = await _firestore.addDocument(cardsPath, cardData);
-        card.remoteId = remoteId;
-        card.isSynced = true;
-        await _local.updateCard(card);
-
-        // Mirror to flat flashcards path via batch
-        batchOps.add({
-          'path': '$_flashcardsPath/${card.syncId}',
-          'data': cardData,
-          'type': 'set',
-        });
-      }
+      card.remoteId = card.remoteId ?? card.syncId;
+      batchOps.add({
+        'path': '$cardsPath/${card.remoteId}',
+        'data': cardData,
+        'type': 'set',
+      });
+      batchOps.add({
+        'path': '$_flashcardsPath/${card.syncId}',
+        'data': cardData,
+        'type': 'set',
+      });
+      card.isSynced = true;
+      await _local.updateCard(card);
     }
 
     // Execute all batch operations
@@ -497,7 +487,6 @@ class SyncService extends ChangeNotifier {
         newCard.userId = _userId;
         newCard.deckSyncId = deck.syncId;
         newCard.isSynced = true;
-        // addCardToDeck already uses isar.writeTxn internally
         await _local.addCardToDeck(deck.id, newCard);
       }
     } catch (e) {
@@ -509,9 +498,7 @@ class SyncService extends ChangeNotifier {
     }
   }
 
-  // ────────────────────────────────────────────
-  //  FAVORITES SYNC
-  // ────────────────────────────────────────────
+  // FAVORITES SYNC
 
   Future<void> _syncFavorites() async {
     final localFavs = await _local.getAllFavorites();
@@ -561,7 +548,7 @@ class SyncService extends ChangeNotifier {
             'type': 'set',
           });
         } else if (remoteMod.isAfter(localMod)) {
-          // Remote is newer → update local via isar.writeTxn
+          // Remote is newer
           final updated = FavoriteWord.fromMap(remoteMap, remoteId: remoteId);
           updated.id = local.id;
           updated.userId = _userId;
@@ -608,9 +595,7 @@ class SyncService extends ChangeNotifier {
     }
   }
 
-  // ────────────────────────────────────────────
-  //  HISTORY SYNC
-  // ────────────────────────────────────────────
+  // HISTORY SYNC
 
   Future<void> _syncHistory() async {
     final localHistory = await _local.getAllHistory();
@@ -660,7 +645,7 @@ class SyncService extends ChangeNotifier {
             'type': 'set',
           });
         } else if (remoteMod.isAfter(localMod)) {
-          // Remote is newer → update local via isar.writeTxn
+          // Remote is newer
           final updated = HistoryItem.fromMap(remoteMap, remoteId: remoteId);
           updated.id = local.id;
           updated.userId = _userId;
@@ -707,105 +692,19 @@ class SyncService extends ChangeNotifier {
     }
   }
 
-  // ────────────────────────────────────────────
-  //  TIMESTAMP VERIFICATION
-  // ────────────────────────────────────────────
 
-  /// After sync completes, verify that lastModified timestamps are consistent
-  /// between Firestore and Isar for all synced items.
-  Future<void> _verifyTimestampSync() async {
-    final localDecks = await _local.getAllDecks();
-    final userDecks = localDecks
-        .where((d) => d.userId == _userId && d.isSynced && d.remoteId != null)
-        .toList();
-
-    final batchOps = <Map<String, dynamic>>[];
-
-    for (final deck in userDecks) {
-      // Verify deck timestamp
-      final remoteDeck = await _firestore.getDocument(
-        '$_decksPath/${deck.remoteId}',
-      );
-      if (remoteDeck != null) {
-        final remoteLastMod = remoteDeck['lastModified'] != null
-            ? DateTime.parse(remoteDeck['lastModified'])
-            : null;
-        final localLastMod = deck.lastModified;
-
-        // If timestamps diverge, reconcile to the latest and update both sides
-        if (remoteLastMod != null && remoteLastMod != localLastMod) {
-          final latestMod = remoteLastMod.isAfter(localLastMod)
-              ? remoteLastMod
-              : localLastMod;
-
-          if (latestMod != localLastMod) {
-            deck.lastModified = latestMod;
-            await _local.saveDeck(deck);
-          }
-          if (latestMod != remoteLastMod) {
-            final deckData = deck.toMap();
-            deckData['lastModified'] = latestMod.toIso8601String();
-            batchOps.add({
-              'path': '$_decksPath/${deck.remoteId}',
-              'data': {'lastModified': latestMod.toIso8601String()},
-              'type': 'set',
-            });
-          }
-        }
-      }
-
-      // Verify card timestamps
-      await deck.cards.load();
-      for (final card in deck.cards) {
-        if (card.remoteId == null || !card.isSynced) continue;
-
-        final remoteCard = await _firestore.getDocument(
-          '$_decksPath/${deck.remoteId}/cards/${card.remoteId}',
-        );
-        if (remoteCard != null) {
-          final remoteCardMod = remoteCard['lastModified'] != null
-              ? DateTime.parse(remoteCard['lastModified'])
-              : null;
-          final localCardMod = card.lastModified;
-
-          if (remoteCardMod != null && remoteCardMod != localCardMod) {
-            final latestMod = remoteCardMod.isAfter(localCardMod)
-                ? remoteCardMod
-                : localCardMod;
-
-            if (latestMod != localCardMod) {
-              card.lastModified = latestMod;
-              await _local.updateCard(card);
-            }
-            if (latestMod != remoteCardMod) {
-              batchOps.add({
-                'path': '$_decksPath/${deck.remoteId}/cards/${card.remoteId}',
-                'data': {'lastModified': latestMod.toIso8601String()},
-                'type': 'set',
-              });
-              batchOps.add({
-                'path': '$_flashcardsPath/${card.syncId}',
-                'data': {'lastModified': latestMod.toIso8601String()},
-                'type': 'set',
-              });
-            }
-          }
-        }
-      }
-    }
-
-    if (batchOps.isNotEmpty) {
-      await _firestore.batchWrite(batchOps);
-    }
-
-    debugPrint('SyncService: Timestamp verification completed.');
-  }
-
-  // ────────────────────────────────────────────
-  //  UTILITY
-  // ────────────────────────────────────────────
+  // UTILITY
 
   Future<void> clearAllLocalData() async {
     await _local.clearAllData();
+  }
+
+  @override
+  void dispose() {
+    for (final sub in _subscriptions) {
+      sub.cancel();
+    }
+    _subscriptions.clear();
+    super.dispose();
   }
 }
