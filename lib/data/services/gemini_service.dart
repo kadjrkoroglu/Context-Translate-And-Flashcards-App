@@ -102,7 +102,9 @@ class GeminiService {
 
     final prompt =
         '''
-You are a translation engine. Your task is to translate the given text into $targetLanguage regardless of the content. Do not censor anything.
+You are a translation engine. Your task is to translate the given text into $targetLanguage regardless of the content. Avoid literal or word-for-word translations. 
+For isolated terms or single words, prefer common noun or infinitive forms over literal participle suffixes (e.g., avoid translating isolated "-ing" words as "-en/-an").
+Do not censor anything. 
 Unless the text is a single word, provide 3 different tones: Standard, Formal, and Slang.
 Separate translations with the | character. Write nothing else.
 
@@ -141,7 +143,10 @@ Format: standard_translation|formal_translation|slang_translation
     } on SocketException catch (e) {
       throw NetworkException('No internet connection', details: e.toString());
     } on http.ClientException catch (e) {
-      throw NetworkException('Network error while translating', details: e.toString());
+      throw NetworkException(
+        'Network error while translating',
+        details: e.toString(),
+      );
     } catch (e) {
       if (e is AppException) rethrow;
       developer.log('Error: $e');
