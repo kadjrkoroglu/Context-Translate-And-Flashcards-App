@@ -65,6 +65,31 @@ class SyncService extends ChangeNotifier {
     markUnsynced();
   }
 
+  Future<void> _cleanupDuplicateDecks() async {
+    final decks = await _local.getAllDecks();
+    final bySyncId = <String, DeckItem>{};
+    for (final d in decks) {
+      if (d.syncId.isEmpty) continue;
+      final existing = bySyncId[d.syncId];
+      if (existing == null) {
+        bySyncId[d.syncId] = d;
+        continue;
+      }
+      // Prefer the record with a real Isar id; always keep one and drop the rest.
+      DeckItem keep;
+      final drop = existing.id == 0 ? existing : d;
+      if (existing.id == 0 && d.id != 0) {
+        keep = d;
+      } else if (existing.id != 0 && d.id == 0) {
+        keep = existing;
+      } else {
+        keep = existing;
+      }
+      await _local.deleteDeckItemOnly(drop.id);
+      bySyncId[d.syncId] = keep;
+    }
+  }
+
   Future<bool> checkUnsyncedChanges() async {
     if (_userId == null) {
       if (_hasUnsyncedChanges) {
@@ -75,7 +100,7 @@ class SyncService extends ChangeNotifier {
     }
     try {
       final decks = await _local.getAllDecks();
-      final unsyncedDecks = decks.where((d) => (d.userId == _userId || d.userId == null) && !d.isSynced).toList();
+      final unsyncedDecks = decks.where((d) => (d.userId == _userId || d.userId == null) && !d.isDeleted && !d.isSynced).toList();
       if (unsyncedDecks.isNotEmpty) {
         _hasUnsyncedChanges = true;
         notifyListeners();
@@ -83,7 +108,7 @@ class SyncService extends ChangeNotifier {
       }
 
       final cards = await _local.isar.cardItems.where().findAll();
-      final unsyncedCards = cards.where((c) => (c.userId == _userId || c.userId == null) && !c.isSynced).toList();
+      final unsyncedCards = cards.where((c) => (c.userId == _userId || c.userId == null) && !c.isDeleted && !c.isSynced).toList();
       if (unsyncedCards.isNotEmpty) {
         _hasUnsyncedChanges = true;
         notifyListeners();
@@ -91,7 +116,7 @@ class SyncService extends ChangeNotifier {
       }
 
       final favs = await _local.getAllFavorites();
-      final unsyncedFavs = favs.where((f) => (f.userId == _userId || f.userId == null) && !f.isSynced).toList();
+      final unsyncedFavs = favs.where((f) => (f.userId == _userId || f.userId == null) && !f.isDeleted && !f.isSynced).toList();
       if (unsyncedFavs.isNotEmpty) {
         _hasUnsyncedChanges = true;
         notifyListeners();
@@ -99,7 +124,7 @@ class SyncService extends ChangeNotifier {
       }
 
       final history = await _local.getAllHistory();
-      final unsyncedHistory = history.where((h) => (h.userId == _userId || h.userId == null) && !h.isSynced).toList();
+      final unsyncedHistory = history.where((h) => (h.userId == _userId || h.userId == null) && !h.isDeleted && !h.isSynced).toList();
       if (unsyncedHistory.isNotEmpty) {
         _hasUnsyncedChanges = true;
         notifyListeners();
@@ -141,6 +166,7 @@ class SyncService extends ChangeNotifier {
     notifyListeners();
 
     try {
+      await _cleanupDuplicateDecks();
       await Future.wait([
         _syncDecksAndCards(),
         _syncFavorites(),

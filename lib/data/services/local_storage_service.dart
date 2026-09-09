@@ -128,7 +128,10 @@ class LocalStorageService {
   Future<void> saveDeck(DeckItem deck) async {
     try {
       await isar.writeTxn(() async {
-        await isar.deckItems.put(deck);
+        final newId = await isar.deckItems.put(deck);
+        if (deck.id != newId) {
+          deck.id = newId;
+        }
       });
       _notifyMutation();
     } catch (e) {
@@ -155,10 +158,23 @@ class LocalStorageService {
     }
   }
 
+  Future<void> deleteDeckItemOnly(int id) async {
+    try {
+      await isar.writeTxn(() async {
+        await isar.deckItems.delete(id);
+      });
+    } catch (e) {
+      throw StorageException('Failed to delete deck item', details: e.toString());
+    }
+  }
+
   Future<void> addCardToDeck(int deckId, CardItem card) async {
     try {
       await isar.writeTxn(() async {
-        await isar.cardItems.put(card);
+        final newId = await isar.cardItems.put(card);
+        if (card.id != newId) {
+          card.id = newId;
+        }
         final deck = await isar.deckItems.get(deckId);
         if (deck != null) {
           deck.cards.add(card);
@@ -185,7 +201,10 @@ class LocalStorageService {
   Future<void> updateCard(CardItem card) async {
     try {
       await isar.writeTxn(() async {
-        await isar.cardItems.put(card);
+        final newId = await isar.cardItems.put(card);
+        if (card.id != newId) {
+          card.id = newId;
+        }
       });
       _notifyMutation();
     } catch (e) {

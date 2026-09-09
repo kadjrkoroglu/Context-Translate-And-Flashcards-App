@@ -117,6 +117,10 @@ class DecksViewModel extends ChangeNotifier {
     }).length;
   }
 
+  int getTotalCardCount(DeckEntity deck) {
+    return deck.cards.where((card) => !card.isDeleted).length;
+  }
+
   Map<String, int> getCardCountsByStatus(DeckEntity deck) {
     final now = DateTime.now();
 
@@ -158,6 +162,46 @@ class DecksViewModel extends ChangeNotifier {
       'good': goodCount,
       'easy': easyCount,
     };
+  }
+
+  Future<void> updateDeckSettings(
+    int deckId,
+    String newName,
+    int newCardsLimit,
+    int reviewsLimit,
+  ) async {
+    _clearError();
+    try {
+      final deck = _decks.firstWhere((d) => d.id == deckId);
+      final name = newName.trim().isEmpty ? deck.name : newName.trim();
+      final nameChanged = name != deck.name;
+      final limitsChanged =
+          newCardsLimit != deck.newCardsLimit ||
+          reviewsLimit != deck.reviewsLimit;
+
+      if (!nameChanged && !limitsChanged) return;
+
+      await _usecase.executeSaveDeck(
+        DeckEntity(
+          id: deck.id,
+          syncId: deck.syncId,
+          name: name,
+          createdAt: deck.createdAt,
+          lastModified: deck.lastModified,
+          newCardsLimit: newCardsLimit,
+          reviewsLimit: reviewsLimit,
+          cards: deck.cards,
+          orderIndex: deck.orderIndex,
+          userId: deck.userId,
+          remoteId: deck.remoteId,
+          isSynced: deck.isSynced,
+          isDeleted: deck.isDeleted,
+        ),
+      );
+      await loadDecks();
+    } catch (e) {
+      _setError('Failed to update deck settings');
+    }
   }
 
   Future<void> updateDeckLimits(

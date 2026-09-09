@@ -157,6 +157,7 @@ class _DecksPageState extends State<DecksPage> {
           content: TextField(
             controller: controller,
             autofocus: true,
+            textCapitalization: TextCapitalization.words,
             style: const TextStyle(color: Colors.white),
             cursorColor: Colors.white,
             decoration: InputDecoration(
@@ -232,30 +233,30 @@ class _DeckCard extends StatelessWidget {
                 horizontal: 20,
                 vertical: 12,
               ),
-              leading: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    '${deck.orderIndex ?? (index + 1)}',
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    deck.name,
                     style: const TextStyle(
                       color: ip,
                       fontWeight: FontWeight.bold,
+                      fontSize: 18,
                     ),
                   ),
-                ),
-              ),
-              title: Text(
-                deck.name,
-                style: const TextStyle(
-                  color: ip,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
+                  if (vm.getTotalCardCount(deck) > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        '${vm.getTotalCardCount(deck)} cards',
+                        style: TextStyle(
+                          color: ip.withValues(alpha: 0.5),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                ],
               ),
               trailing: _CountBadges(
                 counts: vm.getCardCountsByStatus(deck),
@@ -411,6 +412,7 @@ class _DeckCard extends StatelessWidget {
   }
 
   void _showDeckSettingsDialog(BuildContext context) {
+    final nameCtrl = TextEditingController(text: deck.name);
     final newCtrl = TextEditingController(text: deck.newCardsLimit.toString());
     final revCtrl = TextEditingController(text: deck.reviewsLimit.toString());
     showDialog(
@@ -430,6 +432,8 @@ class _DeckCard extends StatelessWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              _NameField(controller: nameCtrl),
+              const SizedBox(height: 16),
               _LimitField(controller: newCtrl, label: 'Daily New Cards Limit'),
               const SizedBox(height: 16),
               _LimitField(controller: revCtrl, label: 'Daily Reviews Limit'),
@@ -444,13 +448,14 @@ class _DeckCard extends StatelessWidget {
               ),
             ),
             ElevatedButton(
-              onPressed: () async {
-                await vm.updateDeckLimits(
+              onPressed: () {
+                Navigator.pop(ctx);
+                vm.updateDeckSettings(
                   deck.id,
+                  nameCtrl.text,
                   int.tryParse(newCtrl.text) ?? 20,
                   int.tryParse(revCtrl.text) ?? 200,
                 );
-                if (context.mounted) Navigator.pop(ctx);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blueAccent,
@@ -462,6 +467,32 @@ class _DeckCard extends StatelessWidget {
               child: const Text('Save'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NameField extends StatelessWidget {
+  final TextEditingController controller;
+
+  const _NameField({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      textCapitalization: TextCapitalization.words,
+      style: const TextStyle(color: Colors.white),
+      cursorColor: Colors.white,
+      decoration: InputDecoration(
+        labelText: 'Deck Name',
+        labelStyle: const TextStyle(color: Colors.white54),
+        filled: true,
+        fillColor: Colors.white.withValues(alpha: 0.05),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
         ),
       ),
     );
