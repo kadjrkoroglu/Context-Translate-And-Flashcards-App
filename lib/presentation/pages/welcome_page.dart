@@ -27,25 +27,27 @@ class WelcomePage extends StatelessWidget {
                 Stack(
                   alignment: Alignment.center,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(70),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: Container(
-                          width: 140,
-                          height: 140,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              width: 1.5,
+                    SizedBox(
+                      width: 140,
+                      height: 140,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(70),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                width: 1.5,
+                              ),
                             ),
-                          ),
-                          child: const Icon(
-                            Icons.translate_rounded,
-                            size: 80,
-                            color: Colors.white,
+                            child: const Icon(
+                              Icons.translate_rounded,
+                              size: 80,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ),
@@ -54,28 +56,28 @@ class WelcomePage extends StatelessWidget {
                       right: 0,
                       bottom: 0,
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(25),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.3),
-                                width: 1.5,
+                          borderRadius: BorderRadius.circular(25),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.3),
+                                  width: 1.5,
+                                ),
                               ),
-                            ),
-                            child: const Icon(
-                              Icons.style_rounded, // Flashcards icon
-                              size: 30,
-                              color: Colors.white,
+                              child: Image.asset(
+                                'assets/images/flashcard.png',
+                                width: 38,
+                                height: 38,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
                   ],
                 ),
                 const Spacer(flex: 3),

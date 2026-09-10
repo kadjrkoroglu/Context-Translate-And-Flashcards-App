@@ -84,12 +84,12 @@ flutter:
   assets:
     - env.json
     - assets/images/google.png
-    - assets/icon1.png
+    - assets/images/flashcard.png
 
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/icon1.png"
+  image_path: "assets/images/ikon2.png"
   min_sdk_android: 21
   remove_alpha_ios: true
 
