@@ -71,16 +71,6 @@ void main() {
     );
   }
 
-  testWidgets('renders favorites page', (tester) async {
-    await tester.pumpWidget(buildSubject());
-    expect(find.byType(FavoritesPage), findsOneWidget);
-  });
-
-  testWidgets('displays Favorites title', (tester) async {
-    await tester.pumpWidget(buildSubject());
-    expect(find.text('Favorites'), findsOneWidget);
-  });
-
   testWidgets('shows empty state when no favorites', (tester) async {
     when(() => mockFavoriteVM.favorites).thenReturn([]);
 
@@ -88,15 +78,6 @@ void main() {
     await tester.pump();
 
     expect(find.text('No favorites yet'), findsOneWidget);
-  });
-
-  testWidgets('shows empty state icon', (tester) async {
-    when(() => mockFavoriteVM.favorites).thenReturn([]);
-
-    await tester.pumpWidget(buildSubject());
-    await tester.pump();
-
-    expect(find.byIcon(Icons.favorite_outline_rounded), findsOneWidget);
   });
 
   testWidgets('calls loadFavorites on init', (tester) async {

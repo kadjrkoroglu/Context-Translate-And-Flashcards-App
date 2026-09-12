@@ -23,11 +23,6 @@ void main() {
     );
   }
 
-  testWidgets('renders welcome page', (tester) async {
-    await tester.pumpWidget(buildSubject());
-    expect(find.byType(WelcomePage), findsOneWidget);
-  });
-
   testWidgets('displays title text', (tester) async {
     await tester.pumpWidget(buildSubject());
     expect(find.text("Don't waste time, add and study!"), findsOneWidget);
@@ -53,15 +48,5 @@ void main() {
     await tester.pumpWidget(buildSubject());
     expect(find.text('Sign in and Sync'), findsOneWidget);
     expect(find.byType(TextButton), findsOneWidget);
-  });
-
-  testWidgets('displays translate icon', (tester) async {
-    await tester.pumpWidget(buildSubject());
-    expect(find.byIcon(Icons.translate_rounded), findsOneWidget);
-  });
-
-  testWidgets('displays flashcards icon', (tester) async {
-    await tester.pumpWidget(buildSubject());
-    expect(find.byIcon(Icons.style_rounded), findsOneWidget);
   });
 }

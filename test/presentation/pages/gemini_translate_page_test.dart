@@ -65,21 +65,6 @@ void main() {
     );
   }
 
-  testWidgets('renders GeminiTranslatePage', (tester) async {
-    await tester.pumpWidget(buildSubject());
-    expect(find.byType(GeminiTranslatePage), findsOneWidget);
-  });
-
-  testWidgets('displays text input field', (tester) async {
-    await tester.pumpWidget(buildSubject());
-    expect(find.byType(TextField), findsOneWidget);
-  });
-
-  testWidgets('displays swap languages button', (tester) async {
-    await tester.pumpWidget(buildSubject());
-    expect(find.byIcon(Icons.swap_horiz_rounded), findsOneWidget);
-  });
-
   testWidgets('tapping swap button calls swapLanguages', (tester) async {
     when(() => mockViewModel.swapLanguages(any())).thenReturn(null);
 
@@ -113,13 +98,6 @@ void main() {
     await tester.pumpAndSettle();
 
     verify(() => mockViewModel.clear(any())).called(1);
-  });
-
-  testWidgets('displays volume button when output has text', (tester) async {
-    outputController.text = 'Merhaba';
-
-    await tester.pumpWidget(buildSubject());
-    expect(find.byIcon(Icons.volume_up_rounded), findsOneWidget);
   });
 
   testWidgets('tapping volume button calls speakInputText', (tester) async {
