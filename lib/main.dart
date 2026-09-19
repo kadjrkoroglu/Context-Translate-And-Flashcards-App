@@ -12,8 +12,6 @@ import 'package:translate_app/domain/usecases/history_usecase.dart';
 import 'package:translate_app/domain/usecases/translate_usecase.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/pages/auth/auth_wrapper.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart';
 import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
 import 'package:translate_app/theme/theme_provider.dart';
 import 'package:translate_app/theme/theme.dart';
@@ -49,12 +47,7 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final settingsService = SettingsService(prefs);
 
-  final envString = await rootBundle.loadString('env.json');
-  final envMap = jsonDecode(envString) as Map<String, dynamic>;
-  final apiKey = envMap['api_key'] as String;
-
-  final geminiService = GeminiService(apiKey);
-  await geminiService.initialize();
+  final geminiService = GeminiService();
 
   final firestoreService = FirestoreService();
   final historyRepository = HistoryRepositoryImpl(localStorage);

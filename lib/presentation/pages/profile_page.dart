@@ -149,35 +149,42 @@ class _ProfilePageState extends State<ProfilePage> {
   void _showLogoutDialog(BuildContext context, AuthViewModel vm) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        title: const Text('Sign Out', style: TextStyle(color: Colors.white)),
-        content: const Text(
-          'Are you sure you want to sign out?',
-          style: TextStyle(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white60),
-            ),
+      builder: (dialogContext) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await vm.signOut();
-            },
-            child: const Text(
-              'Sign Out',
-              style: TextStyle(
-                color: Colors.redAccent,
-                fontWeight: FontWeight.bold,
+          title: const Text('Sign Out', style: TextStyle(color: Colors.white)),
+          content: const Text(
+            'Are you sure you want to sign out?',
+            style: TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white60),
               ),
             ),
-          ),
-        ],
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                await vm.signOut();
+              },
+              child: const Text(
+                'Sign Out',
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -218,7 +225,8 @@ class _ProfilePageState extends State<ProfilePage> {
     Color subTextColor,
     SyncService syncService,
   ) {
-    final bool isSyncedState = !syncService.isSyncing && !syncService.hasUnsyncedChanges;
+    final bool isSyncedState =
+        !syncService.isSyncing && !syncService.hasUnsyncedChanges;
 
     // Define values dynamically for the button
     VoidCallback? buttonOnPressed;
@@ -232,10 +240,7 @@ class _ProfilePageState extends State<ProfilePage> {
       buttonIcon = const SizedBox(
         width: 18,
         height: 18,
-        child: CircularProgressIndicator(
-          strokeWidth: 2,
-          color: Colors.white,
-        ),
+        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
       );
       buttonText = 'Syncing...';
       buttonBgColor = Colors.white24;
@@ -270,8 +275,12 @@ class _ProfilePageState extends State<ProfilePage> {
               Row(
                 children: [
                   _buildIconCircle(
-                    isSyncedState ? Icons.cloud_done_rounded : Icons.cloud_rounded,
-                    isSyncedState ? Colors.greenAccent : textColor.withValues(alpha: 0.7),
+                    isSyncedState
+                        ? Icons.cloud_done_rounded
+                        : Icons.cloud_rounded,
+                    isSyncedState
+                        ? Colors.greenAccent
+                        : textColor.withValues(alpha: 0.7),
                     glass,
                   ),
                   const SizedBox(width: 16),

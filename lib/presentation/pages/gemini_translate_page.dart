@@ -10,6 +10,8 @@ class GeminiTranslatePage extends StatelessWidget {
 
   const GeminiTranslatePage({super.key, required this.outputController});
 
+  static bool _errorDialogOpen = false;
+
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<GeminiTranslateViewModel>(context);
@@ -82,16 +84,11 @@ class GeminiTranslatePage extends StatelessWidget {
                   ),
                 ),
               if (viewModel.error != null)
-                Positioned(
-                  bottom: 8,
-                  left: 16,
-                  child: Text(
-                    viewModel.error!,
-                    style: const TextStyle(
-                      color: Colors.redAccent,
-                      fontSize: 12,
-                    ),
-                  ),
+                Builder(
+                  builder: (_) {
+                    _showTranslationErrorDialog(context);
+                    return const SizedBox.shrink();
+                  },
                 ),
             ],
           ),
@@ -173,5 +170,53 @@ class GeminiTranslatePage extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  void _showTranslationErrorDialog(BuildContext context) {
+    if (_errorDialogOpen) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted || _errorDialogOpen) return;
+      _errorDialogOpen = true;
+      context.read<GeminiTranslateViewModel>().clearError();
+      showDialog<void>(
+        context: context,
+        builder: (dialogContext) => BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: AlertDialog(
+            backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.15),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+            ),
+            title: const Text(
+              'Connection Error',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: const SizedBox(
+              height: 56,
+              child: Center(
+                child: Text(
+                  'Translation could not be completed. Try again later.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.redAccent),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ).whenComplete(() => _errorDialogOpen = false);
+    });
   }
 }

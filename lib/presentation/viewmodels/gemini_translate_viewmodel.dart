@@ -52,8 +52,9 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _clearError() {
+  void clearError() {
     _error = null;
+    notifyListeners();
   }
 
   void setSourceLanguage(
@@ -204,7 +205,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     if (translateKey == _lastTranslateKey) return;
 
     _setLoading(true);
-    _clearError();
+    clearError();
 
     try {
       final entity = await _translateUsecase.execute(
@@ -263,7 +264,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     _textController.clear();
     outputController.clear();
     _results = [];
-    _clearError();
+    clearError();
     notifyListeners();
   }
 
