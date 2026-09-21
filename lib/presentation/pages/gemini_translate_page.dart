@@ -2,22 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'package:translate_app/presentation/widgets/dropdown.dart';
-import 'package:translate_app/presentation/widgets/speech_toggle_button.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
 import 'package:translate_app/presentation/utils/font_size_helper.dart';
 
-class GeminiTranslatePage extends StatelessWidget {
+/// Fixed-height language header for the Gemini page.
+/// Used inside a PageView with a fixed SizedBox height.
+class GeminiLanguageHeader extends StatelessWidget {
   final TextEditingController outputController;
-
-  const GeminiTranslatePage({super.key, required this.outputController});
-
-  static bool _errorDialogOpen = false;
+  const GeminiLanguageHeader({super.key, required this.outputController});
 
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<GeminiTranslateViewModel>(context);
-
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
@@ -29,72 +27,6 @@ class GeminiTranslatePage extends StatelessWidget {
             color: Colors.white.withValues(alpha: 0.1),
             thickness: 0.5,
             height: 12,
-          ),
-        ),
-        Expanded(
-          child: Stack(
-            children: [
-              ValueListenableBuilder<TextEditingValue>(
-                valueListenable: viewModel.textController,
-                builder: (context, value, child) {
-                  final fontSize = FontSizeHelper.getDynamicFontSize(
-                    value.text.length,
-                  );
-                  return TextField(
-                    controller: viewModel.textController,
-                    expands: true,
-                    maxLines: null,
-                    minLines: null,
-                    textAlignVertical: TextAlignVertical.top,
-                    style: TextStyle(
-                      fontSize: fontSize,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    cursorColor: Colors.white,
-                    decoration: InputDecoration(
-                      hintText: 'Enter text',
-                      hintStyle: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.3),
-                      ),
-                      contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 48),
-                      border: InputBorder.none,
-                    ),
-                    onChanged: (val) {
-                      if (val.isEmpty) outputController.clear();
-                    },
-                  );
-                },
-              ),
-              if (outputController.text.isNotEmpty && !viewModel.isLoading)
-                Positioned(
-                  bottom: 4,
-                  right: 4,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SpeechToggleButton(
-                        text: viewModel.textController.text,
-                        language: viewModel.sourceLanguage,
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.clear_rounded,
-                          color: Colors.white.withValues(alpha: 0.5),
-                        ),
-                        onPressed: () => viewModel.clear(outputController),
-                      ),
-                    ],
-                  ),
-                ),
-              if (viewModel.error != null)
-                Builder(
-                  builder: (_) {
-                    _showTranslationErrorDialog(context);
-                    return const SizedBox.shrink();
-                  },
-                ),
-            ],
           ),
         ),
       ],
@@ -175,8 +107,67 @@ class GeminiTranslatePage extends StatelessWidget {
       ],
     );
   }
+}
 
-  void _showTranslationErrorDialog(BuildContext context) {
+/// Flexible input body for the Gemini page.
+/// Grows naturally with content — no fixed height or expands.
+class GeminiInputBody extends StatelessWidget {
+  final TextEditingController outputController;
+  const GeminiInputBody({super.key, required this.outputController});
+
+  static bool _errorDialogOpen = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = Provider.of<GeminiTranslateViewModel>(context);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: viewModel.textController,
+          builder: (context, value, child) {
+            final fontSize = FontSizeHelper.getDynamicFontSize(
+              value.text.length,
+            );
+            return TextField(
+              controller: viewModel.textController,
+              maxLines: null,
+              minLines: 1,
+              textAlignVertical: TextAlignVertical.top,
+              style: TextStyle(
+                fontSize: fontSize,
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+              cursorColor: Colors.white,
+              decoration: InputDecoration(
+                hintText: 'Enter text',
+                hintStyle: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.3),
+                ),
+                contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                border: InputBorder.none,
+              ),
+              onChanged: (val) {
+                if (val.isEmpty) outputController.clear();
+              },
+            );
+          },
+        ),
+
+        if (viewModel.error != null)
+          Builder(
+            builder: (_) {
+              _showTranslationErrorDialog(context);
+              return const SizedBox.shrink();
+            },
+          ),
+      ],
+    );
+  }
+
+  static void _showTranslationErrorDialog(BuildContext context) {
     if (_errorDialogOpen) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!context.mounted || _errorDialogOpen) return;

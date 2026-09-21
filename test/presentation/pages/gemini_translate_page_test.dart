@@ -59,7 +59,7 @@ void main() {
       child: MaterialApp(
         theme: lightTheme,
         home: Scaffold(
-          body: GeminiTranslatePage(outputController: outputController),
+          body: GeminiLanguageHeader(outputController: outputController),
         ),
       ),
     );
@@ -73,47 +73,6 @@ void main() {
     await tester.pumpAndSettle();
 
     verify(() => mockViewModel.swapLanguages(any())).called(1);
-  });
-
-  testWidgets('displays clear button when output has text', (tester) async {
-    outputController.text = 'Hello';
-
-    await tester.pumpWidget(buildSubject());
-    expect(find.byIcon(Icons.clear_rounded), findsOneWidget);
-  });
-
-  testWidgets('does not display clear button when output is empty', (
-    tester,
-  ) async {
-    await tester.pumpWidget(buildSubject());
-    expect(find.byIcon(Icons.clear_rounded), findsNothing);
-  });
-
-  testWidgets('tapping clear button calls clear', (tester) async {
-    outputController.text = 'Hello';
-    when(() => mockViewModel.clear(any())).thenReturn(null);
-
-    await tester.pumpWidget(buildSubject());
-    await tester.tap(find.byIcon(Icons.clear_rounded));
-    await tester.pumpAndSettle();
-
-    verify(() => mockViewModel.clear(any())).called(1);
-  });
-
-  testWidgets('tapping volume button starts speech', (tester) async {
-    outputController.text = 'Merhaba';
-    inputController.text = 'Merhaba';
-    when(
-      () => mockTts.speak(any(), any(), onDone: any(named: 'onDone')),
-    ).thenAnswer((_) async {});
-
-    await tester.pumpWidget(buildSubject());
-    await tester.tap(find.byIcon(Icons.volume_up_rounded));
-    await tester.pumpAndSettle();
-
-    verify(
-      () => mockTts.speak('Merhaba', any(), onDone: any(named: 'onDone')),
-    ).called(1);
   });
 
   testWidgets('shows Listening overlay when isListening', (tester) async {

@@ -10,11 +10,11 @@ import 'package:translate_app/presentation/widgets/deck_selector_sheet.dart';
 import 'package:translate_app/presentation/widgets/speech_toggle_button.dart';
 import 'package:translate_app/presentation/utils/font_size_helper.dart';
 
-class OutputScreen extends StatelessWidget {
+class OutputTranslationField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
 
-  const OutputScreen({
+  const OutputTranslationField({
     super.key,
     required this.controller,
     this.hintText = 'Translation',
@@ -31,49 +31,43 @@ class OutputScreen extends StatelessWidget {
           controller.text.length,
         );
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Stack(
-            children: [
-              _buildTranslationField(fontSize),
-              if (controller.text.isNotEmpty)
-                _buildActionButtons(context, viewModel),
-            ],
+        return TextField(
+          controller: controller,
+          readOnly: true,
+          maxLines: null,
+          minLines: 1,
+          textAlignVertical: TextAlignVertical.top,
+          style: TextStyle(
+            fontSize: fontSize,
+            color: Colors.white.withValues(alpha: 0.85),
+            fontWeight: FontWeight.w500,
+          ),
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+            contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+            border: InputBorder.none,
           ),
         );
       },
     );
   }
+}
 
-  Widget _buildTranslationField(double fontSize) {
+class OutputActionButtons extends StatelessWidget {
+  final TextEditingController controller;
+  
+  const OutputActionButtons({
+    super.key,
+    required this.controller,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final mainVM = Provider.of<MainViewModel>(context);
+    
     return Padding(
-      padding: const EdgeInsets.only(bottom: 48),
-      child: TextField(
-        controller: controller,
-        readOnly: true,
-        maxLines: null,
-        minLines: 1,
-        textAlignVertical: TextAlignVertical.top,
-        style: TextStyle(
-          fontSize: fontSize,
-          color: Colors.white.withValues(alpha: 0.85),
-          fontWeight: FontWeight.w500,
-        ),
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
-          contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-          border: InputBorder.none,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(BuildContext context, MainViewModel mainVM) {
-    return Positioned(
-      bottom: 0,
-      left: 4,
-      right: 4,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Row(
         children: [
           if (!mainVM.isMLPage) ...[
@@ -100,6 +94,7 @@ class OutputScreen extends StatelessWidget {
       ),
     );
   }
+
 
   Widget _actionIcon(BuildContext context, IconData icon, String label) {
     return InkWell(

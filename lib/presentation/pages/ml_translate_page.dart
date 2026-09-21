@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'package:translate_app/presentation/widgets/dropdown.dart';
-import 'package:translate_app/presentation/widgets/speech_toggle_button.dart';
 import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
 import 'package:translate_app/presentation/utils/font_size_helper.dart';
 
-class MLTranslatePage extends StatelessWidget {
+/// Fixed-height language header for the ML page.
+/// Used inside a PageView with a fixed SizedBox height.
+class MLLanguageHeader extends StatelessWidget {
   final TextEditingController outputController;
-
-  const MLTranslatePage({super.key, required this.outputController});
+  const MLLanguageHeader({super.key, required this.outputController});
 
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<MLTranslateViewModel>(context);
-
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(8, 12, 8, 0),
@@ -27,194 +27,6 @@ class MLTranslatePage extends StatelessWidget {
             color: Colors.white.withValues(alpha: 0.1),
             thickness: 0.5,
             height: 12,
-          ),
-        ),
-        Expanded(
-          child: Stack(
-            children: [
-              SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(bottom: 48),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ValueListenableBuilder<TextEditingValue>(
-                      valueListenable: viewModel.textController,
-                      builder: (context, value, child) {
-                        final fontSize = FontSizeHelper.getDynamicFontSize(
-                          value.text.length,
-                        );
-                        return TextField(
-                          controller: viewModel.textController,
-                          maxLines: null,
-                          minLines: 1,
-                          textAlignVertical: TextAlignVertical.top,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: fontSize,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          cursorColor: Colors.white,
-                          decoration: InputDecoration(
-                            hintText: 'Enter text',
-                            hintStyle: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.3),
-                            ),
-                            contentPadding: const EdgeInsets.fromLTRB(
-                              20,
-                              16,
-                              20,
-                              8,
-                            ),
-                            border: InputBorder.none,
-                          ),
-                          onChanged: (text) =>
-                              viewModel.onTextChanged(text, outputController),
-                        );
-                      },
-                    ),
-                    if (viewModel.error != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          viewModel.error!,
-                          style: const TextStyle(
-                            color: Colors.redAccent,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                    if (viewModel.spellingCorrection != null)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Material(
-                          color: Colors.white.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(12),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: () =>
-                                viewModel.applyCorrection(outputController),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.auto_fix_high,
-                                    size: 16,
-                                    color: Colors.blueAccent,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Flexible(
-                                    child: Text.rich(
-                                      TextSpan(
-                                        text: 'Did you mean: ',
-                                        style: TextStyle(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.6,
-                                          ),
-                                          fontSize: 13,
-                                        ),
-                                        children: [
-                                          TextSpan(
-                                            text: viewModel.spellingCorrection,
-                                            style: const TextStyle(
-                                              color: Colors.blueAccent,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    if (viewModel.detectedLanguage != null)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                        child: Material(
-                          color: Colors.white.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(12),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: () => viewModel.applyDetectedLanguage(
-                              outputController,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.auto_fix_high,
-                                    size: 16,
-                                    color: Colors.blueAccent,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Flexible(
-                                    child: Text.rich(
-                                      TextSpan(
-                                        text: 'Translate from: ',
-                                        style: TextStyle(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.6,
-                                          ),
-                                          fontSize: 13,
-                                        ),
-                                        children: [
-                                          TextSpan(
-                                            text: viewModel.detectedLanguage,
-                                            style: const TextStyle(
-                                              color: Colors.blueAccent,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              if (outputController.text.isNotEmpty)
-                Positioned(
-                  bottom: 4,
-                  right: 4,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SpeechToggleButton(
-                        text: viewModel.textController.text,
-                        language: viewModel.sourceLanguage,
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.clear_rounded,
-                          color: Colors.white.withValues(alpha: 0.5),
-                        ),
-                        onPressed: () => viewModel.clear(outputController),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
           ),
         ),
       ],
@@ -293,6 +105,177 @@ class MLTranslatePage extends StatelessWidget {
               ),
             ),
           ),
+      ],
+    );
+  }
+}
+
+/// Flexible input body for the ML page.
+/// Grows naturally with content — no fixed height or expands.
+class MLInputBody extends StatelessWidget {
+  final TextEditingController outputController;
+  const MLInputBody({super.key, required this.outputController});
+
+  @override
+  Widget build(BuildContext context) {
+    final viewModel = Provider.of<MLTranslateViewModel>(context);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: viewModel.textController,
+          builder: (context, value, child) {
+            final fontSize = FontSizeHelper.getDynamicFontSize(
+              value.text.length,
+            );
+            return TextField(
+              controller: viewModel.textController,
+              maxLines: null,
+              minLines: 1,
+              textAlignVertical: TextAlignVertical.top,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: fontSize,
+                fontWeight: FontWeight.w500,
+              ),
+              cursorColor: Colors.white,
+              decoration: InputDecoration(
+                hintText: 'Enter text',
+                hintStyle: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.3),
+                ),
+                contentPadding: const EdgeInsets.fromLTRB(
+                  20,
+                  16,
+                  20,
+                  8,
+                ),
+                border: InputBorder.none,
+              ),
+              onChanged: (text) =>
+                  viewModel.onTextChanged(text, outputController),
+            );
+          },
+        ),
+        if (viewModel.error != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              viewModel.error!,
+              style: const TextStyle(
+                color: Colors.redAccent,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        if (viewModel.spellingCorrection != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Material(
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () =>
+                    viewModel.applyCorrection(outputController),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.auto_fix_high,
+                        size: 16,
+                        color: Colors.blueAccent,
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text.rich(
+                          TextSpan(
+                            text: 'Did you mean: ',
+                            style: TextStyle(
+                              color: Colors.white.withValues(
+                                alpha: 0.6,
+                              ),
+                              fontSize: 13,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: viewModel.spellingCorrection,
+                                style: const TextStyle(
+                                  color: Colors.blueAccent,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        if (viewModel.detectedLanguage != null)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Material(
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => viewModel.applyDetectedLanguage(
+                  outputController,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.auto_fix_high,
+                        size: 16,
+                        color: Colors.blueAccent,
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text.rich(
+                          TextSpan(
+                            text: 'Translate from: ',
+                            style: TextStyle(
+                              color: Colors.white.withValues(
+                                alpha: 0.6,
+                              ),
+                              fontSize: 13,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: viewModel.detectedLanguage,
+                                style: const TextStyle(
+                                  color: Colors.blueAccent,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
       ],
     );
   }
