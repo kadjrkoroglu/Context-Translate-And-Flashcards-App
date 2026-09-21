@@ -4,7 +4,6 @@ import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/domain/usecases/translate_usecase.dart';
 import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/data/services/settings_service.dart';
-import 'package:translate_app/data/services/tts_service.dart';
 import 'package:translate_app/data/constants/ml_languages.dart';
 
 class GeminiTranslateViewModel extends ChangeNotifier {
@@ -266,18 +265,6 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     _results = [];
     clearError();
     notifyListeners();
-  }
-
-  Future<void> speakInputText(TtsService tts) async {
-    final text = _textController.text.trim();
-    if (text.isEmpty) return;
-
-    try {
-      await tts.speak(text, _sourceLanguage);
-    } catch (e) {
-      debugPrint('Speak error: $e');
-      await tts.speak(text, 'English');
-    }
   }
 
   @override

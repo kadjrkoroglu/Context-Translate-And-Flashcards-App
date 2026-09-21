@@ -100,15 +100,20 @@ void main() {
     verify(() => mockViewModel.clear(any())).called(1);
   });
 
-  testWidgets('tapping volume button calls speakInputText', (tester) async {
+  testWidgets('tapping volume button starts speech', (tester) async {
     outputController.text = 'Merhaba';
-    when(() => mockViewModel.speakInputText(any())).thenAnswer((_) async {});
+    inputController.text = 'Merhaba';
+    when(
+      () => mockTts.speak(any(), any(), onDone: any(named: 'onDone')),
+    ).thenAnswer((_) async {});
 
     await tester.pumpWidget(buildSubject());
     await tester.tap(find.byIcon(Icons.volume_up_rounded));
     await tester.pumpAndSettle();
 
-    verify(() => mockViewModel.speakInputText(any())).called(1);
+    verify(
+      () => mockTts.speak('Merhaba', any(), onDone: any(named: 'onDone')),
+    ).called(1);
   });
 
   testWidgets('shows Listening overlay when isListening', (tester) async {

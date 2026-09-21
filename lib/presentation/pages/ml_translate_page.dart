@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'package:translate_app/presentation/widgets/dropdown.dart';
+import 'package:translate_app/presentation/widgets/speech_toggle_button.dart';
 import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
-import 'package:translate_app/data/services/tts_service.dart';
 
 class MLTranslatePage extends StatelessWidget {
   final TextEditingController outputController;
@@ -191,17 +191,9 @@ class MLTranslatePage extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.volume_up_rounded,
-                          color: Colors.white.withValues(alpha: 0.5),
-                        ),
-                        onPressed: () {
-                          context.read<TtsService>().speak(
-                            viewModel.textController.text,
-                            viewModel.sourceLanguage,
-                          );
-                        },
+                      SpeechToggleButton(
+                        text: viewModel.textController.text,
+                        language: viewModel.sourceLanguage,
                       ),
                       IconButton(
                         icon: Icon(

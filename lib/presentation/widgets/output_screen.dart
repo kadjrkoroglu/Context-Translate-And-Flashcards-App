@@ -7,7 +7,7 @@ import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/deck_selector_sheet.dart';
-import 'package:translate_app/data/services/tts_service.dart';
+import 'package:translate_app/presentation/widgets/speech_toggle_button.dart';
 
 class OutputScreen extends StatelessWidget {
   final TextEditingController controller;
@@ -79,7 +79,18 @@ class OutputScreen extends StatelessWidget {
             _actionIcon(context, Icons.auto_awesome_rounded, "Translate"),
           ],
           const Spacer(),
-          _TtsButton(mainVM: mainVM, text: controller.text),
+          SpeechToggleButton(
+            text: controller.text,
+            language: mainVM.isMLPage
+                ? Provider.of<MLTranslateViewModel>(
+                    context,
+                    listen: false,
+                  ).targetLanguage
+                : Provider.of<GeminiTranslateViewModel>(
+                    context,
+                    listen: false,
+                  ).targetLanguage,
+          ),
           _DeckAddButton(mainVM: mainVM, translation: controller.text),
           _FavoriteButton(mainVM: mainVM, translation: controller.text),
         ],
@@ -308,11 +319,7 @@ class _ToneDropdownState extends State<_ToneDropdown> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.tune_rounded,
-                  color: Colors.white70,
-                  size: 16,
-                ),
+                const Icon(Icons.tune_rounded, color: Colors.white70, size: 16),
                 const SizedBox(width: 4),
                 SizedBox(
                   width: 58,
@@ -401,37 +408,6 @@ class _FavoriteButton extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _TtsButton extends StatelessWidget {
-  final MainViewModel mainVM;
-  final String text;
-  const _TtsButton({required this.mainVM, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 36),
-      onPressed: () {
-        final tts = context.read<TtsService>();
-        final language = mainVM.isMLPage
-            ? Provider.of<MLTranslateViewModel>(
-                context,
-                listen: false,
-              ).targetLanguage
-            : Provider.of<GeminiTranslateViewModel>(
-                context,
-                listen: false,
-              ).targetLanguage;
-        tts.speak(text, language);
-      },
-      icon: Icon(
-        Icons.volume_up_rounded,
-        color: Colors.white.withValues(alpha: 0.7),
-      ),
     );
   }
 }

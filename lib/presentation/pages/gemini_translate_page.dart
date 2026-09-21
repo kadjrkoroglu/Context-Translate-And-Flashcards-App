@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'package:translate_app/presentation/widgets/dropdown.dart';
+import 'package:translate_app/presentation/widgets/speech_toggle_button.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
-import 'package:translate_app/data/services/tts_service.dart';
 
 class GeminiTranslatePage extends StatelessWidget {
   final TextEditingController outputController;
@@ -64,14 +64,9 @@ class GeminiTranslatePage extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.volume_up_rounded,
-                          color: Colors.white.withValues(alpha: 0.5),
-                        ),
-                        onPressed: () => viewModel.speakInputText(
-                          context.read<TtsService>(),
-                        ),
+                      SpeechToggleButton(
+                        text: viewModel.textController.text,
+                        language: viewModel.sourceLanguage,
                       ),
                       IconButton(
                         icon: Icon(
