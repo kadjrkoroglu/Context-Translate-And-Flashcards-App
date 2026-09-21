@@ -32,7 +32,7 @@ class MainPage extends StatelessWidget {
 
     // Calculates space between input and bottom bar
     final double safeAreaBottom = MediaQuery.of(context).padding.bottom;
-    final double bottomAreaHeight = 85 + 38;
+    final double bottomAreaHeight = 45 + 38;
     final double fixedGap = 15;
     final double totalBottomPadding =
         bottomAreaHeight + fixedGap + safeAreaBottom;
@@ -363,20 +363,23 @@ class MainPage extends StatelessWidget {
     final glassTheme = Theme.of(context).extension<GlassThemeExtension>();
     return BottomAppBar(
       padding: const EdgeInsets.symmetric(horizontal: 10),
-      height: 85,
+      height: 45,
       color: glassTheme?.baseGlassColor ?? Colors.white.withValues(alpha: 0.1),
       elevation: 0,
       shape: const CircularNotchedRectangle(),
       notchMargin: 12,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _navIcon(context, Icons.history_rounded, const HistoryPage()),
-          _navIcon(context, Icons.favorite_rounded, const FavoritesPage()),
-          const SizedBox(width: 50),
-          _navIcon(context, Icons.quiz_rounded, const DecksPage()),
-          _navIcon(context, Icons.person_rounded, const ProfilePage()),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _navIcon(context, Icons.history_rounded, const HistoryPage()),
+            _navIcon(context, Icons.favorite_rounded, const FavoritesPage()),
+            const SizedBox(width: 50),
+            _navIcon(context, Icons.quiz_rounded, const DecksPage()),
+            _navIcon(context, Icons.person_rounded, const ProfilePage()),
+          ],
+        ),
       ),
     );
   }
