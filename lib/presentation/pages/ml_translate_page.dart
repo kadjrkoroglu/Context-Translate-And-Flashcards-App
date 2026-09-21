@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:translate_app/presentation/widgets/dropdown.dart';
 import 'package:translate_app/presentation/widgets/speech_toggle_button.dart';
 import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
+import 'package:translate_app/presentation/utils/font_size_helper.dart';
 
 class MLTranslatePage extends StatelessWidget {
   final TextEditingController outputController;
@@ -38,32 +39,40 @@ class MLTranslatePage extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    TextField(
-                      controller: viewModel.textController,
-                      maxLines: null,
-                      minLines: 1,
-                      textAlignVertical: TextAlignVertical.top,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      cursorColor: Colors.white,
-                      decoration: InputDecoration(
-                        hintText: 'Enter text',
-                        hintStyle: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.3),
-                        ),
-                        contentPadding: const EdgeInsets.fromLTRB(
-                          20,
-                          16,
-                          20,
-                          8,
-                        ),
-                        border: InputBorder.none,
-                      ),
-                      onChanged: (text) =>
-                          viewModel.onTextChanged(text, outputController),
+                    ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: viewModel.textController,
+                      builder: (context, value, child) {
+                        final fontSize = FontSizeHelper.getDynamicFontSize(
+                          value.text.length,
+                        );
+                        return TextField(
+                          controller: viewModel.textController,
+                          maxLines: null,
+                          minLines: 1,
+                          textAlignVertical: TextAlignVertical.top,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: fontSize,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          cursorColor: Colors.white,
+                          decoration: InputDecoration(
+                            hintText: 'Enter text',
+                            hintStyle: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.3),
+                            ),
+                            contentPadding: const EdgeInsets.fromLTRB(
+                              20,
+                              16,
+                              20,
+                              8,
+                            ),
+                            border: InputBorder.none,
+                          ),
+                          onChanged: (text) =>
+                              viewModel.onTextChanged(text, outputController),
+                        );
+                      },
                     ),
                     if (viewModel.error != null)
                       Padding(

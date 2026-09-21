@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:translate_app/presentation/widgets/dropdown.dart';
 import 'package:translate_app/presentation/widgets/speech_toggle_button.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
+import 'package:translate_app/presentation/utils/font_size_helper.dart';
 
 class GeminiTranslatePage extends StatelessWidget {
   final TextEditingController outputController;
@@ -33,28 +34,36 @@ class GeminiTranslatePage extends StatelessWidget {
         Expanded(
           child: Stack(
             children: [
-              TextField(
-                controller: viewModel.textController,
-                expands: true,
-                maxLines: null,
-                minLines: null,
-                textAlignVertical: TextAlignVertical.top,
-                style: const TextStyle(
-                  fontSize: 22,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                ),
-                cursorColor: Colors.white,
-                decoration: InputDecoration(
-                  hintText: 'Enter text',
-                  hintStyle: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.3),
-                  ),
-                  contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 48),
-                  border: InputBorder.none,
-                ),
-                onChanged: (value) {
-                  if (value.isEmpty) outputController.clear();
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: viewModel.textController,
+                builder: (context, value, child) {
+                  final fontSize = FontSizeHelper.getDynamicFontSize(
+                    value.text.length,
+                  );
+                  return TextField(
+                    controller: viewModel.textController,
+                    expands: true,
+                    maxLines: null,
+                    minLines: null,
+                    textAlignVertical: TextAlignVertical.top,
+                    style: TextStyle(
+                      fontSize: fontSize,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    cursorColor: Colors.white,
+                    decoration: InputDecoration(
+                      hintText: 'Enter text',
+                      hintStyle: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
+                      contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 48),
+                      border: InputBorder.none,
+                    ),
+                    onChanged: (val) {
+                      if (val.isEmpty) outputController.clear();
+                    },
+                  );
                 },
               ),
               if (outputController.text.isNotEmpty && !viewModel.isLoading)

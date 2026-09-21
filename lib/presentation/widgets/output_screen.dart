@@ -8,6 +8,7 @@ import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dar
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/deck_selector_sheet.dart';
 import 'package:translate_app/presentation/widgets/speech_toggle_button.dart';
+import 'package:translate_app/presentation/utils/font_size_helper.dart';
 
 class OutputScreen extends StatelessWidget {
   final TextEditingController controller;
@@ -26,7 +27,9 @@ class OutputScreen extends StatelessWidget {
     return AnimatedBuilder(
       animation: Listenable.merge([viewModel.pageController, controller]),
       builder: (context, _) {
-        const double fontSize = 22;
+        final fontSize = FontSizeHelper.getDynamicFontSize(
+          controller.text.length,
+        );
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
