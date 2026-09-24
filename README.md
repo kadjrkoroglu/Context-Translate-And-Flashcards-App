@@ -14,7 +14,7 @@ Interactive flashcards allow users to:
 - Improve vocabulary retention through quick swipe-based review
 
 ## Tech Stack
-Flutter, Dart, Gemini 1.5 Flash API, Google ML Kit, Speech-to-Text, Provider, IsarDatabase, Firestore Database, Cloud Sync, Offline-First Architecture
+Flutter, Dart, Gemini 2.5 Flash API, Google ML Kit, Speech-to-Text, Provider, IsarDatabase, Firestore Database, Cloud Sync, Offline-First Architecture
 ---
 Developed as a real-world application highlighting clean architecture, modern Flutter workflows, and AI-driven translation features.
 

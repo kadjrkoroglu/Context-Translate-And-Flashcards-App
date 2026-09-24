@@ -5,8 +5,6 @@ import 'package:translate_app/presentation/widgets/dropdown.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
 import 'package:translate_app/presentation/utils/font_size_helper.dart';
 
-/// Fixed-height language header for the Gemini page.
-/// Used inside a PageView with a fixed SizedBox height.
 class GeminiLanguageHeader extends StatelessWidget {
   final TextEditingController outputController;
   const GeminiLanguageHeader({super.key, required this.outputController});
@@ -109,8 +107,6 @@ class GeminiLanguageHeader extends StatelessWidget {
   }
 }
 
-/// Flexible input body for the Gemini page.
-/// Grows naturally with content — no fixed height or expands.
 class GeminiInputBody extends StatelessWidget {
   final TextEditingController outputController;
   const GeminiInputBody({super.key, required this.outputController});
