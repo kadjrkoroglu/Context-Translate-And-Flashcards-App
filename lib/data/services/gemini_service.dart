@@ -1,20 +1,32 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:translate_app/core/errors/app_exception.dart';
 
 class GeminiService {
   static const String _baseUrl =
-      'https://europe-west1-translateapp-bd410.cloudfunctions.net/translate';
+      'https://context-translate-api-production.up.railway.app/translate';
 
   Future<List<String>> translateText(String text, String targetLanguage) async {
     try {
+      final token = await FirebaseAuth.instance.currentUser?.getIdToken();
+      if (token == null) {
+        throw const AuthException('Sign in required to translate');
+      }
+
       final response = await http.post(
         Uri.parse(_baseUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
         body: jsonEncode({'text': text, 'targetLanguage': targetLanguage}),
       );
 
+      if (response.statusCode == 429) {
+        throw GeneralException('Too many requests, try again shortly');
+      }
       if (response.statusCode != 200) {
         throw GeneralException('Translation failed', details: response.body);
       }
