@@ -6,7 +6,7 @@ import 'package:translate_app/core/errors/app_exception.dart';
 
 class GeminiService {
   static const String _baseUrl =
-      'https://context-translate-api-production.up.railway.app/translate';
+      'https://europe-west1-translateapp-bd410.cloudfunctions.net/api/translate';
 
   Future<List<String>> translateText(String text, String targetLanguage) async {
     try {
