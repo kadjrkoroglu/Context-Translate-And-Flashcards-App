@@ -18,6 +18,9 @@ class AuthUsecase {
   Future<AuthEntity?> executeSignInWithGoogle() =>
       _repository.signInWithGoogle();
 
+  Future<AuthEntity?> executeSignInAnonymously() =>
+      _repository.signInAnonymously();
+
   Future<void> executeSignOut() => _repository.signOut();
 
   Future<void> executeSendEmailVerification() =>

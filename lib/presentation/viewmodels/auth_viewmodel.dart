@@ -4,37 +4,66 @@ import 'package:translate_app/domain/entities/auth_entity.dart';
 import 'package:translate_app/domain/usecases/auth_usecase.dart';
 
 import '../../data/services/sync_service.dart';
+import 'entitlements_viewmodel.dart';
 
 class AuthViewModel extends ChangeNotifier {
   final AuthUsecase _authUsecase;
   final SyncService _syncService;
+  final EntitlementsViewModel _entitlementsViewModel;
   AuthEntity? _user;
   bool _isLoading = false;
   String? _error;
 
-  AuthViewModel(AuthUsecase authUsecase, SyncService syncService)
-    : _authUsecase = authUsecase,
+  AuthViewModel(
+    AuthUsecase authUsecase,
+    SyncService syncService,
+    EntitlementsViewModel entitlementsViewModel,
+  ) : _authUsecase = authUsecase,
       _syncService = syncService,
+      _entitlementsViewModel = entitlementsViewModel,
       // Seed the session so a cold-start restore isn't treated as a login.
       _user = authUsecase.currentUser {
+    // Only true right now, before the listener below can react to a
+    // deliberate signOut(). Used once below so signing out doesn't
+    // immediately grant a fresh anonymous quota (that would let anyone
+    // reset their daily limit by repeatedly tapping "sign out").
+    final noSessionAtStartup = _user == null;
+
     _authUsecase.user.listen((AuthEntity? user) async {
       _user = user;
 
       // Reload a restored account that hasn't verified its email yet.
-      if (user != null && !user.emailVerified) {
+      if (user != null && !user.isAnonymous && !user.emailVerified) {
         _authUsecase.executeReloadUser().then((_) {
           _user = _authUsecase.currentUser;
           notifyListeners();
         });
       }
+      // Refresh tier/quota on both a fresh login and a cold-start restore.
+      if (user != null) _entitlementsViewModel.load();
       notifyListeners();
     });
+
+    // First-ever launch (or first launch since data was cleared): grant a
+    // real Firebase UID in the background so free-tier features (backend
+    // quota, translate) work without asking anyone to sign in. Deliberately
+    // NOT repeated after an explicit signOut() — see noSessionAtStartup.
+    if (noSessionAtStartup) {
+      _authUsecase.executeSignInAnonymously().catchError((e) {
+        debugPrint('Anonymous sign-in failed: $e');
+        return null;
+      });
+    }
   }
 
   AuthEntity? get user => _user;
+
   bool get isLoading => _isLoading;
   String? get error => _error;
-  bool get isAuthenticated => _user != null;
+  // A "real" account for UI purposes (Welcome/VerifyEmail routing): a guest
+  // (anonymous) session doesn't count, even though it already has a valid
+  // Firebase UID the backend accepts for free-tier translate/quota.
+  bool get isAuthenticated => _user != null && !_user!.isAnonymous;
 
   bool get isEmailVerified => _user?.emailVerified ?? false;
 

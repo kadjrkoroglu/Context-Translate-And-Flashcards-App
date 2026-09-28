@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:translate_app/core/errors/app_exception.dart';
+import 'package:translate_app/data/constants/api_config.dart';
 
 class GeminiService {
-  static const String _baseUrl =
-      'https://europe-west1-translateapp-bd410.cloudfunctions.net/api/translate';
+  static const String _baseUrl = '${ApiConfig.baseUrl}/translate';
 
   Future<List<String>> translateText(String text, String targetLanguage) async {
     try {

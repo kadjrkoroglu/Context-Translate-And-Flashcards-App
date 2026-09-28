@@ -174,6 +174,7 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: () async {
                 Navigator.pop(dialogContext);
                 await vm.signOut();
+                if (context.mounted) _showRestartRequiredDialog(context);
               },
               child: const Text(
                 'Sign Out',
@@ -182,6 +183,38 @@ class _ProfilePageState extends State<ProfilePage> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRestartRequiredDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+          ),
+          title: const Text(
+            'Restart Required',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: const Text(
+            'Please close and reopen the app to keep translating as a guest, '
+            'or sign back in.',
+            style: TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('OK', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),

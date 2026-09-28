@@ -5,11 +5,15 @@ import 'package:translate_app/data/repositories/deck_repository_impl.dart';
 import 'package:translate_app/data/repositories/favorite_repository_impl.dart';
 import 'package:translate_app/data/repositories/history_repository_impl.dart';
 import 'package:translate_app/data/repositories/translation_repository_impl.dart';
+import 'package:translate_app/data/repositories/entitlements_repository_impl.dart';
 import 'package:translate_app/domain/usecases/auth_usecase.dart';
 import 'package:translate_app/domain/usecases/deck_usecase.dart';
 import 'package:translate_app/domain/usecases/favorite_usecase.dart';
 import 'package:translate_app/domain/usecases/history_usecase.dart';
 import 'package:translate_app/domain/usecases/translate_usecase.dart';
+import 'package:translate_app/domain/usecases/entitlements_usecase.dart';
+import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
+import 'package:translate_app/data/services/entitlements_service.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/pages/auth/auth_wrapper.dart';
 import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
@@ -48,6 +52,9 @@ void main() async {
   final settingsService = SettingsService(prefs);
 
   final geminiService = GeminiService();
+  final entitlementsUsecase = EntitlementsUsecase(
+    EntitlementsRepositoryImpl(EntitlementsService()),
+  );
 
   final firestoreService = FirestoreService();
   final historyRepository = HistoryRepositoryImpl(localStorage);
@@ -65,7 +72,14 @@ void main() async {
         Provider<TtsService>(create: (_) => TtsService()),
         ChangeNotifierProvider(create: (_) => ThemeProvider(settingsService)),
         ChangeNotifierProvider(
-          create: (_) => AuthViewModel(authUsecase, syncService),
+          create: (_) => EntitlementsViewModel(entitlementsUsecase),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => AuthViewModel(
+            authUsecase,
+            syncService,
+            context.read<EntitlementsViewModel>(),
+          ),
         ),
         ChangeNotifierProvider(create: (_) => MainViewModel()),
         ChangeNotifierProvider<SyncService>.value(value: syncService),

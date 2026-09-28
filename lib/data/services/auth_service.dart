@@ -26,10 +26,20 @@ class AuthService {
     String password,
   ) async {
     try {
-      final credential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      final anonymousUser = _auth.currentUser;
+      final UserCredential credential;
+      if (anonymousUser != null && anonymousUser.isAnonymous) {
+        // Upgrade the guest session in place so its Firebase UID (and every
+        // row keyed by it, both here and in our backend) is kept as-is.
+        credential = await anonymousUser.linkWithCredential(
+          EmailAuthProvider.credential(email: email, password: password),
+        );
+      } else {
+        credential = await _auth.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+      }
       if (credential.user != null) {
         await credential.user!.sendEmailVerification();
       }
@@ -71,6 +81,21 @@ class AuthService {
         idToken: googleAuth.idToken,
       );
 
+      final anonymousUser = _auth.currentUser;
+      if (anonymousUser != null && anonymousUser.isAnonymous) {
+        try {
+          // Same reasoning as registerWithEmail: keep the guest's UID.
+          return await anonymousUser.linkWithCredential(credential);
+        } on FirebaseAuthException catch (e) {
+          // This Google account already has a real account elsewhere; sign
+          // into that one instead and let the throwaway guest session go.
+          if (e.code == 'credential-already-in-use' || e.code == 'email-already-in-use') {
+            return await _auth.signInWithCredential(credential);
+          }
+          rethrow;
+        }
+      }
+
       return await _auth.signInWithCredential(credential);
     } on FirebaseAuthException catch (e) {
       throw AuthException('Google sign-in failed', details: e.message, code: e.code);
@@ -79,6 +104,14 @@ class AuthService {
     } catch (e) {
       if (e is AppException) rethrow;
       throw GeneralException('Google sign-in failed', details: e.toString());
+    }
+  }
+
+  Future<UserCredential?> signInAnonymously() async {
+    try {
+      return await _auth.signInAnonymously();
+    } on FirebaseAuthException catch (e) {
+      throw AuthException('Anonymous sign-in failed', details: e.message, code: e.code);
     }
   }
 

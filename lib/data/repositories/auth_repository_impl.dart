@@ -33,6 +33,12 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<AuthEntity?> signInAnonymously() async {
+    final credential = await _authService.signInAnonymously();
+    return _toEntity(credential?.user);
+  }
+
+  @override
   Future<void> signOut() => _authService.signOut();
 
   @override
@@ -49,6 +55,7 @@ class AuthRepositoryImpl implements AuthRepository {
       displayName: user.displayName,
       photoURL: user.photoURL,
       emailVerified: user.emailVerified,
+      isAnonymous: user.isAnonymous,
     );
   }
 }

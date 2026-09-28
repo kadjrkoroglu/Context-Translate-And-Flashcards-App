@@ -4,6 +4,7 @@ class AuthEntity {
   final String? displayName;
   final String? photoURL;
   final bool emailVerified;
+  final bool isAnonymous;
 
   const AuthEntity({
     required this.uid,
@@ -11,5 +12,6 @@ class AuthEntity {
     this.displayName,
     this.photoURL,
     required this.emailVerified,
+    this.isAnonymous = false,
   });
 }
