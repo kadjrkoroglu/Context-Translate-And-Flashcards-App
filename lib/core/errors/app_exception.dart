@@ -5,7 +5,8 @@ abstract class AppException implements Exception {
   const AppException(this.message, {this.details});
 
   @override
-  String toString() => '$runtimeType: $message${details != null ? ' ($details)' : ''}';
+  String toString() =>
+      '$runtimeType: $message${details != null ? ' ($details)' : ''}';
 }
 
 class NetworkException extends AppException {
@@ -28,4 +29,23 @@ class AuthException extends AppException {
   const AuthException(super.message, {super.details, this.code});
 
   final String? code;
+}
+
+/// A 429 from the backend. [window] tells the two cases apart:
+/// 'day' is the free tier's daily cap, 'burst' is Standard/Premium's
+/// short-lived token bucket, and null is a generic anti-abuse rate limit.
+class QuotaExceededException extends AppException {
+  const QuotaExceededException(
+    super.message, {
+    super.details,
+    this.window,
+    this.resetsAt,
+    this.retryAfterSeconds,
+  });
+
+  final String? window;
+  final DateTime? resetsAt;
+  final int? retryAfterSeconds;
+
+  bool get isDailyLimit => window == 'day';
 }

@@ -14,6 +14,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
 
   bool _isLoading = false;
   String? _error;
+  AppException? _lastException;
   late String _sourceLanguage;
   late String _targetLanguage;
   bool _speechEnabled = false;
@@ -23,6 +24,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   String _lastTranslateKey = '';
   bool get isLoading => _isLoading;
   String? get error => _error;
+  AppException? get lastException => _lastException;
   String get sourceLanguage => _sourceLanguage;
   String get targetLanguage => _targetLanguage;
   bool get speechEnabled => _speechEnabled;
@@ -53,6 +55,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
 
   void clearError() {
     _error = null;
+    _lastException = null;
     notifyListeners();
   }
 
@@ -230,6 +233,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
 
       _lastTranslateKey = translateKey;
     } catch (e) {
+      _lastException = e is AppException ? e : null;
       _setError(_handleError(e));
       _results = [];
     } finally {
@@ -238,22 +242,22 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   }
 
   String _handleError(dynamic e) {
+    if (e is NetworkException) {
+      return 'No internet connection. Please check your network and try again.';
+    }
+    if (e is QuotaExceededException) {
+      return e.isDailyLimit
+          ? 'Daily AI limit reached. Try offline mode or upgrade for unlimited translations.'
+          : 'Too many requests! Please wait a few seconds and try again.';
+    }
+
     final String raw = e is AppException
         ? '${e.message} ${e.details ?? ''}'
         : e.toString();
     String message = raw.toLowerCase();
 
-    if (e is NetworkException) {
-      return 'No internet connection. Please check your network and try again.';
-    }
     if (message.contains('503') || message.contains('service unavailable')) {
       return 'AI servers are currently overloaded. Please wait a few seconds and try again.';
-    }
-    if (message.contains('429') || message.contains('too many requests')) {
-      return 'Too many requests! Please wait 1 minute and try again (Quota Limit).';
-    }
-    if (message.contains('quota') || message.contains('exhausted')) {
-      return 'Daily AI limit reached. Please try again tomorrow or use Basic mode.';
     }
 
     return 'An error occurred: ${e is AppException ? e.message : e}';

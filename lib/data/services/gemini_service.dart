@@ -25,7 +25,21 @@ class GeminiService {
       );
 
       if (response.statusCode == 429) {
-        throw GeneralException('Too many requests, try again shortly');
+        Map<String, dynamic>? body;
+        try {
+          body = jsonDecode(response.body) as Map<String, dynamic>;
+        } catch (_) {
+          // Not every 429 (e.g. the plain IP rate limiter) returns JSON we recognize.
+        }
+        throw QuotaExceededException(
+          body?['error'] as String? ?? 'Too many requests, try again shortly',
+          details: response.body,
+          window: body?['window'] as String?,
+          resetsAt: body?['resetsAt'] != null
+              ? DateTime.tryParse(body!['resetsAt'] as String)
+              : null,
+          retryAfterSeconds: body?['retryAfterSeconds'] as int?,
+        );
       }
       if (response.statusCode != 200) {
         throw GeneralException('Translation failed', details: response.body);
