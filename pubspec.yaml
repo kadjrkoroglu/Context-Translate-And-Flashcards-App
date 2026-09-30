@@ -53,6 +53,9 @@ dependencies:
   google_sign_in: ^6.2.2
   cloud_firestore: ^5.6.12
   flutter_tts: ^4.2.5
+  camera: ^0.12.1
+  flutter_onnxruntime: ^1.8.5
+  image_picker: ^1.2.3
 
 dev_dependencies:
   flutter_test:
@@ -84,6 +87,8 @@ flutter:
   assets:
     - assets/images/google.png
     - assets/images/flashcard.png
+    # On-device OCR for photo translation (PaddleOCR PP-OCRv5 mobile, ONNX)
+    - assets/ocr/
 
 flutter_launcher_icons:
   android: "launcher_icon"

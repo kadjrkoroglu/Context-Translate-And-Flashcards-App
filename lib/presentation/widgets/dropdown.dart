@@ -12,6 +12,9 @@ class LanguageDropdown extends StatefulWidget {
   final bool isLoading;
   final String? labelText;
 
+  /// Smaller box for tight spots (photo camera).
+  final bool dense;
+
   const LanguageDropdown({
     super.key,
     required this.value,
@@ -22,6 +25,7 @@ class LanguageDropdown extends StatefulWidget {
     this.showIcons = true,
     this.isLoading = false,
     this.labelText,
+    this.dense = false,
   });
 
   static const List<String> languages = [
@@ -134,7 +138,9 @@ class _LanguageDropdownState extends State<LanguageDropdown> {
             Positioned(
               left: anchor.dx,
               top: top,
-              width: box.size.width,
+              width: widget.dense
+                  ? math.max(box.size.width, 150)
+                  : box.size.width,
               child: _buildMenuCard(menuHeight),
             ),
           ],
@@ -298,9 +304,11 @@ class _LanguageDropdownState extends State<LanguageDropdown> {
               onTap: _openMenu,
               borderRadius: BorderRadius.circular(16),
               child: SizedBox(
-                height: 48,
+                height: widget.dense ? 40 : 48,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: widget.dense ? 8 : 12,
+                  ),
                   child: Row(
                     children: [
                       Expanded(
@@ -324,15 +332,16 @@ class _LanguageDropdownState extends State<LanguageDropdown> {
                                     color: isPlaceholder
                                         ? Colors.white54
                                         : color,
-                                    fontSize: 14,
+                                    fontSize: widget.dense ? 13 : 14,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                         ),
                       ),
-                      const Icon(
+                      Icon(
                         Icons.expand_more_rounded,
                         color: Colors.white70,
+                        size: widget.dense ? 16 : 24,
                       ),
                     ],
                   ),

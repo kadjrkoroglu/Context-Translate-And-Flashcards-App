@@ -13,6 +13,9 @@ import 'package:translate_app/presentation/widgets/app_background.dart';
 import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
+import 'package:translate_app/presentation/pages/photo_translate_page.dart';
+import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
 import 'package:translate_app/theme/theme.dart';
 import 'dart:ui';
 import 'dart:math' as math;
@@ -30,7 +33,6 @@ class MainPage extends StatelessWidget {
 
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
-    // Calculates space between input and bottom bar
     final double safeAreaBottom = MediaQuery.of(context).padding.bottom;
     final double bottomAreaHeight = 45 + 38;
     final double fixedGap = 15;
@@ -80,9 +82,7 @@ class MainPage extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: Color.alphaBlend(
                               glassTheme?.baseGlassColor ??
-                                  Colors.white.withValues(
-                                    alpha: 0.12,
-                                  ), // Bright glass tint from the root theme
+                                  Colors.white.withValues(alpha: 0.12),
                               glassTheme?.backgroundGradient.first ??
                                   (Theme.of(context).brightness ==
                                           Brightness.dark
@@ -103,7 +103,6 @@ class MainPage extends StatelessWidget {
                           ),
                           child: Column(
                             children: [
-                              // Fixed sticky language header — swipeable
                               SizedBox(
                                 height: 72,
                                 child: PageView(
@@ -128,7 +127,6 @@ class MainPage extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              // Unified scrollable body: Input + Divider + Output + Translate Button
                               Expanded(
                                 child: LayoutBuilder(
                                   builder: (context, constraints) {
@@ -149,7 +147,6 @@ class MainPage extends StatelessWidget {
                                               return Column(
                                                 mainAxisSize: MainAxisSize.max,
                                                 children: [
-                                                  // Input body (conditionally rendered based on active page)
                                                   AnimatedBuilder(
                                                     animation: viewModel
                                                         .pageController,
@@ -171,10 +168,8 @@ class MainPage extends StatelessWidget {
                                                   ),
 
                                                   if (!hasOutput)
-                                                    const Spacer(), // Pushes initial Translate button to bottom
-                                                  if (hasOutput)
-                                                    const Spacer(), // Top space for centering the Divider
-                                                  // Input action buttons (Speaker and Clear) right above the divider
+                                                    const Spacer(),
+                                                  if (hasOutput) const Spacer(),
                                                   if (hasOutput &&
                                                       !(viewModel.isMLPage
                                                           ? mlViewModel
@@ -249,7 +244,6 @@ class MainPage extends StatelessWidget {
                                                       ),
                                                     ),
 
-                                                  // Divider between Input and Output (shown when output exists)
                                                   if (hasOutput)
                                                     Padding(
                                                       padding:
@@ -266,23 +260,19 @@ class MainPage extends StatelessWidget {
                                                       ),
                                                     ),
 
-                                                  // Output Translation TextField
                                                   if (hasOutput)
                                                     OutputTranslationField(
                                                       controller: viewModel
                                                           .outputController,
                                                     ),
 
-                                                  if (hasOutput)
-                                                    const Spacer(), // Bottom space for centering the Divider
-                                                  // Action Buttons for Output (only when output exists)
+                                                  if (hasOutput) const Spacer(),
                                                   if (hasOutput)
                                                     OutputActionButtons(
                                                       controller: viewModel
                                                           .outputController,
                                                     ),
 
-                                                  // Translate button at the bottom (ONLY when no output)
                                                   if (!hasOutput)
                                                     Padding(
                                                       padding:
@@ -537,56 +527,138 @@ class MainPage extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           child: IgnorePointer(
             ignoring: isMLPage || gVM.isLoading,
-            child: SizedBox(
-              height: 42,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: ElevatedButton(
-                    onPressed: () => gVM.translate(viewModel.outputController),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white.withValues(alpha: 0.1),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        side: BorderSide(
-                          color: Colors.white.withValues(alpha: 0.1),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Hidden as soon as Translate is pressed.
+                AnimatedSize(
+                  duration: const Duration(milliseconds: 200),
+                  child: gVM.isLoading
+                      ? const SizedBox.shrink()
+                      : Padding(
+                          padding: const EdgeInsets.only(right: 10),
+                          child: _buildCameraButton(context, gVM),
                         ),
-                      ),
-                    ),
-                    child: gVM.isLoading
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.auto_awesome_rounded, size: 20),
-                              SizedBox(width: 8),
-                              Text(
-                                'Translate',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                  ),
                 ),
-              ),
+                _buildTranslateButtonBody(viewModel, gVM),
+              ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildCameraButton(
+    BuildContext context,
+    GeminiTranslateViewModel gVM,
+  ) {
+    return SizedBox(
+      width: 42,
+      height: 42,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: ElevatedButton(
+            onPressed: () => _openPhotoTranslate(context, gVM),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: EdgeInsets.zero,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+              ),
+            ),
+            child: const Icon(Icons.photo_camera_rounded, size: 20),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // A cached "not allowed" is re-checked so an upgrade shows up at once.
+  Future<void> _openPhotoTranslate(
+    BuildContext context,
+    GeminiTranslateViewModel gVM,
+  ) async {
+    final entitlementsVM = context.read<EntitlementsViewModel>();
+    if (entitlementsVM.entitlements?.entitlements.photo != true) {
+      await entitlementsVM.load();
+    }
+    if (!context.mounted) return;
+
+    final entitlements = entitlementsVM.entitlements;
+    // Unknown (e.g. offline) is let through; the backend enforces the tier.
+    if (entitlements != null && !entitlements.entitlements.photo) {
+      showUpgradeRequiredDialog(
+        context,
+        title: 'Photo Translation',
+        message:
+            'Translating text in photos is available on the Standard and '
+            'Premium plans.',
+      );
+      return;
+    }
+    if (gVM.targetLanguage == '-') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Choose a target language first.')),
+      );
+      return;
+    }
+    await PhotoTranslatePage.open(context);
+  }
+
+  Widget _buildTranslateButtonBody(
+    MainViewModel viewModel,
+    GeminiTranslateViewModel gVM,
+  ) {
+    return SizedBox(
+      height: 42,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: ElevatedButton(
+            onPressed: () => gVM.translate(viewModel.outputController),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+              ),
+            ),
+            child: gVM.isLoading
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                : const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.auto_awesome_rounded, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Translate',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
     );
   }
 }

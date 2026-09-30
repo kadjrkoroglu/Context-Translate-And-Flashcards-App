@@ -26,6 +26,7 @@ import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/data/services/local_storage_service.dart';
 import 'package:translate_app/data/services/gemini_service.dart';
+import 'package:translate_app/data/services/text_recognition_service.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:translate_app/data/services/settings_service.dart';
@@ -65,6 +66,9 @@ void main() async {
   final historyUsecase = HistoryUsecase(historyRepository);
   final favoriteUsecase = FavoriteUsecase(favoriteRepository);
   final deckUsecase = DeckUsecase(deckRepository);
+  final translateUsecase = TranslateUsecase(
+    TranslationRepositoryImpl(geminiService),
+  );
 
   runApp(
     MultiProvider(
@@ -89,6 +93,11 @@ void main() async {
         Provider<HistoryUsecase>.value(value: historyUsecase),
         Provider<FavoriteUsecase>.value(value: favoriteUsecase),
         Provider<DeckUsecase>.value(value: deckUsecase),
+        Provider<TranslateUsecase>.value(value: translateUsecase),
+        Provider<TextRecognitionService>(
+          create: (_) => TextRecognitionService(),
+          dispose: (_, service) => service.dispose(),
+        ),
         ChangeNotifierProvider(
           create: (context) =>
               FavoriteViewModel(context.read<FavoriteUsecase>()),
@@ -97,11 +106,14 @@ void main() async {
           create: (context) => HistoryViewModel(context.read<HistoryUsecase>()),
         ),
         ChangeNotifierProvider(
-          create: (context) => DecksViewModel(context.read<DeckUsecase>()),
+          create: (context) => DecksViewModel(
+            context.read<DeckUsecase>(),
+            context.read<EntitlementsViewModel>(),
+          ),
         ),
         ChangeNotifierProvider(
           create: (context) => GeminiTranslateViewModel(
-            TranslateUsecase(TranslationRepositoryImpl(geminiService)),
+            context.read<TranslateUsecase>(),
             context.read<SettingsService>(),
             context.read<HistoryViewModel>(),
           ),

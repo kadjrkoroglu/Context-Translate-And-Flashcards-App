@@ -1,6 +1,7 @@
 import '../../domain/entities/translation_entity.dart';
 import '../../domain/repositories/translation_repository.dart';
 import '../services/gemini_service.dart';
+import '../../domain/entities/photo_translation.dart';
 
 class TranslationRepositoryImpl implements TranslationRepository {
   final GeminiService _geminiService;
@@ -20,5 +21,14 @@ class TranslationRepositoryImpl implements TranslationRepository {
       sourceLanguage: sourceLang,
       targetLanguage: targetLang,
     );
+  }
+
+  @override
+  Future<PhotoTranslation> translatePhotoLines(
+    List<String> lines,
+    String sourceLang,
+    String targetLang,
+  ) {
+    return _geminiService.translatePhotoLines(lines, sourceLang, targetLang);
   }
 }

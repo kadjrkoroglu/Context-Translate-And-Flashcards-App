@@ -31,9 +31,8 @@ class AuthException extends AppException {
   final String? code;
 }
 
-/// A 429 from the backend. [window] tells the two cases apart:
-/// 'day' is the free tier's daily cap, 'burst' is Standard/Premium's
-/// short-lived token bucket, and null is a generic anti-abuse rate limit.
+/// 429. [window]: 'day' = free daily cap, 'burst' = token bucket,
+/// null = generic rate limit.
 class QuotaExceededException extends AppException {
   const QuotaExceededException(
     super.message, {
@@ -48,4 +47,16 @@ class QuotaExceededException extends AppException {
   final int? retryAfterSeconds;
 
   bool get isDailyLimit => window == 'day';
+}
+
+/// 403: the user's plan doesn't include the feature.
+class FeatureNotAvailableException extends AppException {
+  const FeatureNotAvailableException(super.message, {super.details});
+}
+
+/// No OCR model for this language's script (e.g. Hebrew).
+class UnsupportedLanguageException extends AppException {
+  const UnsupportedLanguageException(super.message, {this.language});
+
+  final String? language;
 }

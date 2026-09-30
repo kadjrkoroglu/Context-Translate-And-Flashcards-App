@@ -4,11 +4,49 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/data/constants/api_config.dart';
+import 'package:translate_app/domain/entities/photo_translation.dart';
 
 class GeminiService {
-  static const String _baseUrl = '${ApiConfig.baseUrl}/translate';
+  static const String _translateUrl = '${ApiConfig.baseUrl}/translate';
+  static const String _photoUrl = '${ApiConfig.baseUrl}/translate/photo';
 
   Future<List<String>> translateText(String text, String targetLanguage) async {
+    final data = await _post(_translateUrl, {
+      'text': text,
+      'targetLanguage': targetLanguage,
+    });
+    return (data['translations'] as List<dynamic>)
+        .map((t) => t.toString())
+        .toList();
+  }
+
+  /// Only the text read on the device is sent, never the photo.
+  Future<PhotoTranslation> translatePhotoLines(
+    List<String> lines,
+    String sourceLanguage,
+    String targetLanguage,
+  ) async {
+    final data = await _post(_photoUrl, {
+      'lines': lines,
+      'sourceLanguage': sourceLanguage,
+      'targetLanguage': targetLanguage,
+    });
+    return PhotoTranslation(
+      translations: (data['translations'] as List<dynamic>)
+          .map((t) => t.toString())
+          .toList(),
+      words: [
+        for (final w in data['words'] as List<dynamic>? ?? const [])
+          if (w is Map && w['word'] is String && w['translation'] is String)
+            PhotoWord(word: w['word'], translation: w['translation']),
+      ],
+    );
+  }
+
+  Future<Map<String, dynamic>> _post(
+    String url,
+    Map<String, dynamic> payload,
+  ) async {
     try {
       final token = await FirebaseAuth.instance.currentUser?.getIdToken();
       if (token == null) {
@@ -16,12 +54,12 @@ class GeminiService {
       }
 
       final response = await http.post(
-        Uri.parse(_baseUrl),
+        Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({'text': text, 'targetLanguage': targetLanguage}),
+        body: jsonEncode(payload),
       );
 
       if (response.statusCode == 429) {
@@ -41,16 +79,17 @@ class GeminiService {
           retryAfterSeconds: body?['retryAfterSeconds'] as int?,
         );
       }
+      if (response.statusCode == 403) {
+        throw FeatureNotAvailableException(
+          'Not available on your plan',
+          details: response.body,
+        );
+      }
       if (response.statusCode != 200) {
         throw GeneralException('Translation failed', details: response.body);
       }
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final translations = (data['translations'] as List<dynamic>)
-          .map((t) => t.toString())
-          .toList();
-
-      return translations;
+      return jsonDecode(response.body) as Map<String, dynamic>;
     } on SocketException catch (e) {
       throw NetworkException('No internet connection', details: e.toString());
     } on http.ClientException catch (e) {
