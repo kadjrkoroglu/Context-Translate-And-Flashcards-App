@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
+import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
 
 class DeckSelectorSheet extends StatelessWidget {
   final String word;
@@ -165,6 +166,10 @@ class DeckSelectorSheet extends StatelessWidget {
     DecksViewModel decksVM,
     dynamic deck,
   ) async {
+    if (!decksVM.canAddCard(deck)) {
+      await showCardLimitDialog(context, decksVM.maxCardsPerDeck);
+      return;
+    }
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => BackdropFilter(
@@ -207,7 +212,13 @@ class DeckSelectorSheet extends StatelessWidget {
     );
 
     if (confirmed == true) {
-      await decksVM.addCard(deck.id, word, translation);
+      final added = await decksVM.addCard(deck.id, word, translation);
+      if (!added) {
+        if (context.mounted) {
+          await showCardLimitDialog(context, decksVM.maxCardsPerDeck);
+        }
+        return;
+      }
       if (context.mounted) Navigator.pop(context);
     }
   }

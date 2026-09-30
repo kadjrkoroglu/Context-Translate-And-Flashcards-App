@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
+import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
 
 class AddCardDialog {
   static void show(BuildContext context, dynamic deck) {
+    final vm = context.read<DecksViewModel>();
+    if (!vm.canAddCard(deck)) {
+      showCardLimitDialog(context, vm.maxCardsPerDeck);
+      return;
+    }
     final frontCtrl = TextEditingController();
     final backCtrl = TextEditingController();
     final frontFocus = FocusNode();
-    final vm = context.read<DecksViewModel>();
 
     showDialog(
       context: context,
@@ -48,11 +53,20 @@ class AddCardDialog {
             ElevatedButton(
               onPressed: () async {
                 if (frontCtrl.text.isNotEmpty && backCtrl.text.isNotEmpty) {
-                  await vm.addCard(
+                  // The dialog stays open for adding several cards in a row,
+                  // so the limit can be reached from inside it.
+                  final added = await vm.addCard(
                     deck.id,
                     frontCtrl.text.trim(),
                     backCtrl.text.trim(),
                   );
+                  if (!added) {
+                    if (ctx.mounted) Navigator.pop(ctx);
+                    if (context.mounted) {
+                      showCardLimitDialog(context, vm.maxCardsPerDeck);
+                    }
+                    return;
+                  }
                   frontCtrl.clear();
                   backCtrl.clear();
                   frontFocus.requestFocus();

@@ -5,7 +5,7 @@ import 'package:translate_app/presentation/widgets/dropdown.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
 import 'package:translate_app/presentation/utils/font_size_helper.dart';
 import 'package:translate_app/core/errors/app_exception.dart';
-import 'package:translate_app/presentation/pages/upgrade_page.dart';
+import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
 import 'package:translate_app/presentation/widgets/restart_required_dialog.dart';
 
 class GeminiLanguageHeader extends StatelessWidget {
@@ -195,53 +195,13 @@ class GeminiInputBody extends StatelessWidget {
 
   static void _showDailyLimitDialog(BuildContext context) {
     _errorDialogOpen = true;
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: AlertDialog(
-          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.2),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-            side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
-          ),
-          title: const Text(
-            'Daily Limit Reached',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-          content: const Text(
-            "You've used your 10 free AI translations for today. "
-            'You can keep using offline translation, or upgrade for '
-            'unlimited AI translations.',
-            style: TextStyle(color: Colors.white70),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white60),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const UpgradePage()),
-                );
-              },
-              child: const Text(
-                'Upgrade',
-                style: TextStyle(
-                  color: Colors.amberAccent,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    showUpgradeRequiredDialog(
+      context,
+      title: 'Daily Limit Reached',
+      message:
+          "You've used your 10 free AI translations for today. "
+          'You can keep using offline translation, or upgrade for '
+          'unlimited AI translations.',
     ).whenComplete(() => _errorDialogOpen = false);
   }
 

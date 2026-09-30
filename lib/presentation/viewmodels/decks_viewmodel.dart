@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:translate_app/domain/entities/card_entity.dart';
 import 'package:translate_app/domain/entities/deck_entity.dart';
 import 'package:translate_app/domain/usecases/deck_usecase.dart';
+import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
 
 class DecksViewModel extends ChangeNotifier {
   final DeckUsecase _usecase;
+  final EntitlementsViewModel _entitlementsViewModel;
 
   List<DeckEntity> _decks = [];
   bool _isLoading = false;
@@ -14,8 +16,25 @@ class DecksViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  DecksViewModel(this._usecase) {
+  DecksViewModel(this._usecase, this._entitlementsViewModel) {
     loadDecks();
+  }
+
+  // Tier limits; null = unlimited (also while entitlements are loading or
+  // offline). Only new additions are limited.
+  int? get maxDecks =>
+      _entitlementsViewModel.entitlements?.entitlements.maxDecks;
+  int? get maxCardsPerDeck =>
+      _entitlementsViewModel.entitlements?.entitlements.maxCardsPerDeck;
+
+  bool get canAddDeck {
+    final limit = maxDecks;
+    return limit == null || _decks.where((d) => !d.isDeleted).length < limit;
+  }
+
+  bool canAddCard(DeckEntity deck) {
+    final limit = maxCardsPerDeck;
+    return limit == null || getTotalCardCount(deck) < limit;
   }
 
   void _setLoading(bool value) {
@@ -45,7 +64,9 @@ class DecksViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> addDeck(String name) async {
+  /// Returns false (without saving) if the tier's deck limit is reached.
+  Future<bool> addDeck(String name) async {
+    if (!canAddDeck) return false;
     _clearError();
     final now = DateTime.now();
     final newDeck = DeckEntity(
@@ -64,6 +85,7 @@ class DecksViewModel extends ChangeNotifier {
     } catch (e) {
       _setError('Failed to add deck');
     }
+    return true;
   }
 
   Future<void> deleteDeck(int id) async {
@@ -76,7 +98,10 @@ class DecksViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> addCard(int deckId, String word, String translation) async {
+  /// Returns false (without saving) if the deck's card limit is reached.
+  Future<bool> addCard(int deckId, String word, String translation) async {
+    final deck = _decks.where((d) => d.id == deckId).firstOrNull;
+    if (deck != null && !canAddCard(deck)) return false;
     _clearError();
     final now = DateTime.now();
     final newCard = CardEntity(
@@ -95,6 +120,7 @@ class DecksViewModel extends ChangeNotifier {
     } catch (e) {
       _setError('Failed to add card');
     }
+    return true;
   }
 
   Future<void> deleteMultipleCards(List<int> cardIds) async {

@@ -8,6 +8,7 @@ import 'package:translate_app/presentation/pages/study_page.dart';
 import 'package:translate_app/presentation/viewmodels/study_viewmodel.dart';
 import 'package:translate_app/domain/usecases/deck_usecase.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
+import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
 
 class DecksPage extends StatefulWidget {
   const DecksPage({super.key});
@@ -139,6 +140,11 @@ class _DecksPageState extends State<DecksPage> {
   }
 
   void _showAddDeckDialog(BuildContext context) {
+    final vm = context.read<DecksViewModel>();
+    if (!vm.canAddDeck) {
+      showDeckLimitDialog(context, vm.maxDecks);
+      return;
+    }
     final controller = TextEditingController();
     showDialog(
       context: context,
@@ -182,10 +188,11 @@ class _DecksPageState extends State<DecksPage> {
             ElevatedButton(
               onPressed: () async {
                 if (controller.text.isNotEmpty) {
-                  await context.read<DecksViewModel>().addDeck(
-                    controller.text.trim(),
-                  );
+                  final added = await vm.addDeck(controller.text.trim());
                   if (context.mounted) Navigator.pop(ctx);
+                  if (!added && context.mounted) {
+                    showDeckLimitDialog(context, vm.maxDecks);
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -268,10 +275,7 @@ class _DeckCard extends StatelessWidget {
                   MaterialPageRoute(
                     builder: (_) => ChangeNotifierProvider(
                       create: (ctx) =>
-                          StudyViewModel(
-                            deck,
-                            ctx.read<DeckUsecase>(),
-                          ),
+                          StudyViewModel(deck, ctx.read<DeckUsecase>()),
                       child: const StudyPage(),
                     ),
                   ),
