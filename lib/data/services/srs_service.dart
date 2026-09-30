@@ -35,11 +35,9 @@ class SRSService {
             card.easeFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02));
         if (card.easeFactor < 1.3) card.easeFactor = 1.3;
 
-        // Calculate new interval
         card.interval = (card.interval * card.easeFactor).round();
       }
 
-      // Increment repetitions
       card.repetitions += 1;
     }
 
@@ -56,12 +54,10 @@ class SRSService {
       if (fuzzedInterval < 1) fuzzedInterval = 1;
     }
 
-    // Schedule next review
     if (rating == StudyRating.again) {
-      // If "Again" is selected, card is shown again immediately (within 1 minute)
+      // Again: show again within a minute.
       card.nextReviewDate = now.add(const Duration(minutes: 1));
     } else {
-      // In other cases, schedule for a future day
       card.nextReviewDate = DateTime(
         now.year,
         now.month,

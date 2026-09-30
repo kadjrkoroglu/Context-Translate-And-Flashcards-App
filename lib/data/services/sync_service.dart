@@ -3,7 +3,8 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
-import 'package:translate_app/core/errors/app_exception.dart';import 'package:translate_app/data/models/card_model.dart';
+import 'package:translate_app/core/errors/app_exception.dart';
+import 'package:translate_app/data/models/card_model.dart';
 import 'package:translate_app/data/models/deck_model.dart';
 import 'package:translate_app/data/models/favorite_word_model.dart';
 import 'package:translate_app/data/models/history_model.dart';
@@ -29,12 +30,10 @@ class SyncService extends ChangeNotifier {
     _setupChangeListeners();
   }
 
-  /// Marks local data as changed so the UI can show the "Sync Now" button.
-  /// Called either from Isar watches or from [LocalStorageService.onLocalMutation].
+  /// Marks local data as changed so the UI shows "Sync Now".
   void markUnsynced() {
     if (_isSyncing) {
-      // A change arrived while sync is running: remember it and re-evaluate
-      // the real unsynced state once sync finishes.
+      // Changed during sync: re-check once sync finishes.
       _mutationDuringSync = true;
       return;
     }
@@ -100,7 +99,14 @@ class SyncService extends ChangeNotifier {
     }
     try {
       final decks = await _local.getAllDecks();
-      final unsyncedDecks = decks.where((d) => (d.userId == _userId || d.userId == null) && !d.isDeleted && !d.isSynced).toList();
+      final unsyncedDecks = decks
+          .where(
+            (d) =>
+                (d.userId == _userId || d.userId == null) &&
+                !d.isDeleted &&
+                !d.isSynced,
+          )
+          .toList();
       if (unsyncedDecks.isNotEmpty) {
         _hasUnsyncedChanges = true;
         notifyListeners();
@@ -108,7 +114,14 @@ class SyncService extends ChangeNotifier {
       }
 
       final cards = await _local.isar.cardItems.where().findAll();
-      final unsyncedCards = cards.where((c) => (c.userId == _userId || c.userId == null) && !c.isDeleted && !c.isSynced).toList();
+      final unsyncedCards = cards
+          .where(
+            (c) =>
+                (c.userId == _userId || c.userId == null) &&
+                !c.isDeleted &&
+                !c.isSynced,
+          )
+          .toList();
       if (unsyncedCards.isNotEmpty) {
         _hasUnsyncedChanges = true;
         notifyListeners();
@@ -116,7 +129,14 @@ class SyncService extends ChangeNotifier {
       }
 
       final favs = await _local.getAllFavorites();
-      final unsyncedFavs = favs.where((f) => (f.userId == _userId || f.userId == null) && !f.isDeleted && !f.isSynced).toList();
+      final unsyncedFavs = favs
+          .where(
+            (f) =>
+                (f.userId == _userId || f.userId == null) &&
+                !f.isDeleted &&
+                !f.isSynced,
+          )
+          .toList();
       if (unsyncedFavs.isNotEmpty) {
         _hasUnsyncedChanges = true;
         notifyListeners();
@@ -124,7 +144,14 @@ class SyncService extends ChangeNotifier {
       }
 
       final history = await _local.getAllHistory();
-      final unsyncedHistory = history.where((h) => (h.userId == _userId || h.userId == null) && !h.isDeleted && !h.isSynced).toList();
+      final unsyncedHistory = history
+          .where(
+            (h) =>
+                (h.userId == _userId || h.userId == null) &&
+                !h.isDeleted &&
+                !h.isSynced,
+          )
+          .toList();
       if (unsyncedHistory.isNotEmpty) {
         _hasUnsyncedChanges = true;
         notifyListeners();
@@ -148,10 +175,8 @@ class SyncService extends ChangeNotifier {
 
   String get _flashcardsPath => 'users/$_userId/flashcards';
 
-  /// Main sync entry point — call this from the "Senkronize Et" button.
-  ///
-  /// Returns an error message string if the user is not logged in,
-  /// otherwise returns null on success (check [syncError] for failures).
+  /// Returns an error message if not logged in, otherwise null
+  /// (see [syncError] for failures).
   Future<String?> syncAll() async {
     if (_userId == null) {
       _syncError = 'Please log in first';
@@ -178,9 +203,7 @@ class SyncService extends ChangeNotifier {
       _isSyncing = false;
       _hasUnsyncedChanges = false;
       if (_mutationDuringSync) {
-        // A change happened while syncing (e.g. delete deck, delete favorite,
-        // deck settings). Re-evaluate ground truth with the local db so the
-        // change is not silently lost.
+        // Changed while syncing: re-check against the local db.
         _mutationDuringSync = false;
         await checkUnsyncedChanges();
       }
@@ -252,7 +275,6 @@ class SyncService extends ChangeNotifier {
             'type': 'set',
           });
         } else if (remoteMod.isAfter(localMod)) {
-          // Remote is newer
           final updated = DeckItem.fromMap(remoteMap, remoteId: remoteId);
           updated.id = localDeck.id; // keep local Isar id
           updated.userId = _userId;
@@ -284,7 +306,7 @@ class SyncService extends ChangeNotifier {
         }
       } else if (localDeck != null && remoteMap == null) {
         // LOCAL ONLY
-        if (localDeck.isDeleted) continue; // don't push deleted items
+        if (localDeck.isDeleted) continue;
 
         localDeck.userId = _userId;
         localDeck.remoteId = localDeck.remoteId ?? localDeck.syncId;
@@ -297,10 +319,12 @@ class SyncService extends ChangeNotifier {
           'type': 'set',
         });
 
-        cardSyncFutures.add(_pushAllCardsForDeck(localDeck, localDeck.remoteId!));
+        cardSyncFutures.add(
+          _pushAllCardsForDeck(localDeck, localDeck.remoteId!),
+        );
       } else if (localDeck == null && remoteMap != null) {
         // REMOTE ONLY
-        if (remoteMap['isDeleted'] == true) continue; // skip deleted
+        if (remoteMap['isDeleted'] == true) continue;
 
         final remoteId = remoteMap['remoteId'] as String;
         final newDeck = DeckItem.fromMap(remoteMap, remoteId: remoteId);
@@ -312,12 +336,10 @@ class SyncService extends ChangeNotifier {
       }
     }
 
-    // Execute all card syncs in parallel
     if (cardSyncFutures.isNotEmpty) {
       await Future.wait(cardSyncFutures);
     }
 
-    // Execute all deck-level batch operations
     if (batchOps.isNotEmpty) {
       await _firestore.batchWrite(batchOps);
     }
@@ -395,7 +417,6 @@ class SyncService extends ChangeNotifier {
             'type': 'set',
           });
         } else if (remoteMod.isAfter(localMod)) {
-          // Remote is newer
           final updated = CardItem.fromMap(remoteMap, remoteId: remoteId);
           updated.id = localCard.id;
           updated.userId = _userId;
@@ -459,7 +480,6 @@ class SyncService extends ChangeNotifier {
       }
     }
 
-    // Execute card-level batch operations
     if (batchOps.isNotEmpty) {
       await _firestore.batchWrite(batchOps);
     }
@@ -496,7 +516,6 @@ class SyncService extends ChangeNotifier {
       await _local.updateCard(card);
     }
 
-    // Execute all batch operations
     if (batchOps.isNotEmpty) {
       await _firestore.batchWrite(batchOps);
     }
@@ -574,7 +593,6 @@ class SyncService extends ChangeNotifier {
             'type': 'set',
           });
         } else if (remoteMod.isAfter(localMod)) {
-          // Remote is newer
           final updated = FavoriteWord.fromMap(remoteMap, remoteId: remoteId);
           updated.id = local.id;
           updated.userId = _userId;
@@ -671,7 +689,6 @@ class SyncService extends ChangeNotifier {
             'type': 'set',
           });
         } else if (remoteMod.isAfter(localMod)) {
-          // Remote is newer
           final updated = HistoryItem.fromMap(remoteMap, remoteId: remoteId);
           updated.id = local.id;
           updated.userId = _userId;
@@ -717,7 +734,6 @@ class SyncService extends ChangeNotifier {
       await _firestore.batchWrite(batchOps);
     }
   }
-
 
   // UTILITY
 

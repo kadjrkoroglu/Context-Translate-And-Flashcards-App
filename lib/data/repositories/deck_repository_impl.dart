@@ -24,7 +24,7 @@ class DeckRepositoryImpl implements DeckRepository {
     final allDecks = await _local.getAllDecks();
     final List<DeckItem> filtered;
     if (currentUserId == null) {
-      // Logged out: show all non-deleted decks so data persists visually
+      // Logged out: show all non-deleted decks.
       filtered = allDecks.where((d) => !d.isDeleted).toList();
     } else {
       filtered = allDecks
@@ -52,7 +52,6 @@ class DeckRepositoryImpl implements DeckRepository {
     deck.userId = currentUserId;
     deck.lastModified = DateTime.now();
 
-    // Assign syncId if missing
     if (deck.syncId.isEmpty) {
       deck.syncId = _generateSyncId();
     }
@@ -68,7 +67,7 @@ class DeckRepositoryImpl implements DeckRepository {
     final deck = decks.where((element) => element.id == id).firstOrNull;
 
     if (deck != null) {
-      // Soft delete: mark as deleted, update timestamp
+      // Soft delete.
       deck.isDeleted = true;
       // Keep it flagged so the pending delete survives an app restart.
       deck.isSynced = false;
@@ -88,7 +87,6 @@ class DeckRepositoryImpl implements DeckRepository {
       cardItem.syncId = _generateSyncId();
     }
 
-    // Find deck to set deckSyncId
     final decks = await _local.getAllDecks();
     final deck = decks.where((d) => d.id == deckId).firstOrNull;
     if (deck != null) {
@@ -101,7 +99,6 @@ class DeckRepositoryImpl implements DeckRepository {
 
   @override
   Future<void> deleteCards(List<int> cardIds) async {
-    // Soft delete cards
     for (final cardId in cardIds) {
       final card = await _local.getCardById(cardId);
       if (card != null) {

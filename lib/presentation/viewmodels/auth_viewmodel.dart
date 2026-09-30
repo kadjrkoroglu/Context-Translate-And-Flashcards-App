@@ -23,10 +23,8 @@ class AuthViewModel extends ChangeNotifier {
       _entitlementsViewModel = entitlementsViewModel,
       // Seed the session so a cold-start restore isn't treated as a login.
       _user = authUsecase.currentUser {
-    // Only true right now, before the listener below can react to a
-    // deliberate signOut(). Used once below so signing out doesn't
-    // immediately grant a fresh anonymous quota (that would let anyone
-    // reset their daily limit by repeatedly tapping "sign out").
+    // True only before the listener runs, so signOut() doesn't grant a fresh
+    // anonymous quota (resetting the daily limit).
     final noSessionAtStartup = _user == null;
 
     _authUsecase.user.listen((AuthEntity? user) async {
@@ -39,15 +37,13 @@ class AuthViewModel extends ChangeNotifier {
           notifyListeners();
         });
       }
-      // Refresh tier/quota on both a fresh login and a cold-start restore.
+      // Refresh tier/quota on login and cold-start restore.
       if (user != null) _entitlementsViewModel.load();
       notifyListeners();
     });
 
-    // First-ever launch (or first launch since data was cleared): grant a
-    // real Firebase UID in the background so free-tier features (backend
-    // quota, translate) work without asking anyone to sign in. Deliberately
-    // NOT repeated after an explicit signOut() — see noSessionAtStartup.
+    // First launch: anonymous sign-in so free-tier features work without an
+    // account. Not repeated after signOut().
     if (noSessionAtStartup) {
       _authUsecase.executeSignInAnonymously().catchError((e) {
         debugPrint('Anonymous sign-in failed: $e');
@@ -60,9 +56,7 @@ class AuthViewModel extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   String? get error => _error;
-  // A "real" account for UI purposes (Welcome/VerifyEmail routing): a guest
-  // (anonymous) session doesn't count, even though it already has a valid
-  // Firebase UID the backend accepts for free-tier translate/quota.
+  // Guest (anonymous) sessions don't count as a real account.
   bool get isAuthenticated => _user != null && !_user!.isAnonymous;
 
   bool get isEmailVerified => _user?.emailVerified ?? false;
