@@ -1300,7 +1300,7 @@ class _WordsDrawer extends StatelessWidget {
                 else
                   SliverList.separated(
                     itemCount: words.length,
-                    separatorBuilder: (_, _) => Divider(
+                    separatorBuilder: (context, index) => Divider(
                       height: 1,
                       indent: 20,
                       endIndent: 20,
@@ -1449,7 +1449,7 @@ class _StatusBar extends StatelessWidget {
               style: const TextStyle(color: Colors.white, fontSize: 13),
             ),
           ),
-          ?action,
+          action ?? const SizedBox.shrink(),
           if (done)
             _StatusIconButton(
               tooltip: vm.showOriginal ? 'Show translation' : 'Show original',
