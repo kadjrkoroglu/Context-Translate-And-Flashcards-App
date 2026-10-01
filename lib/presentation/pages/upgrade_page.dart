@@ -59,7 +59,7 @@ class UpgradePage extends StatelessWidget {
                 accentColor: Colors.amberAccent,
                 features: const [
                   'Everything in Standard',
-                  'Live translation mode (100 min/month)',
+                  'Live translation (60 min/month)',
                   'AI chat using your deck\'s words',
                 ],
                 onTap: () => _showComingSoon(context),

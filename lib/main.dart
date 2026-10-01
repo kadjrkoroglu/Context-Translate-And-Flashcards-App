@@ -26,7 +26,9 @@ import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/data/services/local_storage_service.dart';
 import 'package:translate_app/data/services/gemini_service.dart';
+import 'package:translate_app/data/services/live_audio_service.dart';
 import 'package:translate_app/data/services/text_recognition_service.dart';
+import 'package:translate_app/presentation/viewmodels/live_translate_viewmodel.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:translate_app/data/services/settings_service.dart';
@@ -94,6 +96,14 @@ void main() async {
         Provider<FavoriteUsecase>.value(value: favoriteUsecase),
         Provider<DeckUsecase>.value(value: deckUsecase),
         Provider<TranslateUsecase>.value(value: translateUsecase),
+        ChangeNotifierProvider(
+          create: (context) => LiveTranslateViewModel(
+            translateUsecase,
+            LiveAudioService(),
+            settingsService,
+            onSessionEnded: () => context.read<EntitlementsViewModel>().load(),
+          ),
+        ),
         Provider<TextRecognitionService>(
           create: (_) => TextRecognitionService(),
           dispose: (_, service) => service.dispose(),

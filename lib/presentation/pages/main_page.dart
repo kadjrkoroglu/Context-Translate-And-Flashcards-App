@@ -15,6 +15,9 @@ import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dar
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
 import 'package:translate_app/presentation/pages/photo_translate_page.dart';
+import 'package:translate_app/presentation/pages/upgrade_page.dart';
+import 'package:translate_app/presentation/viewmodels/live_translate_viewmodel.dart';
+import 'package:translate_app/presentation/widgets/live_translate_body.dart';
 import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
 import 'package:translate_app/theme/theme.dart';
 import 'dart:ui';
@@ -28,6 +31,7 @@ class MainPage extends StatelessWidget {
     final viewModel = Provider.of<MainViewModel>(context);
     final mlViewModel = Provider.of<MLTranslateViewModel>(context);
     final geminiViewModel = Provider.of<GeminiTranslateViewModel>(context);
+    final liveViewModel = Provider.of<LiveTranslateViewModel>(context);
     final glassTheme = Theme.of(context).extension<GlassThemeExtension>();
     const Color inversePrimary = Colors.white;
 
@@ -114,8 +118,14 @@ class MainPage extends StatelessWidget {
                                     mlViewModel.clear(
                                       viewModel.outputController,
                                     );
+                                    if (index == MainViewModel.livePage) {
+                                      _ensureLiveAccess(context, viewModel);
+                                    } else {
+                                      liveViewModel.stop();
+                                    }
                                   },
                                   children: [
+                                    const LiveLanguageHeader(),
                                     GeminiLanguageHeader(
                                       outputController:
                                           viewModel.outputController,
@@ -128,172 +138,178 @@ class MainPage extends StatelessWidget {
                                 ),
                               ),
                               Expanded(
-                                child: LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    return SingleChildScrollView(
-                                      physics: const BouncingScrollPhysics(),
-                                      child: ConstrainedBox(
-                                        constraints: BoxConstraints(
-                                          minHeight: constraints.maxHeight,
-                                        ),
-                                        child: IntrinsicHeight(
-                                          child: ValueListenableBuilder<TextEditingValue>(
-                                            valueListenable:
-                                                viewModel.outputController,
-                                            builder: (context, outputValue, _) {
-                                              final bool hasOutput =
-                                                  outputValue.text.isNotEmpty;
+                                child: AnimatedBuilder(
+                                  animation: viewModel.pageController,
+                                  builder: (context, _) => viewModel.isLivePage
+                                      ? const LiveTranslateBody()
+                                      : LayoutBuilder(
+                                          builder: (context, constraints) {
+                                            return SingleChildScrollView(
+                                              physics:
+                                                  const BouncingScrollPhysics(),
+                                              child: ConstrainedBox(
+                                                constraints: BoxConstraints(
+                                                  minHeight:
+                                                      constraints.maxHeight,
+                                                ),
+                                                child: IntrinsicHeight(
+                                                  child: ValueListenableBuilder<TextEditingValue>(
+                                                    valueListenable: viewModel
+                                                        .outputController,
+                                                    builder: (context, outputValue, _) {
+                                                      final bool hasOutput =
+                                                          outputValue
+                                                              .text
+                                                              .isNotEmpty;
 
-                                              return Column(
-                                                mainAxisSize: MainAxisSize.max,
-                                                children: [
-                                                  AnimatedBuilder(
-                                                    animation: viewModel
-                                                        .pageController,
-                                                    builder: (context, _) {
-                                                      final isML =
-                                                          viewModel.isMLPage;
-                                                      return isML
-                                                          ? MLInputBody(
-                                                              outputController:
+                                                      return Column(
+                                                        mainAxisSize:
+                                                            MainAxisSize.max,
+                                                        children: [
+                                                          AnimatedBuilder(
+                                                            animation: viewModel
+                                                                .pageController,
+                                                            builder: (context, _) {
+                                                              final isML =
                                                                   viewModel
-                                                                      .outputController,
-                                                            )
-                                                          : GeminiInputBody(
-                                                              outputController:
-                                                                  viewModel
-                                                                      .outputController,
-                                                            );
+                                                                      .isMLPage;
+                                                              return isML
+                                                                  ? MLInputBody(
+                                                                      outputController:
+                                                                          viewModel
+                                                                              .outputController,
+                                                                    )
+                                                                  : GeminiInputBody(
+                                                                      outputController:
+                                                                          viewModel
+                                                                              .outputController,
+                                                                    );
+                                                            },
+                                                          ),
+
+                                                          if (!hasOutput)
+                                                            const Spacer(),
+                                                          if (hasOutput)
+                                                            const Spacer(),
+                                                          if (hasOutput &&
+                                                              !(viewModel
+                                                                      .isMLPage
+                                                                  ? mlViewModel
+                                                                        .isLoading
+                                                                  : geminiViewModel
+                                                                        .isLoading))
+                                                            Align(
+                                                              alignment: Alignment
+                                                                  .centerRight,
+                                                              child: Transform.translate(
+                                                                offset:
+                                                                    const Offset(
+                                                                      0,
+                                                                      10,
+                                                                    ),
+                                                                child: Padding(
+                                                                  padding:
+                                                                      const EdgeInsets.only(
+                                                                        right:
+                                                                            8,
+                                                                      ),
+                                                                  child: Row(
+                                                                    mainAxisSize:
+                                                                        MainAxisSize
+                                                                            .min,
+                                                                    children: [
+                                                                      SpeechToggleButton(
+                                                                        text:
+                                                                            viewModel.isMLPage
+                                                                            ? mlViewModel.textController.text
+                                                                            : geminiViewModel.textController.text,
+                                                                        language:
+                                                                            viewModel.isMLPage
+                                                                            ? mlViewModel.sourceLanguage
+                                                                            : geminiViewModel.sourceLanguage,
+                                                                      ),
+                                                                      IconButton(
+                                                                        icon: Icon(
+                                                                          Icons
+                                                                              .clear_rounded,
+                                                                          color: Colors.white.withValues(
+                                                                            alpha:
+                                                                                0.5,
+                                                                          ),
+                                                                        ),
+                                                                        onPressed: () {
+                                                                          if (viewModel
+                                                                              .isMLPage) {
+                                                                            mlViewModel.clear(
+                                                                              viewModel.outputController,
+                                                                            );
+                                                                          } else {
+                                                                            geminiViewModel.clear(
+                                                                              viewModel.outputController,
+                                                                            );
+                                                                          }
+                                                                        },
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
+
+                                                          if (hasOutput)
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets.symmetric(
+                                                                    horizontal:
+                                                                        12,
+                                                                    vertical: 8,
+                                                                  ),
+                                                              child: Divider(
+                                                                color: Colors
+                                                                    .white
+                                                                    .withValues(
+                                                                      alpha:
+                                                                          0.15,
+                                                                    ),
+                                                                thickness: 0.5,
+                                                              ),
+                                                            ),
+
+                                                          if (hasOutput)
+                                                            OutputTranslationField(
+                                                              controller: viewModel
+                                                                  .outputController,
+                                                            ),
+
+                                                          if (hasOutput)
+                                                            const Spacer(),
+                                                          if (hasOutput)
+                                                            OutputActionButtons(
+                                                              controller: viewModel
+                                                                  .outputController,
+                                                            ),
+
+                                                          if (!hasOutput)
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets.only(
+                                                                    top: 6,
+                                                                    bottom: 15,
+                                                                  ),
+                                                              child: _buildTranslateButton(
+                                                                viewModel,
+                                                                geminiViewModel,
+                                                              ),
+                                                            ),
+                                                        ],
+                                                      );
                                                     },
                                                   ),
-
-                                                  if (!hasOutput)
-                                                    const Spacer(),
-                                                  if (hasOutput) const Spacer(),
-                                                  if (hasOutput &&
-                                                      !(viewModel.isMLPage
-                                                          ? mlViewModel
-                                                                .isLoading
-                                                          : geminiViewModel
-                                                                .isLoading))
-                                                    Align(
-                                                      alignment:
-                                                          Alignment.centerRight,
-                                                      child: Transform.translate(
-                                                        offset: const Offset(
-                                                          0,
-                                                          10,
-                                                        ),
-                                                        child: Padding(
-                                                          padding:
-                                                              const EdgeInsets.only(
-                                                                right: 8,
-                                                              ),
-                                                          child: Row(
-                                                            mainAxisSize:
-                                                                MainAxisSize
-                                                                    .min,
-                                                            children: [
-                                                              SpeechToggleButton(
-                                                                text:
-                                                                    viewModel
-                                                                        .isMLPage
-                                                                    ? mlViewModel
-                                                                          .textController
-                                                                          .text
-                                                                    : geminiViewModel
-                                                                          .textController
-                                                                          .text,
-                                                                language:
-                                                                    viewModel
-                                                                        .isMLPage
-                                                                    ? mlViewModel
-                                                                          .sourceLanguage
-                                                                    : geminiViewModel
-                                                                          .sourceLanguage,
-                                                              ),
-                                                              IconButton(
-                                                                icon: Icon(
-                                                                  Icons
-                                                                      .clear_rounded,
-                                                                  color: Colors
-                                                                      .white
-                                                                      .withValues(
-                                                                        alpha:
-                                                                            0.5,
-                                                                      ),
-                                                                ),
-                                                                onPressed: () {
-                                                                  if (viewModel
-                                                                      .isMLPage) {
-                                                                    mlViewModel.clear(
-                                                                      viewModel
-                                                                          .outputController,
-                                                                    );
-                                                                  } else {
-                                                                    geminiViewModel.clear(
-                                                                      viewModel
-                                                                          .outputController,
-                                                                    );
-                                                                  }
-                                                                },
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-
-                                                  if (hasOutput)
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                            horizontal: 12,
-                                                            vertical: 8,
-                                                          ),
-                                                      child: Divider(
-                                                        color: Colors.white
-                                                            .withValues(
-                                                              alpha: 0.15,
-                                                            ),
-                                                        thickness: 0.5,
-                                                      ),
-                                                    ),
-
-                                                  if (hasOutput)
-                                                    OutputTranslationField(
-                                                      controller: viewModel
-                                                          .outputController,
-                                                    ),
-
-                                                  if (hasOutput) const Spacer(),
-                                                  if (hasOutput)
-                                                    OutputActionButtons(
-                                                      controller: viewModel
-                                                          .outputController,
-                                                    ),
-
-                                                  if (!hasOutput)
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                            top: 6,
-                                                            bottom: 15,
-                                                          ),
-                                                      child:
-                                                          _buildTranslateButton(
-                                                            viewModel,
-                                                            geminiViewModel,
-                                                          ),
-                                                    ),
-                                                ],
-                                              );
-                                            },
-                                          ),
+                                                ),
+                                              ),
+                                            );
+                                          },
                                         ),
-                                      ),
-                                    );
-                                  },
                                 ),
                               ),
                             ],
@@ -313,6 +329,7 @@ class MainPage extends StatelessWidget {
         viewModel,
         mlViewModel,
         geminiViewModel,
+        liveViewModel,
         inversePrimary,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -327,7 +344,7 @@ class MainPage extends StatelessWidget {
   ) {
     return Container(
       height: 36,
-      width: 140,
+      width: 210,
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(16),
@@ -338,17 +355,10 @@ class MainPage extends StatelessWidget {
           AnimatedBuilder(
             animation: viewModel.pageController,
             builder: (context, child) {
-              double offset = 0;
-              try {
-                if (viewModel.pageController.hasClients &&
-                    viewModel.pageController.positions.length == 1) {
-                  offset = viewModel.pageController.page ?? 0;
-                }
-              } catch (_) {}
               return Align(
-                alignment: Alignment(offset * 2 - 1, 0),
+                alignment: Alignment(viewModel.page - 1, 0),
                 child: FractionallySizedBox(
-                  widthFactor: 0.5,
+                  widthFactor: 1 / 3,
                   child: Container(
                     margin: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
@@ -365,8 +375,9 @@ class MainPage extends StatelessWidget {
           ),
           Row(
             children: [
-              _buildToggleButton(context, viewModel, 'AI', 0),
-              _buildToggleButton(context, viewModel, 'Basic', 1),
+              _buildToggleButton(context, viewModel, 'Live', 0),
+              _buildToggleButton(context, viewModel, 'AI', 1),
+              _buildToggleButton(context, viewModel, 'Basic', 2),
             ],
           ),
         ],
@@ -387,15 +398,10 @@ class MainPage extends StatelessWidget {
         child: AnimatedBuilder(
           animation: viewModel.pageController,
           builder: (context, child) {
-            double page = 0;
-            try {
-              if (viewModel.pageController.hasClients &&
-                  viewModel.pageController.positions.length == 1) {
-                page = viewModel.pageController.page ?? 0;
-              }
-            } catch (_) {}
-            double selectionFactor = (index == 0) ? (1 - page) : page;
-            selectionFactor = selectionFactor.clamp(0, 1);
+            final selectionFactor = (1 - (viewModel.page - index).abs()).clamp(
+              0.0,
+              1.0,
+            );
             return Center(
               child: Text(
                 label,
@@ -421,6 +427,7 @@ class MainPage extends StatelessWidget {
     MainViewModel viewModel,
     MLTranslateViewModel mlVM,
     GeminiTranslateViewModel gVM,
+    LiveTranslateViewModel liveVM,
     Color inversePrimary,
   ) {
     final glassTheme = Theme.of(context).extension<GlassThemeExtension>();
@@ -444,15 +451,11 @@ class MainPage extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            double currentPage = 0;
-            try {
-              if (viewModel.pageController.hasClients &&
-                  viewModel.pageController.positions.length == 1) {
-                currentPage = viewModel.pageController.page ?? 0;
-              }
-            } catch (_) {}
-            final isMLPage = currentPage > 0.5;
-            if (isMLPage) {
+            if (viewModel.isLivePage) {
+              liveVM.isActive ? liveVM.stop() : liveVM.start();
+              return;
+            }
+            if (viewModel.isMLPage) {
               mlVM.isListening
                   ? mlVM.stopListening()
                   : mlVM.startListening(viewModel.outputController);
@@ -462,8 +465,8 @@ class MainPage extends StatelessWidget {
           },
           customBorder: const CircleBorder(),
           child: Icon(
-            Icons.mic_rounded,
-            color: mlVM.isListening || gVM.isListening
+            liveVM.isActive ? Icons.stop_rounded : Icons.mic_rounded,
+            color: mlVM.isListening || gVM.isListening || liveVM.isActive
                 ? Colors.redAccent
                 : Colors.white,
             size: 36,
@@ -577,6 +580,27 @@ class MainPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // Premium only: others get the plans screen. Unknown (offline) passes;
+  // the backend enforces the plan.
+  Future<void> _ensureLiveAccess(
+    BuildContext context,
+    MainViewModel mainVM,
+  ) async {
+    final entitlementsVM = context.read<EntitlementsViewModel>();
+    if (entitlementsVM.entitlements?.entitlements.live != true) {
+      await entitlementsVM.load();
+    }
+    if (!context.mounted) return;
+    final entitlements = entitlementsVM.entitlements;
+    if (entitlements != null && !entitlements.entitlements.live) {
+      mainVM.animateToPage(MainViewModel.aiPage);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const UpgradePage()),
+      );
+    }
   }
 
   // A cached "not allowed" is re-checked so an upgrade shows up at once.
