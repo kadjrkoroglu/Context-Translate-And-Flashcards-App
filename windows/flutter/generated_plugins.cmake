@@ -10,6 +10,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   flutter_onnxruntime
   flutter_tts
   isar_flutter_libs
+  record_windows
   speech_to_text_windows
 )
 

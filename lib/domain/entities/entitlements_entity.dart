@@ -47,6 +47,15 @@ class TranslateQuotaStatus {
   final int? bucketCapacity;
   final int? bucketTokens;
 
+  const TranslateQuotaStatus.empty()
+    : isWindow = true,
+      limit = null,
+      used = null,
+      remaining = null,
+      resetsAt = null,
+      bucketCapacity = null,
+      bucketTokens = null;
+
   const TranslateQuotaStatus._({
     required this.isWindow,
     this.limit,
@@ -68,13 +77,17 @@ class TranslateQuotaStatus {
     }
     if (type == 'window') {
       final windows = json['windows'] as List<dynamic>? ?? [];
-      final window = windows.isNotEmpty ? windows.first as Map<String, dynamic> : null;
+      final window = windows.isNotEmpty
+          ? windows.first as Map<String, dynamic>
+          : null;
       return TranslateQuotaStatus._(
         isWindow: true,
         limit: window?['limit'] as int?,
         used: window?['used'] as int?,
         remaining: window?['remaining'] as int?,
-        resetsAt: window?['resetsAt'] != null ? DateTime.tryParse(window!['resetsAt'] as String) : null,
+        resetsAt: window?['resetsAt'] != null
+            ? DateTime.tryParse(window!['resetsAt'] as String)
+            : null,
       );
     }
     return const TranslateQuotaStatus._(isWindow: true);
@@ -86,10 +99,13 @@ class EntitlementsEntity {
   final TierEntitlements entitlements;
   final TranslateQuotaStatus translateQuota;
 
+  final TranslateQuotaStatus liveQuota;
+
   const EntitlementsEntity({
     required this.tier,
     required this.entitlements,
     required this.translateQuota,
+    this.liveQuota = const TranslateQuotaStatus.empty(),
   });
 
   factory EntitlementsEntity.fromJson(Map<String, dynamic> json) {
@@ -100,6 +116,9 @@ class EntitlementsEntity {
       ),
       translateQuota: TranslateQuotaStatus.fromJson(
         json['translate'] as Map<String, dynamic>? ?? const {},
+      ),
+      liveQuota: TranslateQuotaStatus.fromJson(
+        json['live'] as Map<String, dynamic>? ?? const {},
       ),
     );
   }

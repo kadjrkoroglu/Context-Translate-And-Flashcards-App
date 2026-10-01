@@ -54,6 +54,10 @@ class FeatureNotAvailableException extends AppException {
   const FeatureNotAvailableException(super.message, {super.details});
 }
 
+class MicrophoneDeniedException extends AppException {
+  const MicrophoneDeniedException(super.message);
+}
+
 /// No OCR model for this language's script (e.g. Hebrew).
 class UnsupportedLanguageException extends AppException {
   const UnsupportedLanguageException(super.message, {this.language});

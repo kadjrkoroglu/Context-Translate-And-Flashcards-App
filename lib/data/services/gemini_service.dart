@@ -4,11 +4,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/data/constants/api_config.dart';
+import 'package:translate_app/domain/entities/live_session_grant.dart';
 import 'package:translate_app/domain/entities/photo_translation.dart';
 
 class GeminiService {
   static const String _translateUrl = '${ApiConfig.baseUrl}/translate';
   static const String _photoUrl = '${ApiConfig.baseUrl}/translate/photo';
+  static const String _liveSessionUrl = '${ApiConfig.baseUrl}/live/session';
 
   Future<List<String>> translateText(String text, String targetLanguage) async {
     final data = await _post(_translateUrl, {
@@ -41,6 +43,20 @@ class GeminiService {
             PhotoWord(word: w['word'], translation: w['translation']),
       ],
     );
+  }
+
+  /// Reserves Live time; returns a token for Gemini (the key stays on the server).
+  Future<LiveSessionGrant> startLiveSession(String targetLanguageCode) async {
+    final data = await _post(_liveSessionUrl, {
+      'targetLanguageCode': targetLanguageCode,
+    });
+    return LiveSessionGrant.fromJson(data);
+  }
+
+  /// Gives back unused time; returns seconds left this month.
+  Future<int?> endLiveSession(String sessionId) async {
+    final data = await _post('$_liveSessionUrl/end', {'sessionId': sessionId});
+    return data['remainingSeconds'] as int?;
   }
 
   Future<Map<String, dynamic>> _post(

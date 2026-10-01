@@ -1,4 +1,5 @@
 import '../entities/translation_entity.dart';
+import '../entities/live_session_grant.dart';
 import '../entities/photo_translation.dart';
 
 abstract class TranslationRepository {
@@ -15,4 +16,10 @@ abstract class TranslationRepository {
     String sourceLang,
     String targetLang,
   );
+
+  /// Reserves Live time and returns what is needed to connect.
+  Future<LiveSessionGrant> startLiveSession(String targetLanguageCode);
+
+  /// Gives back unused time; returns seconds left this month.
+  Future<int?> endLiveSession(String sessionId);
 }

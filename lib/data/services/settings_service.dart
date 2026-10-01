@@ -5,6 +5,7 @@ class SettingsService {
   static const String _keyTargetLang = 'ml_target_lang';
   static const String _keyGeminiSourceLang = 'gemini_source_lang';
   static const String _keyGeminiLang = 'gemini_target_lang';
+  static const String _keyLiveLang = 'live_target_lang';
   static const String _keyRecentLangs = 'recent_languages';
   static const String _keyThemeMode = 'theme_mode';
 
@@ -47,6 +48,11 @@ class SettingsService {
   String get geminiTargetLang => _prefs.getString(_keyGeminiLang) ?? '-';
   Future<void> setGeminiTargetLang(String lang) =>
       _prefs.setString(_keyGeminiLang, lang);
+
+  // Live target (separate from the AI page's)
+  String? get liveTargetLang => _prefs.getString(_keyLiveLang);
+  Future<void> setLiveTargetLang(String lang) =>
+      _prefs.setString(_keyLiveLang, lang);
 
   // Theme Mode
   String get themeMode => _prefs.getString(_keyThemeMode) ?? 'system';

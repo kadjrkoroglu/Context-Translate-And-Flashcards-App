@@ -1,6 +1,7 @@
 import '../../domain/entities/translation_entity.dart';
 import '../../domain/repositories/translation_repository.dart';
 import '../services/gemini_service.dart';
+import '../../domain/entities/live_session_grant.dart';
 import '../../domain/entities/photo_translation.dart';
 
 class TranslationRepositoryImpl implements TranslationRepository {
@@ -30,5 +31,15 @@ class TranslationRepositoryImpl implements TranslationRepository {
     String targetLang,
   ) {
     return _geminiService.translatePhotoLines(lines, sourceLang, targetLang);
+  }
+
+  @override
+  Future<LiveSessionGrant> startLiveSession(String targetLanguageCode) {
+    return _geminiService.startLiveSession(targetLanguageCode);
+  }
+
+  @override
+  Future<int?> endLiveSession(String sessionId) {
+    return _geminiService.endLiveSession(sessionId);
   }
 }
