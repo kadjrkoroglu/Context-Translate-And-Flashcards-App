@@ -164,8 +164,11 @@ class _HistoryPageState extends State<HistoryPage> {
                                           .read<GeminiTranslateViewModel>();
 
                                       if (item.isGemini) {
-                                        geminiVM.textController.text =
-                                            item.word;
+                                        geminiVM.restore(
+                                          word: item.word,
+                                          shown: item.translation,
+                                          translations: item.translations,
+                                        );
                                       } else {
                                         mlVM.textController.text = item.word;
                                       }

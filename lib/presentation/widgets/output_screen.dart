@@ -393,6 +393,7 @@ class _FavoriteButton extends StatelessWidget {
               favVM.toggleFavorite(
                 word: word,
                 translation: translation,
+                translations: mainVM.isMLPage ? const [] : geminiVM.results,
                 isGemini: !mainVM.isMLPage,
               );
               if (mainVM.isMLPage) mlVM.saveHistoryNow(translation);

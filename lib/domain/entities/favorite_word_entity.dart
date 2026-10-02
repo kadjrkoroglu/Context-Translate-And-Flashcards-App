@@ -3,6 +3,7 @@ class FavoriteWordEntity {
   final String syncId;
   final String word;
   final String translation;
+  final List<String> translations;
   final DateTime createdAt;
   DateTime lastModified;
 
@@ -17,6 +18,7 @@ class FavoriteWordEntity {
     required this.syncId,
     required this.word,
     required this.translation,
+    this.translations = const [],
     required this.createdAt,
     required this.lastModified,
     this.userId,

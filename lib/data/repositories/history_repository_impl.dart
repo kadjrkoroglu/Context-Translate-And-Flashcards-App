@@ -81,6 +81,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
       syncId: m.syncId,
       word: m.word,
       translation: m.translation,
+      translations: m.translations,
       createdAt: m.createdAt,
       lastModified: m.lastModified,
       userId: m.userId,
@@ -101,6 +102,7 @@ class HistoryRepositoryImpl implements HistoryRepository {
       ..syncId = e.syncId
       ..word = e.word
       ..translation = e.translation
+      ..translations = List.of(e.translations)
       ..createdAt = e.createdAt
       ..lastModified = e.lastModified
       ..userId = e.userId

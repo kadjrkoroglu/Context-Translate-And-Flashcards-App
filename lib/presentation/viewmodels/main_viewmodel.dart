@@ -24,6 +24,7 @@ class MainViewModel extends ChangeNotifier {
     return aiPage.toDouble();
   }
 
+  bool get isRestoring => _isRestoring;
   bool get isLivePage => page < 0.5;
   bool get isMLPage => page > 1.5;
 

@@ -13,6 +13,9 @@ class FavoriteWord {
   late String word;
 
   late String translation;
+
+  /// Gemini's Standard/Formal/Slang variants; empty for older items.
+  List<String> translations = [];
   late DateTime createdAt;
   late DateTime lastModified;
 
@@ -27,6 +30,7 @@ class FavoriteWord {
       'syncId': syncId,
       'word': word,
       'translation': translation,
+      'translations': translations,
       'createdAt': createdAt.toIso8601String(),
       'lastModified': lastModified.toIso8601String(),
       'userId': userId,
@@ -40,6 +44,7 @@ class FavoriteWord {
       ..syncId = map['syncId'] ?? remoteId ?? ''
       ..word = map['word'] ?? ''
       ..translation = map['translation'] ?? ''
+      ..translations = List<String>.from(map['translations'] ?? const [])
       ..createdAt = DateTime.parse(map['createdAt'])
       ..lastModified = map['lastModified'] != null
           ? DateTime.parse(map['lastModified'])

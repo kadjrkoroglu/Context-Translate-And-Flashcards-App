@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:translate_app/core/errors/app_exception.dart';
@@ -32,6 +33,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   TextEditingController get textController => _textController;
   List<String> get recentLanguages => _settingsService.recentLanguages;
   int get selectedToneIndex => _selectedToneIndex;
+  List<String> get results => List.unmodifiable(_results);
 
   GeminiTranslateViewModel(
     this._translateUsecase,
@@ -226,6 +228,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
           _historyViewModel.addHistoryItem(
             word: trimmedWord,
             translation: trimmedTranslation,
+            translations: List.of(_results),
             isGemini: true,
           );
         }
@@ -261,6 +264,19 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     }
 
     return 'An error occurred: ${e is AppException ? e.message : e}';
+  }
+
+  /// Restores a saved translation (history/favorites) with its tone variants.
+  void restore({
+    required String word,
+    required String shown,
+    required List<String> translations,
+  }) {
+    _textController.text = word;
+    _results = translations.isNotEmpty ? List.of(translations) : [shown];
+    _selectedToneIndex = math.max(0, _results.indexOf(shown));
+    clearError();
+    notifyListeners();
   }
 
   void clear(TextEditingController outputController) {

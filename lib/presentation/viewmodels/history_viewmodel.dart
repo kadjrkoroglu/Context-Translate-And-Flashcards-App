@@ -45,6 +45,7 @@ class HistoryViewModel extends ChangeNotifier {
   Future<void> addHistoryItem({
     required String word,
     required String translation,
+    List<String> translations = const [],
     bool isGemini = false,
   }) async {
     if (_historyItems.isEmpty && !_isLoading) {
@@ -68,6 +69,7 @@ class HistoryViewModel extends ChangeNotifier {
           '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}',
       word: word,
       translation: translation,
+      translations: translations,
       createdAt: now,
       lastModified: now,
       isGemini: isGemini,

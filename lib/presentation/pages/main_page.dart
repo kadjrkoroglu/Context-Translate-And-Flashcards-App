@@ -112,12 +112,15 @@ class MainPage extends StatelessWidget {
                                 child: PageView(
                                   controller: viewModel.pageController,
                                   onPageChanged: (index) {
-                                    geminiViewModel.clear(
-                                      viewModel.outputController,
-                                    );
-                                    mlViewModel.clear(
-                                      viewModel.outputController,
-                                    );
+                                    // Keep restored text when history/favorites switch pages.
+                                    if (!viewModel.isRestoring) {
+                                      geminiViewModel.clear(
+                                        viewModel.outputController,
+                                      );
+                                      mlViewModel.clear(
+                                        viewModel.outputController,
+                                      );
+                                    }
                                     if (index == MainViewModel.livePage) {
                                       _ensureLiveAccess(context, viewModel);
                                     } else {

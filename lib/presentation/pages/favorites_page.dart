@@ -133,8 +133,11 @@ class _FavoritesPageState extends State<FavoritesPage> {
                                         .read<GeminiTranslateViewModel>();
 
                                     if (favorite.isGemini) {
-                                      geminiVM.textController.text =
-                                          favorite.word;
+                                      geminiVM.restore(
+                                        word: favorite.word,
+                                        shown: favorite.translation,
+                                        translations: favorite.translations,
+                                      );
                                     } else {
                                       mlVM.textController.text = favorite.word;
                                     }
