@@ -516,14 +516,7 @@ class MainPage extends StatelessWidget {
     return AnimatedBuilder(
       animation: Listenable.merge([viewModel.pageController, gVM]),
       builder: (context, _) {
-        double page = 0;
-        try {
-          if (viewModel.pageController.hasClients &&
-              viewModel.pageController.positions.length == 1) {
-            page = viewModel.pageController.page ?? 0;
-          }
-        } catch (_) {}
-        final isMLPage = page > 0.5;
+        final isMLPage = viewModel.isMLPage;
 
         return AnimatedOpacity(
           opacity: isMLPage ? 0.0 : 1.0,
