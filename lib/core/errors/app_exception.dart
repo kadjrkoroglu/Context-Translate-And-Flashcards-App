@@ -54,6 +54,23 @@ class FeatureNotAvailableException extends AppException {
   const FeatureNotAvailableException(super.message, {super.details});
 }
 
+enum AiFailure { unavailable, busy, timeout, blocked, failed }
+
+/// The AI service failed; [kind] comes from the backend's error code.
+class AiServiceException extends AppException {
+  const AiServiceException(super.message, this.kind, {super.details});
+
+  final AiFailure kind;
+
+  static AiFailure kindFromCode(String? code) => switch (code) {
+    'ai_unavailable' => AiFailure.unavailable,
+    'ai_busy' => AiFailure.busy,
+    'ai_timeout' => AiFailure.timeout,
+    'ai_blocked' => AiFailure.blocked,
+    _ => AiFailure.failed,
+  };
+}
+
 class MicrophoneDeniedException extends AppException {
   const MicrophoneDeniedException(super.message);
 }

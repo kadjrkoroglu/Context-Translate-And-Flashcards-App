@@ -102,7 +102,17 @@ class GeminiService {
         );
       }
       if (response.statusCode != 200) {
-        throw GeneralException('Translation failed', details: response.body);
+        String? code;
+        try {
+          code =
+              (jsonDecode(response.body) as Map<String, dynamic>)['error']
+                  as String?;
+        } catch (_) {}
+        throw AiServiceException(
+          'Translation failed',
+          AiServiceException.kindFromCode(code),
+          details: response.body,
+        );
       }
 
       return jsonDecode(response.body) as Map<String, dynamic>;

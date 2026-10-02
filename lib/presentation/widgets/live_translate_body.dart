@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/domain/entities/live_entry.dart';
 import 'package:translate_app/presentation/pages/upgrade_page.dart';
+import 'package:translate_app/presentation/utils/ai_error_text.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/live_translate_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/dropdown.dart';
@@ -421,7 +422,9 @@ class _ErrorBanner extends StatelessWidget {
           : 'You have used this month\'s live translation time. It resets on '
                 '${resets.day}/${resets.month}.';
     }
-    if (e is NetworkException) return 'No internet connection.';
+    if (e is AiServiceException || e is NetworkException) {
+      return aiErrorText(e).message;
+    }
     return 'Live translation stopped. Tap the mic to try again.';
   }
 

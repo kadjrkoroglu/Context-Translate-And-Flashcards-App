@@ -92,13 +92,29 @@ class LiveConnection {
     _closed = true;
     if (!_ready.isCompleted) {
       _ready.completeError(
-        GeneralException('Live connection closed', details: reason),
+        AiServiceException(
+          'Live connection closed',
+          _failureFromClose(reason),
+          details: reason,
+        ),
       );
     }
     if (!_events.isClosed) {
       _events.add(LiveClosed(reason));
       _events.close();
     }
+  }
+
+  // Gemini only explains a refused session in the close reason text.
+  static AiFailure _failureFromClose(String? reason) {
+    final text = (reason ?? '').toLowerCase();
+    if (RegExp(r'credit|billing|api key|permission').hasMatch(text)) {
+      return AiFailure.unavailable;
+    }
+    if (RegExp(r'quota|exhausted|overloaded|unavailable').hasMatch(text)) {
+      return AiFailure.busy;
+    }
+    return AiFailure.failed;
   }
 
   void _onMessage(dynamic data) {

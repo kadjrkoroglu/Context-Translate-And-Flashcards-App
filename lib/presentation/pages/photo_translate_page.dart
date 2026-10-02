@@ -12,6 +12,7 @@ import 'package:translate_app/domain/entities/photo_text_block.dart';
 import 'package:translate_app/domain/entities/photo_translation.dart';
 import 'package:translate_app/domain/usecases/translate_usecase.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
+import 'package:translate_app/presentation/utils/ai_error_text.dart';
 import 'package:translate_app/presentation/viewmodels/photo_translate_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
 import 'package:translate_app/presentation/widgets/deck_selector_sheet.dart';
@@ -1483,7 +1484,6 @@ class _StatusBar extends StatelessWidget {
     }
     // No lines: reading failed, not the translation.
     if (vm.blocks.isEmpty) return 'Could not read the text. Please try again.';
-    if (e is NetworkException) return 'No internet connection.';
     if (e is QuotaExceededException) {
       return 'Too many photo translations. Wait a few seconds and retry.';
     }
@@ -1491,7 +1491,7 @@ class _StatusBar extends StatelessWidget {
       return 'Photo translation is available on the Standard plan.';
     }
     if (e is AuthException) return 'Restart the app or sign in to continue.';
-    return 'Translation failed. Please try again.';
+    return aiErrorText(e).message;
   }
 }
 

@@ -5,6 +5,7 @@ import 'package:translate_app/presentation/widgets/dropdown.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
 import 'package:translate_app/presentation/utils/font_size_helper.dart';
 import 'package:translate_app/core/errors/app_exception.dart';
+import 'package:translate_app/presentation/utils/ai_error_text.dart';
 import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
 import 'package:translate_app/presentation/widgets/restart_required_dialog.dart';
 
@@ -189,7 +190,7 @@ class GeminiInputBody extends StatelessWidget {
         ).whenComplete(() => _errorDialogOpen = false);
         return;
       }
-      _showGenericErrorDialog(context);
+      _showErrorDialog(context, exception);
     });
   }
 
@@ -237,7 +238,8 @@ class GeminiInputBody extends StatelessWidget {
     ).whenComplete(() => _errorDialogOpen = false);
   }
 
-  static void _showGenericErrorDialog(BuildContext context) {
+  static void _showErrorDialog(BuildContext context, AppException? exception) {
+    final text = aiErrorText(exception);
     _errorDialogOpen = true;
     showDialog<void>(
       context: context,
@@ -249,17 +251,20 @@ class GeminiInputBody extends StatelessWidget {
             borderRadius: BorderRadius.circular(28),
             side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
-          title: const Text(
-            'Connection Error',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          title: Text(
+            text.title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          content: const SizedBox(
+          content: SizedBox(
             height: 56,
             child: Center(
               child: Text(
-                'Translation could not be completed. Try again later.',
+                text.message,
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white70),
+                style: const TextStyle(color: Colors.white70),
               ),
             ),
           ),
