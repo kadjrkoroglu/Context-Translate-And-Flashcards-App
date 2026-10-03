@@ -59,6 +59,8 @@ dependencies:
   record: ^7.1.1
   web_socket_channel: ^3.0.3
   flutter_pcm_sound: ^3.3.3
+  liquid_glass_renderer: ^0.2.0-dev.4
+  motor: ^1.1.0
 
 dev_dependencies:
   flutter_test:
