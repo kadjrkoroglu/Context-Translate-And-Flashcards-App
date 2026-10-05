@@ -322,6 +322,174 @@ class _PhotoTranslatePageState extends State<PhotoTranslatePage>
     });
   }
 
+  // Before a photo: tips. With a translated photo: copy actions and tips.
+  Widget _buildTopRightButton(PhotoTranslateViewModel vm) {
+    final hasResult =
+        vm.status == PhotoTranslateStatus.done && vm.blocks.isNotEmpty;
+    if (!hasResult) {
+      return _GlassCircleButton(
+        tooltip: 'Tips',
+        icon: Icons.question_mark_rounded,
+        onPressed: _showTips,
+        size: 40,
+        iconSize: 18,
+      );
+    }
+    return Builder(
+      builder: (buttonContext) => _GlassCircleButton(
+        tooltip: 'More',
+        icon: Icons.more_horiz_rounded,
+        onPressed: () => _showMoreMenu(buttonContext, vm),
+        size: 40,
+        iconSize: 20,
+      ),
+    );
+  }
+
+  Future<void> _showMoreMenu(
+    BuildContext buttonContext,
+    PhotoTranslateViewModel vm,
+  ) async {
+    final button = buttonContext.findRenderObject()! as RenderBox;
+    final overlay =
+        Overlay.of(buttonContext).context.findRenderObject()! as RenderBox;
+    final position = RelativeRect.fromRect(
+      Rect.fromPoints(
+        button.localToGlobal(
+          button.size.bottomLeft(const Offset(0, 6)),
+          ancestor: overlay,
+        ),
+        button.localToGlobal(
+          button.size.bottomRight(const Offset(0, 6)),
+          ancestor: overlay,
+        ),
+      ),
+      Offset.zero & overlay.size,
+    );
+    PopupMenuItem<String> item(String value, IconData icon, String label) =>
+        PopupMenuItem(
+          value: value,
+          child: Row(
+            children: [
+              Icon(icon, color: Colors.white70, size: 20),
+              const SizedBox(width: 12),
+              Text(label, style: const TextStyle(color: Colors.white)),
+            ],
+          ),
+        );
+    final choice = await showMenu<String>(
+      context: context,
+      position: position,
+      color: const Color(0xFF2D3238).withValues(alpha: 0.96),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      items: [
+        item('translation', Icons.copy_rounded, 'Copy translation'),
+        item('original', Icons.notes_rounded, 'Copy original text'),
+        item('tips', Icons.question_mark_rounded, 'Tips'),
+      ],
+    );
+    if (!mounted || choice == null) return;
+    if (choice == 'tips') return _showTips();
+    final text = vm.blocks
+        .map((b) => choice == 'translation' ? b.translation : b.text)
+        .join('\n');
+    await Clipboard.setData(ClipboardData(text: text));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          choice == 'translation'
+              ? 'Translation copied'
+              : 'Original text copied',
+        ),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _showTips() {
+    const tips = [
+      (Icons.crop_free_rounded, 'Hold the phone flat over the text.'),
+      (Icons.wb_sunny_outlined, 'Good light helps; use the flash in the dark.'),
+      (Icons.center_focus_strong_rounded, 'Tap the screen to focus.'),
+      (Icons.pinch_rounded, 'Pinch to zoom in on small text.'),
+      (
+        Icons.touch_app_rounded,
+        'Press and hold a translation to select and copy it.',
+      ),
+      (
+        Icons.library_add_rounded,
+        'Swipe up the word list to add words to a deck.',
+      ),
+    ];
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
+      builder: (sheetContext) => ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+            color: const Color(0xFF2D3238).withValues(alpha: 0.85),
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 50,
+                      height: 5,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(2.5),
+                      ),
+                    ),
+                  ),
+                  const Text(
+                    'Tips for better results',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  for (final (icon, text) in tips)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 7),
+                      child: Row(
+                        children: [
+                          Icon(icon, color: Colors.white70, size: 20),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Text(
+                              text,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<PhotoTranslateViewModel>();
@@ -379,6 +547,7 @@ class _PhotoTranslatePageState extends State<PhotoTranslatePage>
                                   onSourceChanged: _changeSourceLanguage,
                                   onTargetChanged: _changeTargetLanguage,
                                   onSwap: _swapLanguages,
+                                  trailing: _buildTopRightButton(vm),
                                 ),
                               ),
                               if (inCameraMode &&
@@ -463,6 +632,9 @@ class _TopBar extends StatelessWidget {
   final ValueChanged<String?> onTargetChanged;
   final VoidCallback onSwap;
 
+  /// Right-hand button, same size as Back.
+  final Widget trailing;
+
   const _TopBar({
     required this.sourceLanguage,
     required this.targetLanguage,
@@ -472,6 +644,7 @@ class _TopBar extends StatelessWidget {
     required this.onSourceChanged,
     required this.onTargetChanged,
     required this.onSwap,
+    required this.trailing,
   });
 
   static const double _height = 40;
@@ -502,6 +675,7 @@ class _TopBar extends StatelessWidget {
                   iconSize: 18,
                 ),
               ),
+              Positioned(right: 0, top: 0, child: trailing),
               Center(
                 child: IgnorePointer(
                   ignoring: locked,
