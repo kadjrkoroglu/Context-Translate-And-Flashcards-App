@@ -163,22 +163,7 @@ class _GlassPageSelectorState extends State<GlassPageSelector> {
             ),
           ),
         ),
-        Positioned(
-          left: cx - _segment / 2,
-          top: _inset,
-          width: _segment,
-          height: _height - 2 * _inset,
-          child: Opacity(
-            opacity: 1 - lift,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
-              ),
-            ),
-          ),
-        ),
+        _restingPill(cx: cx, segment: _segment, opacity: 1 - lift),
         _Labels(labels: widget.labels, page: page, onTap: widget.onSelected),
       ],
     );
@@ -201,12 +186,39 @@ class _GlassPageSelectorState extends State<GlassPageSelector> {
                 lift: lift,
                 magnify: 1 + (_magnify - 1) * lift,
                 labels: widget.labels,
+                page: page,
+                pillX: cx,
+                segment: _segment,
               ),
             ),
           ),
       ],
     );
   }
+}
+
+Widget _restingPill({
+  required double cx,
+  required double segment,
+  required double opacity,
+}) {
+  const inset = _GlassPageSelectorState._inset;
+  return Positioned(
+    left: cx - segment / 2,
+    top: inset,
+    width: segment,
+    height: _GlassPageSelectorState._height - 2 * inset,
+    child: Opacity(
+      opacity: opacity.clamp(0.0, 1.0),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+        ),
+      ),
+    ),
+  );
 }
 
 class _OutsideLens extends CustomClipper<Path> {
@@ -232,14 +244,14 @@ class _Labels extends StatelessWidget {
   final double page;
   final ValueChanged<int>? onTap;
 
-  /// The magnified copy inside the lens: all white, no taps.
-  final bool bright;
+  /// 0..1 towards all-white (the lens copy brightens as the lens lifts).
+  final double brighten;
 
   const _Labels({
     required this.labels,
     required this.page,
     this.onTap,
-    this.bright = false,
+    this.brighten = 0,
   });
 
   @override
@@ -257,13 +269,15 @@ class _Labels extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: bright
-                        ? Colors.white
-                        : Color.lerp(
-                            Colors.white.withValues(alpha: 0.5),
-                            Colors.white,
-                            (1 - (page - i).abs()).clamp(0.0, 1.0),
-                          ),
+                    color: Color.lerp(
+                      Color.lerp(
+                        Colors.white.withValues(alpha: 0.5),
+                        Colors.white,
+                        (1 - (page - i).abs()).clamp(0.0, 1.0),
+                      ),
+                      Colors.white,
+                      brighten,
+                    ),
                   ),
                 ),
               ),
@@ -274,19 +288,25 @@ class _Labels extends StatelessWidget {
   }
 }
 
-/// Inside: the whole bar magnified around the lens centre (its edges land
-/// outside the lens). On top: clear glass that glows and bends at the rim.
+/// Inside: the whole bar magnified around the lens centre. On top: clear glass
+/// that glows and bends at the rim.
 class _Lens extends StatelessWidget {
   final Rect lens;
   final double lift;
   final double magnify;
   final List<String> labels;
+  final double page;
+  final double pillX;
+  final double segment;
 
   const _Lens({
     required this.lens,
     required this.lift,
     required this.magnify,
     required this.labels,
+    required this.page,
+    required this.pillX,
+    required this.segment,
   });
 
   @override
@@ -319,7 +339,13 @@ class _Lens extends StatelessWidget {
                           ),
                         ),
                       ),
-                      _Labels(labels: labels, page: 0, bright: true),
+                      // Matches the bar at lift 0, so the lens fades out without a jump.
+                      _restingPill(
+                        cx: pillX,
+                        segment: segment,
+                        opacity: 1 - lift,
+                      ),
+                      _Labels(labels: labels, page: page, brighten: lift),
                     ],
                   ),
                 ),
