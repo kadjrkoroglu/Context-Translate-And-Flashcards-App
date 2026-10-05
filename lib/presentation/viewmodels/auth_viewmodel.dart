@@ -186,6 +186,44 @@ class AuthViewModel extends ChangeNotifier {
     }
   }
 
+  /// False on failure ([error] set) or when the Apple sheet is closed.
+  Future<bool> signInWithApple() async {
+    _setLoading(true);
+    _clearError();
+    try {
+      final user = await _authUsecase.executeSignInWithApple();
+      if (user != null) _syncAfterAuth();
+      _setLoading(false);
+      return user != null;
+    } catch (e) {
+      _setLoading(false);
+      _setError(e is String ? e : _parseFirebaseError(e));
+      return false;
+    }
+  }
+
+  /// Deletes the account everywhere and continues as a new guest.
+  Future<bool> deleteAccount() async {
+    _setLoading(true);
+    _clearError();
+    try {
+      await _authUsecase.executeDeleteAccount();
+      await _authUsecase.executeSignInAnonymously();
+      _setLoading(false);
+      return true;
+    } catch (e) {
+      _setLoading(false);
+      // Closing the Apple confirmation just stops the deletion.
+      if (e is AuthException && (e.code ?? '').contains('cancel')) return false;
+      _setError(
+        e is NetworkException
+            ? 'No internet connection.'
+            : 'Could not delete the account. Please try again.',
+      );
+      return false;
+    }
+  }
+
   Future<void> signOut() async {
     _setLoading(true);
     try {

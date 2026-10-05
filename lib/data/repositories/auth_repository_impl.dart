@@ -33,6 +33,15 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<AuthEntity?> signInWithApple() async {
+    final credential = await _authService.signInWithApple();
+    return _toEntity(credential?.user);
+  }
+
+  @override
+  Future<void> deleteAccount() => _authService.deleteAccount();
+
+  @override
   Future<AuthEntity?> signInAnonymously() async {
     final credential = await _authService.signInAnonymously();
     return _toEntity(credential?.user);

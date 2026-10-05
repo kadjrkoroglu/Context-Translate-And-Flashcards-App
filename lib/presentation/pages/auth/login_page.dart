@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:translate_app/core/app_links.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
@@ -187,6 +190,31 @@ class _LoginPageState extends State<LoginPage> {
                         },
                 ),
 
+                if (_showApple) ...[
+                  const SizedBox(height: 12),
+                  _buildAppleButton(
+                    onPressed: authViewModel.isLoading
+                        ? null
+                        : () async {
+                            final success = await authViewModel
+                                .signInWithApple();
+                            if (!context.mounted) return;
+                            if (success) {
+                              Navigator.of(
+                                context,
+                              ).popUntil((route) => route.isFirst);
+                            } else if (authViewModel.error != null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(authViewModel.error!)),
+                              );
+                            }
+                          },
+                  ),
+                ],
+
+                const SizedBox(height: 16),
+                _buildLegalNote(ip),
+
                 const SizedBox(height: 32),
 
                 // Register Link
@@ -294,6 +322,69 @@ class _LoginPageState extends State<LoginPage> {
         ),
         child: child,
       ),
+    );
+  }
+
+  // Sign in with Apple is native on Apple devices only.
+  static bool get _showApple =>
+      defaultTargetPlatform == TargetPlatform.iOS ||
+      defaultTargetPlatform == TargetPlatform.macOS;
+
+  Widget _buildAppleButton({required VoidCallback? onPressed}) {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.white.withValues(alpha: 0.05),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: const Icon(Icons.apple, color: Colors.white, size: 28),
+        label: const Text(
+          'Continue with Apple',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: BorderSide.none,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLegalNote(Color ip) {
+    final base = TextStyle(color: ip.withValues(alpha: 0.45), fontSize: 12);
+    final link = base.copyWith(decoration: TextDecoration.underline);
+    return Text.rich(
+      TextSpan(
+        style: base,
+        children: [
+          const TextSpan(text: 'By continuing you agree to the '),
+          TextSpan(
+            text: 'Terms of Use',
+            style: link,
+            recognizer: TapGestureRecognizer()
+              ..onTap = () => AppLinks.open(AppLinks.termsOfUse),
+          ),
+          const TextSpan(text: ' and '),
+          TextSpan(
+            text: 'Privacy Policy',
+            style: link,
+            recognizer: TapGestureRecognizer()
+              ..onTap = () => AppLinks.open(AppLinks.privacyPolicy),
+          ),
+          const TextSpan(text: '.'),
+        ],
+      ),
+      textAlign: TextAlign.center,
     );
   }
 

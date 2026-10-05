@@ -1,11 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:translate_app/core/errors/app_exception.dart';
+import 'package:translate_app/data/services/account_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final AccountService _account;
+
+  AuthService({AccountService? account})
+    : _account = account ?? AccountService();
 
   Stream<User?> get user => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
@@ -104,6 +110,76 @@ class AuthService {
     } catch (e) {
       if (e is AppException) rethrow;
       throw GeneralException('Google sign-in failed', details: e.toString());
+    }
+  }
+
+  /// Returns null if the user closes the Apple sheet.
+  Future<UserCredential?> signInWithApple() async {
+    final provider = AppleAuthProvider()
+      ..addScope('email')
+      ..addScope('name');
+    try {
+      final anonymousUser = _auth.currentUser;
+      if (anonymousUser != null && anonymousUser.isAnonymous) {
+        try {
+          // Same as Google: keep the guest's UID.
+          return await anonymousUser.linkWithProvider(provider);
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'credential-already-in-use' ||
+              e.code == 'email-already-in-use') {
+            final credential = e.credential;
+            return credential != null
+                ? await _auth.signInWithCredential(credential)
+                : await _auth.signInWithProvider(provider);
+          }
+          rethrow;
+        }
+      }
+      return await _auth.signInWithProvider(provider);
+    } on FirebaseAuthException catch (e) {
+      if (_isCancel(e.code)) return null;
+      throw AuthException(
+        'Apple sign-in failed',
+        details: e.message,
+        code: e.code,
+      );
+    } on PlatformException catch (e) {
+      if (_isCancel(e.code)) return null;
+      throw AuthException(
+        'Apple sign-in failed',
+        details: e.message,
+        code: e.code,
+      );
+    }
+  }
+
+  static bool _isCancel(String code) => code.toLowerCase().contains('cancel');
+
+  /// Apple users confirm again so its token can be revoked; the server deletes the rest.
+  Future<void> deleteAccount() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+    try {
+      if (user.providerData.any((p) => p.providerId == 'apple.com')) {
+        final credential = await user.reauthenticateWithProvider(
+          AppleAuthProvider(),
+        );
+        final code = credential.additionalUserInfo?.authorizationCode;
+        if (code != null) {
+          await _auth.revokeTokenWithAuthorizationCode(code).catchError((e) {
+            // Deletion goes ahead: a revoke error must not trap the user.
+            debugPrint('Apple token revoke failed: $e');
+          });
+        }
+      }
+      await _account.deleteAccount();
+      await Future.wait([_auth.signOut(), _googleSignIn.signOut()]);
+    } on FirebaseAuthException catch (e) {
+      throw AuthException(
+        'Account deletion failed',
+        details: e.message,
+        code: e.code,
+      );
     }
   }
 

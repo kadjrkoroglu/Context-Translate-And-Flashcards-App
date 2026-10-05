@@ -18,6 +18,11 @@ class AuthUsecase {
   Future<AuthEntity?> executeSignInWithGoogle() =>
       _repository.signInWithGoogle();
 
+  Future<AuthEntity?> executeSignInWithApple() =>
+      _repository.signInWithApple();
+
+  Future<void> executeDeleteAccount() => _repository.deleteAccount();
+
   Future<AuthEntity?> executeSignInAnonymously() =>
       _repository.signInAnonymously();
 

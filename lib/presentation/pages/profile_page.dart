@@ -9,7 +9,13 @@ import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
 import 'package:translate_app/presentation/widgets/restart_required_dialog.dart';
 import 'package:translate_app/presentation/pages/auth/login_page.dart';
-import 'package:translate_app/theme/theme_provider.dart';
+import 'package:translate_app/core/app_links.dart';
+import 'package:translate_app/data/services/local_storage_service.dart';
+import 'package:translate_app/data/services/settings_service.dart';
+import 'package:translate_app/domain/entities/entitlements_entity.dart';
+import 'package:translate_app/presentation/pages/help_page.dart';
+import 'package:translate_app/presentation/pages/upgrade_page.dart';
+import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
 import 'package:translate_app/theme/theme.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -33,7 +39,6 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     final authViewModel = context.watch<AuthViewModel>();
-    final themeProvider = context.watch<ThemeProvider>();
     final syncService = context.watch<SyncService>();
     final user = authViewModel.user;
     final bool isAuthenticated = authViewModel.isAuthenticated;
@@ -110,7 +115,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     fontStyle: FontStyle.italic,
                   ),
                 ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 12),
+              const _PlanBadge(),
+              const SizedBox(height: 28),
               if (isAuthenticated)
                 _buildSyncCard(
                   context,
@@ -122,29 +129,140 @@ class _ProfilePageState extends State<ProfilePage> {
               else
                 _buildSignInCTA(context, glassTheme, textColor, subTextColor),
               const SizedBox(height: 24),
-              _buildSimpleTile(
-                Icons.dark_mode_outlined,
-                'Dark Mode',
-                textColor,
-                glassTheme,
-                trailing: Switch(
-                  value: themeProvider.isDarkMode,
-                  onChanged: (value) => themeProvider.toggleTheme(value),
-                  activeThumbColor: Colors.white,
-                  activeTrackColor: Colors.white24,
+              _SettingsGroup(
+                rows: [
+                  _SettingsRow(
+                    icon: Icons.help_outline_rounded,
+                    title: 'Help & FAQ',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HelpPage()),
+                    ),
+                  ),
+                  _SettingsRow(
+                    icon: Icons.mail_outline_rounded,
+                    title: 'Contact us',
+                    onTap: () => AppLinks.emailSupport(
+                      body: '\n\n---\nUser: ${user?.uid ?? '-'}',
+                    ),
+                  ),
+                  _SettingsRow(
+                    icon: Icons.privacy_tip_outlined,
+                    title: 'Privacy Policy',
+                    onTap: () => AppLinks.open(AppLinks.privacyPolicy),
+                  ),
+                  _SettingsRow(
+                    icon: Icons.description_outlined,
+                    title: 'Terms of Use',
+                    onTap: () => AppLinks.open(AppLinks.termsOfUse),
+                  ),
+                  _SettingsRow(
+                    icon: Icons.restore_rounded,
+                    title: 'Restore purchases',
+                    onTap: () => showSubscriptionsComingSoon(context),
+                  ),
+                ],
+              ),
+              if (isAuthenticated) ...[
+                const SizedBox(height: 12),
+                _SettingsGroup(
+                  rows: [
+                    _SettingsRow(
+                      icon: Icons.delete_outline_rounded,
+                      title: 'Delete account',
+                      color: Colors.redAccent,
+                      onTap: () =>
+                          _confirmDeleteAccount(context, authViewModel),
+                    ),
+                  ],
                 ),
-              ),
-              _buildSimpleTile(
-                Icons.help_outline_rounded,
-                'Help & Support',
-                textColor,
-                glassTheme,
-              ),
+              ],
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _confirmDeleteAccount(
+    BuildContext context,
+    AuthViewModel vm,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.9),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+          ),
+          title: const Text(
+            'Delete account?',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: const Text(
+            'Your account, decks, cards, favorites and history are deleted '
+            'on all devices. This cannot be undone.\n\n'
+            'An App Store subscription is not cancelled by this; manage it '
+            'in Settings > your name > Subscriptions.',
+            style: TextStyle(color: Colors.white70, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text(
+                'Cancel',
+                style: TextStyle(color: Colors.white60),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text(
+                'Delete',
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final local = context.read<LocalStorageService>();
+    final settings = context.read<SettingsService>();
+    final decks = context.read<DecksViewModel>();
+    final history = context.read<HistoryViewModel>();
+    final favorites = context.read<FavoriteViewModel>();
+    final messenger = ScaffoldMessenger.of(context);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) =>
+          const Center(child: CircularProgressIndicator(color: Colors.white)),
+    );
+    final deleted = await vm.deleteAccount();
+    if (deleted) {
+      // Nothing of the old account stays on this phone.
+      await local.clearAllData();
+      await settings.setAiStudyChat(null);
+      decks.loadDecks();
+      history.loadHistory();
+      favorites.loadFavorites();
+    }
+    if (!context.mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
+    if (deleted) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Your account was deleted.')),
+      );
+    } else if (vm.error != null) {
+      messenger.showSnackBar(SnackBar(content: Text(vm.error!)));
+    }
   }
 
   void _showLogoutDialog(BuildContext context, AuthViewModel vm) {
@@ -485,37 +603,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildSimpleTile(
-    IconData icon,
-    String title,
-    Color textColor,
-    GlassThemeExtension glass, {
-    Widget? trailing,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: glass.baseGlassColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: glass.borderGlassColor),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: textColor.withValues(alpha: 0.7), size: 22),
-          const SizedBox(width: 16),
-          Text(title, style: TextStyle(color: textColor, fontSize: 15)),
-          const Spacer(),
-          trailing ??
-              Icon(
-                Icons.chevron_right_rounded,
-                color: textColor.withValues(alpha: 0.2),
-              ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildIconCircle(
     IconData icon,
     Color color,
@@ -528,6 +615,134 @@ class _ProfilePageState extends State<ProfilePage> {
         shape: BoxShape.circle,
       ),
       child: Icon(icon, color: color, size: 26),
+    );
+  }
+}
+
+/// Current plan; tapping it opens the plans screen.
+class _PlanBadge extends StatelessWidget {
+  const _PlanBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final entitlements = context.watch<EntitlementsViewModel>().entitlements;
+    if (entitlements == null) return const SizedBox(height: 30);
+    final tier = entitlements.tier;
+    final color = switch (tier) {
+      AppTier.premium || AppTier.trialPremium => Colors.amberAccent,
+      AppTier.standard || AppTier.trialStandard => Colors.lightBlueAccent,
+      AppTier.free => Colors.white70,
+    };
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const UpgradePage()),
+      ),
+      child: Container(
+        height: 30,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withValues(alpha: 0.4)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.workspace_premium_rounded, color: color, size: 16),
+            const SizedBox(width: 6),
+            Text(
+              tier.label,
+              style: TextStyle(
+                color: color,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Rows in one rounded card, all the same height.
+class _SettingsGroup extends StatelessWidget {
+  final List<_SettingsRow> rows;
+
+  const _SettingsGroup({required this.rows});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Material(
+          color: Colors.transparent,
+          child: Column(
+            children: [
+              for (var i = 0; i < rows.length; i++) ...[
+                if (i > 0)
+                  Divider(
+                    height: 1,
+                    indent: 54,
+                    color: Colors.white.withValues(alpha: 0.08),
+                  ),
+                rows[i],
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingsRow extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+  final Color color;
+
+  const _SettingsRow({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+    this.color = Colors.white,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: SizedBox(
+        height: 50,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Icon(icon, color: color.withValues(alpha: 0.75), size: 22),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(color: color, fontSize: 15),
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.white.withValues(alpha: 0.25),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

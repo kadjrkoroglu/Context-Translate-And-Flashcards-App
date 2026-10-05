@@ -7,6 +7,8 @@ abstract class AuthRepository {
   Future<AuthEntity?> signInWithEmail(String email, String password);
   Future<AuthEntity?> registerWithEmail(String email, String password);
   Future<AuthEntity?> signInWithGoogle();
+  Future<AuthEntity?> signInWithApple();
+  Future<void> deleteAccount();
   Future<AuthEntity?> signInAnonymously();
   Future<void> signOut();
   Future<void> sendEmailVerification();
