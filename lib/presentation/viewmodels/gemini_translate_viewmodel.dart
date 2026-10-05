@@ -75,6 +75,8 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     String language, [
     TextEditingController? outputController,
   ]) {
+    // Auto-detect has nothing to swap with.
+    if (language == _targetLanguage && _sourceLanguage == autoDetect) return;
     if (language == _targetLanguage) {
       if (outputController != null) {
         swapLanguages(outputController);
@@ -122,6 +124,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   }
 
   void swapLanguages(TextEditingController outputController) {
+    if (_sourceLanguage == autoDetect) return;
     final temp = _sourceLanguage;
     _sourceLanguage = _targetLanguage;
     _targetLanguage = temp;
@@ -187,9 +190,14 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   }
 
   Future<void> startListening() async {
-    final languageCode = MlLanguages.mapNameToBCP(_sourceLanguage);
+    // Auto-detect: the phone's own language.
+    final languageCode = _sourceLanguage == autoDetect
+        ? null
+        : MlLanguages.mapNameToBCP(_sourceLanguage);
+    soundLevel.reset();
     await _speechToText.listen(
       localeId: languageCode,
+      onSoundLevelChange: soundLevel.addRaw,
       onResult: (result) {
         _textController.text = result.recognizedWords;
       },

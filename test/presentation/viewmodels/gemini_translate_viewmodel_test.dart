@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:translate_app/core/languages.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:translate_app/data/services/settings_service.dart';
 import 'package:translate_app/domain/entities/translation_entity.dart';
@@ -93,5 +94,52 @@ void main() {
 
     expect(vm.results, ['merhaba']);
     expect(output.text, 'merhaba');
+  });
+
+  test(
+    'Translate is up to date until the text or a language changes',
+    () async {
+      when(() => repository.translate(any(), any(), any())).thenAnswer(
+        (_) async => TranslationEntity(
+          originalText: 'hello',
+          translatedText: 'merhaba',
+          sourceLanguage: 'English',
+          targetLanguage: 'Turkish',
+        ),
+      );
+      vm.textController.text = 'hello';
+      expect(vm.isUpToDate, isFalse);
+
+      await vm.translate(output);
+      expect(vm.isUpToDate, isTrue);
+
+      vm.setTargetLanguage('German', output);
+      expect(vm.isUpToDate, isFalse);
+      await vm.translate(output);
+      expect(vm.isUpToDate, isTrue);
+
+      vm.textController.text = 'hello there';
+      expect(vm.isUpToDate, isFalse);
+      verify(() => repository.translate(any(), any(), any())).called(2);
+    },
+  );
+
+  test('a restored item counts as translated until something changes', () {
+    vm.restore(word: 'hello', shown: 'merhaba', translations: const []);
+    expect(vm.isUpToDate, isTrue);
+
+    vm.setTargetLanguage('German', output);
+    expect(vm.isUpToDate, isFalse);
+  });
+
+  test('Auto-detect source: no swap, never a recent language', () {
+    vm.setSourceLanguage(autoDetect, output);
+    expect(vm.sourceLanguage, autoDetect);
+    expect(vm.recentLanguages, isNot(contains(autoDetect)));
+
+    vm.swapLanguages(output);
+    vm.setSourceLanguage(vm.targetLanguage, output);
+    expect(vm.sourceLanguage, autoDetect);
+    expect(vm.targetLanguage, 'Turkish');
   });
 }

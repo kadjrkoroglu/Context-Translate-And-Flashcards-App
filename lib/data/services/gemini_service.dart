@@ -33,7 +33,7 @@ class GeminiService {
   ) async {
     final data = await _post(_photoUrl, {
       'lines': lines,
-      'sourceLanguage': sourceLanguage,
+      if (sourceLanguage != autoDetect) 'sourceLanguage': sourceLanguage,
       'targetLanguage': targetLanguage,
     });
     return PhotoTranslation(

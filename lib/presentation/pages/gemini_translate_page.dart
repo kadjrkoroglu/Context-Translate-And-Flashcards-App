@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:translate_app/core/languages.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'package:translate_app/presentation/widgets/dropdown.dart';
@@ -50,13 +51,18 @@ class GeminiLanguageHeader extends StatelessWidget {
                   value: geminiVM.sourceLanguage,
                   recentLanguages: geminiVM.recentLanguages,
                   showIcons: false,
+                  autoDetect: true,
                   onChanged: (v) =>
                       geminiVM.setSourceLanguage(v!, outputController),
                 ),
               ),
               IconButton(
-                onPressed: () => geminiVM.swapLanguages(outputController),
-                icon: const Icon(Icons.swap_horiz_rounded, color: Colors.white),
+                onPressed: geminiVM.sourceLanguage == autoDetect
+                    ? null
+                    : () => geminiVM.swapLanguages(outputController),
+                icon: const Icon(Icons.swap_horiz_rounded),
+                color: Colors.white,
+                disabledColor: Colors.white24,
               ),
               Expanded(
                 child: LanguageDropdown(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:translate_app/core/languages.dart';
 import 'dart:math' as math;
 import 'dart:ui';
 
@@ -15,6 +16,9 @@ class LanguageDropdown extends StatefulWidget {
   /// Smaller box for tight spots (photo camera).
   final bool dense;
 
+  /// Offers "Auto-detect" first (AI source languages only).
+  final bool autoDetect;
+
   const LanguageDropdown({
     super.key,
     required this.value,
@@ -26,6 +30,7 @@ class LanguageDropdown extends StatefulWidget {
     this.isLoading = false,
     this.labelText,
     this.dense = false,
+    this.autoDetect = false,
   });
 
   static const List<String> languages = [
@@ -68,7 +73,7 @@ class _LanguageDropdownState extends State<LanguageDropdown> {
   }
 
   List<dynamic> get _dropdownData {
-    final List<dynamic> data = [];
+    final List<dynamic> data = [if (widget.autoDetect) ...[autoDetect, 'DIVIDER']];
     final List<String> allLangs = widget.items ?? LanguageDropdown.languages;
 
     if (widget.recentLanguages.isNotEmpty && widget.items == null) {

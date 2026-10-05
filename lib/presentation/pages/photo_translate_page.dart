@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:camera/camera.dart';
+import 'package:translate_app/core/languages.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -294,6 +295,7 @@ class _PhotoTranslatePageState extends State<PhotoTranslatePage>
   }
 
   void _swapLanguages() {
+    if (_sourceLanguage == autoDetect) return;
     _applyLanguages(() => _languages.setSourceLanguage(_targetLanguage));
   }
 
@@ -691,6 +693,7 @@ class _TopBar extends StatelessWidget {
                             recentLanguages: recentLanguages,
                             showIcons: false,
                             dense: true,
+                            autoDetect: true,
                             onChanged: onSourceChanged,
                           ),
                         ),
@@ -698,11 +701,14 @@ class _TopBar extends StatelessWidget {
                           width: _swapWidth,
                           child: IconButton(
                             tooltip: 'Swap languages',
-                            onPressed: onSwap,
+                            onPressed: sourceLanguage == autoDetect
+                                ? null
+                                : onSwap,
                             padding: EdgeInsets.zero,
+                            color: Colors.white,
+                            disabledColor: Colors.white24,
                             icon: const Icon(
                               Icons.swap_horiz_rounded,
-                              color: Colors.white,
                               size: 20,
                             ),
                           ),

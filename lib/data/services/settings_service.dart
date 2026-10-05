@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:translate_app/core/languages.dart';
 
 class SettingsService {
   static const String _keySourceLang = 'ml_source_lang';
@@ -17,7 +18,7 @@ class SettingsService {
       _prefs.getStringList(_keyRecentLangs) ?? [];
 
   Future<void> addRecentLanguage(String lang) async {
-    if (lang == '-') return;
+    if (lang == '-' || lang == autoDetect) return;
 
     final current = recentLanguages;
     current.remove(lang);

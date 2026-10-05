@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:translate_app/core/languages.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/data/constants/ml_languages.dart';
@@ -14,7 +15,9 @@ class TtsService {
   }) async {
     if (text.isEmpty) return;
 
-    final bcpCode = MlLanguages.mapNameToBCP(languageName);
+    final bcpCode = languageName == autoDetect
+        ? PlatformDispatcher.instance.locale.languageCode
+        : MlLanguages.mapNameToBCP(languageName);
 
     _flutterTts.setCompletionHandler(() {
       isSpeaking.value = false;
