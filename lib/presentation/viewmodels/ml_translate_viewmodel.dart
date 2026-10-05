@@ -207,10 +207,16 @@ class MLTranslateViewModel extends ChangeNotifier {
       notifyListeners();
 
       try {
-        if (!(await _dictionaryService.isDictionaryDownloaded(bcpCode))) {
-          await _dictionaryService.downloadDictionary(bcpCode);
+        // The spelling dictionary is optional; it must never block the model.
+        try {
+          if (!(await _dictionaryService.isDictionaryDownloaded(bcpCode))) {
+            await _dictionaryService.downloadDictionary(bcpCode);
+          }
+        } catch (e) {
+          debugPrint('Dictionary download failed for $bcpCode: $e');
         }
-        await modelManager.downloadModel(bcpCode);
+        // Mobile data too: the plugin waits for Wi-Fi by default.
+        await modelManager.downloadModel(bcpCode, isWifiRequired: false);
       } catch (e) {
         _setError('Failed to download model for $languageName');
       } finally {

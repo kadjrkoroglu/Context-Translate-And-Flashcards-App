@@ -29,7 +29,7 @@ class DictionaryService {
     'ja':
         'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/ja/ja_full.txt',
     'zh':
-        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/zh/zh_full.txt',
+        'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/zh_cn/zh_cn_full.txt',
     'ko':
         'https://raw.githubusercontent.com/hermitdave/FrequencyWords/master/content/2018/ko/ko_full.txt',
     'ar':
