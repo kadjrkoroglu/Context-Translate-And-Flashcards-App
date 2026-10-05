@@ -7,7 +7,6 @@ class SettingsService {
   static const String _keyGeminiLang = 'gemini_target_lang';
   static const String _keyLiveLang = 'live_target_lang';
   static const String _keyRecentLangs = 'recent_languages';
-  static const String _keyThemeMode = 'theme_mode';
 
   final SharedPreferences _prefs;
 
@@ -54,10 +53,17 @@ class SettingsService {
   Future<void> setLiveTargetLang(String lang) =>
       _prefs.setString(_keyLiveLang, lang);
 
-  // Theme Mode
-  String get themeMode => _prefs.getString(_keyThemeMode) ?? 'system';
-  Future<void> setThemeMode(String mode) =>
-      _prefs.setString(_keyThemeMode, mode);
+  // Study with AI: the unfinished session's chat, as JSON
+  static const String _keyAiStudyChat = 'ai_study_chat';
+  String? get aiStudyChat => _prefs.getString(_keyAiStudyChat);
+  Future<void> setAiStudyChat(String? json) => json == null
+      ? _prefs.remove(_keyAiStudyChat)
+      : _prefs.setString(_keyAiStudyChat, json);
+
+  // Asked once before anything is sent to the AI provider
+  static const String _keyAiConsent = 'ai_consent';
+  bool get aiConsent => _prefs.getBool(_keyAiConsent) ?? false;
+  Future<void> setAiConsent(bool value) => _prefs.setBool(_keyAiConsent, value);
 
   // First Run logic
   static const String _keyFirstRun = 'is_first_run';

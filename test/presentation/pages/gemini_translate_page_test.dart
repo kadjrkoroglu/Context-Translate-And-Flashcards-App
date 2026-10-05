@@ -57,7 +57,7 @@ void main() {
         Provider<TtsService>.value(value: mockTts),
       ],
       child: MaterialApp(
-        theme: lightTheme,
+        theme: darkTheme,
         home: Scaffold(
           body: GeminiLanguageHeader(outputController: outputController),
         ),

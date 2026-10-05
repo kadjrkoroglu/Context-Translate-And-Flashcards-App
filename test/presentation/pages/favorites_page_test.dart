@@ -65,7 +65,7 @@ void main() {
         ),
       ],
       child: MaterialApp(
-        theme: lightTheme,
+        theme: darkTheme,
         home: const FavoritesPage(),
       ),
     );

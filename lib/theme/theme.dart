@@ -53,38 +53,6 @@ class GlassThemeExtension extends ThemeExtension<GlassThemeExtension> {
   }
 }
 
-final ThemeData lightTheme = ThemeData(
-  brightness: Brightness.light,
-  scaffoldBackgroundColor: const Color(0xFF7A8386),
-  canvasColor: const Color(0xFF7A8386),
-  cardColor: const Color(0xFF7A8386),
-  colorScheme: ColorScheme.light(
-    surface: const Color(0xFF7A8386),
-    primary: Colors.grey.shade400,
-    secondary: Colors.grey.shade500,
-    tertiary: Colors.grey.shade600,
-    surfaceContainer: Colors.black,
-    inversePrimary: Colors.white,
-    outline: Colors.black,
-  ),
-  extensions: [
-    GlassThemeExtension(
-      baseGlassColor: Colors.white.withValues(alpha: 0.12),
-      borderGlassColor: Colors.white.withValues(alpha: 0.15),
-      backgroundGradient: [const Color(0xFF7A8386), const Color(0xFF7A8386)],
-      micGradient: [
-        Colors.white.withValues(alpha: 0.12),
-        Colors.white.withValues(alpha: 0.12)
-      ],
-    ),
-  ],
-  textSelectionTheme: const TextSelectionThemeData(
-    cursorColor: Colors.black,
-    selectionColor: Colors.black26,
-    selectionHandleColor: Colors.black,
-  ),
-);
-
 final ThemeData darkTheme = ThemeData(
   brightness: Brightness.dark,
   scaffoldBackgroundColor: const Color(0xFF2D3436),

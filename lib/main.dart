@@ -17,7 +17,6 @@ import 'package:translate_app/data/services/entitlements_service.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/pages/auth/auth_wrapper.dart';
 import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
-import 'package:translate_app/theme/theme_provider.dart';
 import 'package:translate_app/theme/theme.dart';
 import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
@@ -77,7 +76,6 @@ void main() async {
     MultiProvider(
       providers: [
         Provider<TtsService>(create: (_) => TtsService()),
-        ChangeNotifierProvider(create: (_) => ThemeProvider(settingsService)),
         ChangeNotifierProvider(
           create: (_) => EntitlementsViewModel(entitlementsUsecase),
         ),
@@ -154,16 +152,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, child) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          home: const AuthWrapper(),
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          themeMode: themeProvider.themeMode,
-        );
-      },
+    // Dark only: the glass design is white on dark.
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: const AuthWrapper(),
+      theme: darkTheme,
     );
   }
 }

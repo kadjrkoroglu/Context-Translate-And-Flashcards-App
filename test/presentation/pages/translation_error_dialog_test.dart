@@ -37,7 +37,7 @@ void main() {
         ChangeNotifierProvider<GeminiTranslateViewModel>.value(
           value: vm,
           child: MaterialApp(
-            theme: lightTheme,
+            theme: darkTheme,
             home: Scaffold(
               body: GeminiInputBody(outputController: TextEditingController()),
             ),
