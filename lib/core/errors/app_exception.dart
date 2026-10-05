@@ -40,13 +40,18 @@ class QuotaExceededException extends AppException {
     this.window,
     this.resetsAt,
     this.retryAfterSeconds,
+    this.tier,
   });
 
   final String? window;
+
+  /// The user's plan, when the backend sends it (e.g. 'trial_premium').
+  final String? tier;
   final DateTime? resetsAt;
   final int? retryAfterSeconds;
 
   bool get isDailyLimit => window == 'day';
+  bool get isTrial => tier == 'trial_premium';
 }
 
 /// 403: the user's plan doesn't include the feature.

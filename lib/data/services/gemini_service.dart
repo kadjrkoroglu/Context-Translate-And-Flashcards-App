@@ -93,6 +93,7 @@ class GeminiService {
               ? DateTime.tryParse(body!['resetsAt'] as String)
               : null,
           retryAfterSeconds: body?['retryAfterSeconds'] as int?,
+          tier: body?['tier'] as String?,
         );
       }
       if (response.statusCode == 403) {

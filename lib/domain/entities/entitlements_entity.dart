@@ -1,11 +1,22 @@
-enum AppTier { free, standard, premium }
+enum AppTier { free, standard, premium, trialStandard, trialPremium }
 
-AppTier tierFromString(String value) {
-  return AppTier.values.firstWhere(
-    (t) => t.name == value,
-    orElse: () => AppTier.free,
-  );
+extension AppTierLabel on AppTier {
+  String get label => switch (this) {
+    AppTier.free => 'Free',
+    AppTier.standard => 'Standard',
+    AppTier.premium => 'Premium',
+    AppTier.trialStandard => 'Standard (free trial)',
+    AppTier.trialPremium => 'Premium (free trial)',
+  };
 }
+
+AppTier tierFromString(String value) => switch (value) {
+  'standard' => AppTier.standard,
+  'premium' => AppTier.premium,
+  'trial_standard' => AppTier.trialStandard,
+  'trial_premium' => AppTier.trialPremium,
+  _ => AppTier.free,
+};
 
 class TierEntitlements {
   final int? maxDecks;

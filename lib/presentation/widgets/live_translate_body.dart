@@ -1,7 +1,9 @@
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/core/errors/app_exception.dart';
+import 'package:translate_app/domain/entities/entitlements_entity.dart';
 import 'package:translate_app/domain/entities/live_entry.dart';
 import 'package:translate_app/presentation/pages/upgrade_page.dart';
 import 'package:translate_app/presentation/utils/ai_error_text.dart';
@@ -124,6 +126,14 @@ class _LiveTranslateBodyState extends State<LiveTranslateBody> {
 
   void _onChange() {
     final exception = _vm.exception;
+    if (exception is QuotaExceededException &&
+        exception.isTrial &&
+        !identical(exception, _handled)) {
+      _handled = exception;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showTrialUsedDialog(context);
+      });
+    }
     if (exception is FeatureNotAvailableException &&
         !identical(exception, _handled)) {
       _handled = exception;
@@ -161,13 +171,20 @@ class _LiveTranslateBodyState extends State<LiveTranslateBody> {
     final entitlements = context.watch<EntitlementsViewModel>().entitlements;
     final remaining = vm.remainingSeconds ?? entitlements?.liveQuota.remaining;
     final error = vm.status == LiveStatus.error ? vm.exception : null;
+    final trialMinutes = entitlements?.tier == AppTier.trialPremium
+        ? (entitlements!.liveQuota.limit ?? 0) ~/ 60
+        : null;
 
     return Column(
       children: [
-        _StatusRow(vm: vm, remainingSeconds: remaining),
+        _StatusRow(
+          vm: vm,
+          remainingSeconds: remaining,
+          trial: trialMinutes != null,
+        ),
         Expanded(
           child: vm.entries.isEmpty
-              ? _EmptyState(vm: vm, remainingSeconds: remaining)
+              ? _EmptyState(vm: vm, trialMinutes: trialMinutes)
               : ListView.separated(
                   controller: _scroll,
                   padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
@@ -193,8 +210,13 @@ class _LiveTranslateBodyState extends State<LiveTranslateBody> {
 class _StatusRow extends StatelessWidget {
   final LiveTranslateViewModel vm;
   final int? remainingSeconds;
+  final bool trial;
 
-  const _StatusRow({required this.vm, required this.remainingSeconds});
+  const _StatusRow({
+    required this.vm,
+    required this.remainingSeconds,
+    required this.trial,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -244,7 +266,11 @@ class _StatusRow extends StatelessWidget {
           ),
           const Spacer(),
           if (remainingSeconds != null) ...[
-            _RemainingChip(seconds: remainingSeconds!, counting: vm.isActive),
+            _RemainingChip(
+              seconds: remainingSeconds!,
+              counting: vm.isActive,
+              trial: trial,
+            ),
             const SizedBox(width: 4),
           ],
           IconButton(
@@ -277,16 +303,22 @@ class _StatusRow extends StatelessWidget {
 class _RemainingChip extends StatelessWidget {
   final int seconds;
   final bool counting;
+  final bool trial;
 
-  const _RemainingChip({required this.seconds, required this.counting});
+  const _RemainingChip({
+    required this.seconds,
+    required this.counting,
+    required this.trial,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final text = counting
+    final time = counting
         ? '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')} left'
         : seconds >= 60
         ? '${seconds ~/ 60} min left'
         : '$seconds s left';
+    final text = trial ? 'Trial · $time' : time;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -309,9 +341,11 @@ class _RemainingChip extends StatelessWidget {
 
 class _EmptyState extends StatelessWidget {
   final LiveTranslateViewModel vm;
-  final int? remainingSeconds;
 
-  const _EmptyState({required this.vm, required this.remainingSeconds});
+  /// Set during the free trial.
+  final int? trialMinutes;
+
+  const _EmptyState({required this.vm, required this.trialMinutes});
 
   @override
   Widget build(BuildContext context) {
@@ -360,6 +394,20 @@ class _EmptyState extends StatelessWidget {
                 height: 1.35,
               ),
             ),
+            if (trialMinutes != null && !active) ...[
+              const SizedBox(height: 16),
+              Text(
+                'Your trial includes $trialMinutes minutes of Live. '
+                'Premium includes 60 minutes every month.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  height: 1.35,
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -414,6 +462,10 @@ class _ErrorBanner extends StatelessWidget {
     if (e is MicrophoneDeniedException) {
       return 'Microphone access is off. Allow it in Settings > Privacy > '
           'Microphone.';
+    }
+    if (e is QuotaExceededException && e.isTrial) {
+      return "You've used your trial minutes. Premium includes 60 minutes of "
+          'Live translation every month.';
     }
     if (e is QuotaExceededException) {
       final resets = e.resetsAt?.toLocal();
@@ -506,4 +558,35 @@ class _ListeningBarsState extends State<_ListeningBars>
       ),
     );
   }
+}
+
+Future<void> _showTrialUsedDialog(BuildContext context) {
+  return showDialog<void>(
+    context: context,
+    builder: (dialogContext) => BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+      child: AlertDialog(
+        backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(28),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+        ),
+        title: const Text(
+          'Trial minutes used',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          "You've used your free trial minutes of Live translation. Premium "
+          'includes 60 minutes every month once your subscription starts.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('OK', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    ),
+  );
 }
