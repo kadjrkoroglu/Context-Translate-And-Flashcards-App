@@ -3,6 +3,7 @@ import '../../domain/repositories/translation_repository.dart';
 import '../services/gemini_service.dart';
 import '../../domain/entities/live_session_grant.dart';
 import '../../domain/entities/photo_translation.dart';
+import '../../domain/entities/study_session.dart';
 
 class TranslationRepositoryImpl implements TranslationRepository {
   final GeminiService _geminiService;
@@ -42,4 +43,22 @@ class TranslationRepositoryImpl implements TranslationRepository {
   Future<int?> endLiveSession(String sessionId) {
     return _geminiService.endLiveSession(sessionId);
   }
+
+  @override
+  Future<StudyState> fetchStudyState() => _geminiService.fetchStudyState();
+
+  @override
+  Future<StudyStart> startStudy({
+    required String deckId,
+    required String deckName,
+    required List<({String id, String word, String translation})> cards,
+  }) => _geminiService.startStudy(
+    deckId: deckId,
+    deckName: deckName,
+    cards: cards,
+  );
+
+  @override
+  Future<StudyReply> answerStudy(String sessionId, String answer) =>
+      _geminiService.answerStudy(sessionId, answer);
 }

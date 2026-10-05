@@ -26,6 +26,10 @@ class CardItem {
   int?
   lastRatingIndex; // For tracking last rating (0=again, 1=hard, 2=good, 3=easy)
 
+  // Study with AI: when last picked, and whether it needed help then.
+  DateTime? aiStudiedAt;
+  bool aiNeedsReview = false;
+
   String? userId;
   String? remoteId;
   bool isSynced = false;
@@ -48,6 +52,8 @@ class CardItem {
       'isNewCard': isNewCard,
       'lastStudiedDate': lastStudiedDate?.toIso8601String(),
       'lastRatingIndex': lastRatingIndex,
+      'aiStudiedAt': aiStudiedAt?.toIso8601String(),
+      'aiNeedsReview': aiNeedsReview,
       'userId': userId,
       'isDeleted': isDeleted,
       'deckSyncId': deckSyncId,
@@ -74,6 +80,10 @@ class CardItem {
           ? DateTime.parse(map['lastStudiedDate'])
           : null
       ..lastRatingIndex = map['lastRatingIndex']
+      ..aiStudiedAt = map['aiStudiedAt'] != null
+          ? DateTime.parse(map['aiStudiedAt'])
+          : null
+      ..aiNeedsReview = map['aiNeedsReview'] ?? false
       ..userId = map['userId']
       ..remoteId = remoteId
       ..isSynced = true

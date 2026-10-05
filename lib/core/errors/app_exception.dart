@@ -63,9 +63,17 @@ enum AiFailure { unavailable, busy, timeout, blocked, failed }
 
 /// The AI service failed; [kind] comes from the backend's error code.
 class AiServiceException extends AppException {
-  const AiServiceException(super.message, this.kind, {super.details});
+  const AiServiceException(
+    super.message,
+    this.kind, {
+    super.details,
+    this.code,
+  });
 
   final AiFailure kind;
+
+  /// The backend's error code as sent (e.g. 'session_not_found').
+  final String? code;
 
   static AiFailure kindFromCode(String? code) => switch (code) {
     'ai_unavailable' => AiFailure.unavailable,

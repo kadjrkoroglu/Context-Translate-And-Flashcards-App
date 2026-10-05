@@ -29,6 +29,7 @@ import 'package:translate_app/data/services/gemini_service.dart';
 import 'package:translate_app/data/services/live_audio_service.dart';
 import 'package:translate_app/data/services/text_recognition_service.dart';
 import 'package:translate_app/presentation/viewmodels/live_translate_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/ai_study_viewmodel.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:translate_app/data/services/settings_service.dart';
@@ -119,6 +120,14 @@ void main() async {
           create: (context) => DecksViewModel(
             context.read<DeckUsecase>(),
             context.read<EntitlementsViewModel>(),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => AiStudyViewModel(
+            context.read<TranslateUsecase>(),
+            context.read<DeckUsecase>(),
+            context.read<SettingsService>(),
+            onCardsChanged: () => context.read<DecksViewModel>().loadDecks(),
           ),
         ),
         ChangeNotifierProvider(

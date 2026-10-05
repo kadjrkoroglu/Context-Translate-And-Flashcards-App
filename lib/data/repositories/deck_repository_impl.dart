@@ -191,6 +191,8 @@ class DeckRepositoryImpl implements DeckRepository {
       isNewCard: c.isNewCard,
       lastStudiedDate: c.lastStudiedDate,
       lastRatingIndex: c.lastRatingIndex,
+      aiStudiedAt: c.aiStudiedAt,
+      aiNeedsReview: c.aiNeedsReview,
       userId: c.userId,
       remoteId: c.remoteId,
       isSynced: c.isSynced,
@@ -218,6 +220,8 @@ class DeckRepositoryImpl implements DeckRepository {
       ..isNewCard = c.isNewCard
       ..lastStudiedDate = c.lastStudiedDate
       ..lastRatingIndex = c.lastRatingIndex
+      ..aiStudiedAt = c.aiStudiedAt
+      ..aiNeedsReview = c.aiNeedsReview
       ..userId = c.userId
       ..remoteId = c.remoteId
       ..isSynced = c.isSynced

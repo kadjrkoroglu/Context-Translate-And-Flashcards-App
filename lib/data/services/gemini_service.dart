@@ -1,16 +1,19 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:translate_app/core/languages.dart';
 import 'package:http/http.dart' as http;
 import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/data/constants/api_config.dart';
 import 'package:translate_app/domain/entities/live_session_grant.dart';
 import 'package:translate_app/domain/entities/photo_translation.dart';
+import 'package:translate_app/domain/entities/study_session.dart';
 
 class GeminiService {
   static const String _translateUrl = '${ApiConfig.baseUrl}/translate';
   static const String _photoUrl = '${ApiConfig.baseUrl}/translate/photo';
   static const String _liveSessionUrl = '${ApiConfig.baseUrl}/live/session';
+  static const String _studyUrl = '${ApiConfig.baseUrl}/study';
 
   Future<List<String>> translateText(String text, String targetLanguage) async {
     final data = await _post(_translateUrl, {
@@ -59,24 +62,61 @@ class GeminiService {
     return data['remainingSeconds'] as int?;
   }
 
+  Future<StudyState> fetchStudyState() async =>
+      StudyState.fromJson(await _send(_studyUrl));
+
+  /// Starts a session with these cards, or returns the unfinished one.
+  Future<StudyStart> startStudy({
+    required String deckId,
+    required String deckName,
+    required List<({String id, String word, String translation})> cards,
+  }) async {
+    final data = await _post('$_studyUrl/start', {
+      'deckId': deckId,
+      'deckName': deckName,
+      'cards': [
+        for (final c in cards)
+          {'id': c.id, 'word': c.word, 'translation': c.translation},
+      ],
+    });
+    return StudyStart.fromJson(data);
+  }
+
+  Future<StudyReply> answerStudy(String sessionId, String answer) async {
+    final data = await _post('$_studyUrl/answer', {
+      'sessionId': sessionId,
+      'answer': answer,
+    });
+    return StudyReply.fromJson(data);
+  }
+
   Future<Map<String, dynamic>> _post(
     String url,
     Map<String, dynamic> payload,
-  ) async {
+  ) => _send(url, payload: payload);
+
+  /// GET without [payload], POST with it.
+  Future<Map<String, dynamic>> _send(
+    String url, {
+    Map<String, dynamic>? payload,
+  }) async {
     try {
       final token = await FirebaseAuth.instance.currentUser?.getIdToken();
       if (token == null) {
         throw const AuthException('Sign in required to translate');
       }
 
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode(payload),
-      );
+      final headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
+      final response = payload == null
+          ? await http.get(Uri.parse(url), headers: headers)
+          : await http.post(
+              Uri.parse(url),
+              headers: headers,
+              body: jsonEncode(payload),
+            );
 
       if (response.statusCode == 429) {
         Map<String, dynamic>? body;
@@ -113,6 +153,7 @@ class GeminiService {
           'Translation failed',
           AiServiceException.kindFromCode(code),
           details: response.body,
+          code: code,
         );
       }
 

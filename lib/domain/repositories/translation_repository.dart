@@ -1,6 +1,7 @@
 import '../entities/translation_entity.dart';
 import '../entities/live_session_grant.dart';
 import '../entities/photo_translation.dart';
+import '../entities/study_session.dart';
 
 abstract class TranslationRepository {
   Future<TranslationEntity> translate(
@@ -22,4 +23,15 @@ abstract class TranslationRepository {
 
   /// Gives back unused time; returns seconds left this month.
   Future<int?> endLiveSession(String sessionId);
+
+  Future<StudyState> fetchStudyState();
+
+  /// Starts a Study with AI session, or returns the unfinished one.
+  Future<StudyStart> startStudy({
+    required String deckId,
+    required String deckName,
+    required List<({String id, String word, String translation})> cards,
+  });
+
+  Future<StudyReply> answerStudy(String sessionId, String answer);
 }

@@ -8,6 +8,7 @@ import 'package:translate_app/presentation/pages/study_page.dart';
 import 'package:translate_app/presentation/viewmodels/study_viewmodel.dart';
 import 'package:translate_app/domain/usecases/deck_usecase.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
+import 'package:translate_app/presentation/widgets/study_with_ai_button.dart';
 import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
 
 class DecksPage extends StatefulWidget {
@@ -104,20 +105,30 @@ class _DecksPageState extends State<DecksPage> {
             );
           },
         ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => _showAddDeckDialog(context),
-          backgroundColor: Colors.white.withValues(alpha: 0.15),
-          foregroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-            side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const StudyWithAiButton(),
+              FloatingActionButton.extended(
+                onPressed: () => _showAddDeckDialog(context),
+                backgroundColor: Colors.white.withValues(alpha: 0.15),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                ),
+                label: const Text(
+                  'New Deck',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                icon: const Icon(Icons.add_rounded),
+              ),
+            ],
           ),
-          label: const Text(
-            'New Deck',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          icon: const Icon(Icons.add_rounded),
         ),
       ),
     );

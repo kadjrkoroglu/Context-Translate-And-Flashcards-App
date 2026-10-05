@@ -14,6 +14,9 @@ class CardEntity {
   DateTime? lastStudiedDate;
   int? lastRatingIndex;
 
+  DateTime? aiStudiedAt;
+  bool aiNeedsReview = false;
+
   String? userId;
   String? remoteId;
   bool isSynced = false;
@@ -34,6 +37,8 @@ class CardEntity {
     this.isNewCard = true,
     this.lastStudiedDate,
     this.lastRatingIndex,
+    this.aiStudiedAt,
+    this.aiNeedsReview = false,
     this.userId,
     this.remoteId,
     this.isSynced = false,
