@@ -132,6 +132,7 @@ class MLInputBody extends StatelessWidget {
             );
             return TextField(
               controller: viewModel.textController,
+              focusNode: viewModel.inputFocus,
               maxLines: null,
               minLines: 1,
               textAlignVertical: TextAlignVertical.top,

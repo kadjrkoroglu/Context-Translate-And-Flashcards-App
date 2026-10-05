@@ -41,6 +41,7 @@ void main() {
     when(() => mockViewModel.error).thenReturn(null);
     when(() => mockViewModel.isListening).thenReturn(false);
     when(() => mockViewModel.textController).thenReturn(inputController);
+    when(() => mockViewModel.inputFocus).thenReturn(FocusNode());
   });
 
   tearDown(() {

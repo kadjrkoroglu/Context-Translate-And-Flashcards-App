@@ -50,6 +50,8 @@ void main() {
     when(() => mockMainVM.outputController).thenReturn(FakeTextEditingController());
     when(() => mockMlVM.textController).thenReturn(FakeTextEditingController());
     when(() => mockGeminiVM.textController).thenReturn(FakeTextEditingController());
+    when(() => mockMlVM.inputFocus).thenReturn(FocusNode());
+    when(() => mockGeminiVM.inputFocus).thenReturn(FocusNode());
   });
 
   Widget buildSubject() {

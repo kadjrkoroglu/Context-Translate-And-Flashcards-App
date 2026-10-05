@@ -6,6 +6,7 @@ import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
+import 'package:translate_app/presentation/widgets/ai_consent_dialog.dart';
 import 'package:translate_app/presentation/widgets/deck_selector_sheet.dart';
 import 'package:translate_app/presentation/widgets/speech_toggle_button.dart';
 import 'package:translate_app/presentation/utils/font_size_helper.dart';
@@ -73,7 +74,7 @@ class OutputActionButtons extends StatelessWidget {
           if (!mainVM.isMLPage) ...[
             _ToneDropdown(controller: controller),
             const SizedBox(width: 6),
-            _actionIcon(context, Icons.auto_awesome_rounded, "Translate"),
+            _TranslateAgainButton(controller: controller),
           ],
           const Spacer(),
           SpeechToggleButton(
@@ -94,33 +95,78 @@ class OutputActionButtons extends StatelessWidget {
       ),
     );
   }
+}
 
+/// Faded once this text and these languages are translated; spinner while busy.
+class _TranslateAgainButton extends StatelessWidget {
+  final TextEditingController controller;
 
-  Widget _actionIcon(BuildContext context, IconData icon, String label) {
-    return InkWell(
-      onTap: () =>
-          context.read<GeminiTranslateViewModel>().translate(controller),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        height: 38,
-        padding: const EdgeInsets.symmetric(horizontal: 7),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: Colors.white70, size: 16),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: const TextStyle(color: Colors.white, fontSize: 13),
+  const _TranslateAgainButton({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = context.read<GeminiTranslateViewModel>();
+    return ListenableBuilder(
+      listenable: Listenable.merge([vm, vm.textController]),
+      builder: (context, _) {
+        final loading = vm.isLoading;
+        return AnimatedOpacity(
+          opacity: vm.isUpToDate && !loading ? 0.4 : 1,
+          duration: const Duration(milliseconds: 200),
+          child: InkWell(
+            onTap: loading
+                ? null
+                : () async {
+                    if (await ensureAiConsent(context)) {
+                      vm.translate(controller);
+                    }
+                  },
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              height: 38,
+              padding: const EdgeInsets.symmetric(horizontal: 7),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+              ),
+              // The label stays (invisible) under the spinner so the width holds.
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Opacity(
+                    opacity: loading ? 0 : 1,
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.auto_awesome_rounded,
+                          color: Colors.white70,
+                          size: 16,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          'Translate',
+                          style: TextStyle(color: Colors.white, fontSize: 13),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (loading)
+                    const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

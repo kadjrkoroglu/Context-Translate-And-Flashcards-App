@@ -1,4 +1,6 @@
 import 'dart:math' as math;
+import 'package:translate_app/presentation/utils/sound_level.dart';
+import 'package:translate_app/core/languages.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:translate_app/core/errors/app_exception.dart';
@@ -10,6 +12,8 @@ import 'package:translate_app/data/constants/ml_languages.dart';
 class GeminiTranslateViewModel extends ChangeNotifier {
   final TranslateUsecase _translateUsecase;
   final SpeechToText _speechToText = SpeechToText();
+  final SoundLevel soundLevel = SoundLevel();
+  final FocusNode inputFocus = FocusNode();
   final SettingsService _settingsService;
   final HistoryViewModel _historyViewModel;
 
@@ -26,6 +30,12 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   AppException? get lastException => _lastException;
+
+  String get _currentKey =>
+      '${_textController.text.trim()}|$_sourceLanguage|$_targetLanguage';
+
+  /// This text was already translated between these languages.
+  bool get isUpToDate => _lastTranslateKey == _currentKey;
   String get sourceLanguage => _sourceLanguage;
   String get targetLanguage => _targetLanguage;
   bool get speechEnabled => _speechEnabled;
@@ -156,6 +166,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
       _speechEnabled = await _speechToText.initialize(
         onStatus: (status) {
           if (status == 'done' || status == 'notListening') {
+            soundLevel.reset();
             notifyListeners();
           }
         },
@@ -204,8 +215,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
       return;
     }
 
-    final translateKey =
-        '${_textController.text.trim()}|$_sourceLanguage|$_targetLanguage';
+    final translateKey = _currentKey;
     if (translateKey == _lastTranslateKey) return;
 
     _setLoading(true);
@@ -275,6 +285,8 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     _textController.text = word;
     _results = translations.isNotEmpty ? List.of(translations) : [shown];
     _selectedToneIndex = math.max(0, _results.indexOf(shown));
+    // Already translated: Translate stays faded until the text or a language changes.
+    _lastTranslateKey = _currentKey;
     clearError();
     notifyListeners();
   }
@@ -290,6 +302,8 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _textController.dispose();
+    soundLevel.dispose();
+    inputFocus.dispose();
     super.dispose();
   }
 }

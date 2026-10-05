@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:translate_app/presentation/utils/sound_level.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -11,6 +12,8 @@ import 'package:google_mlkit_language_id/google_mlkit_language_id.dart';
 class MLTranslateViewModel extends ChangeNotifier {
   final DictionaryService _dictionaryService = DictionaryService();
   final SpeechToText _speechToText = SpeechToText();
+  final SoundLevel soundLevel = SoundLevel();
+  final FocusNode inputFocus = FocusNode();
   final TextEditingController _textController = TextEditingController();
   final SettingsService _settingsService;
   final HistoryViewModel _historyViewModel;
@@ -82,6 +85,7 @@ class MLTranslateViewModel extends ChangeNotifier {
     _speechEnabled = await _speechToText.initialize(
       onStatus: (status) {
         if (status == 'done' || status == 'notListening') {
+          soundLevel.reset();
           notifyListeners();
         }
       },
@@ -304,8 +308,10 @@ class MLTranslateViewModel extends ChangeNotifier {
 
   void startListening(TextEditingController outputController) async {
     final languageCode = MlLanguages.mapNameToBCP(_sourceLanguage);
+    soundLevel.reset();
     await _speechToText.listen(
       localeId: languageCode,
+      onSoundLevelChange: soundLevel.addRaw,
       onResult: (result) {
         _textController.text = result.recognizedWords;
         translate(outputController);
@@ -361,6 +367,8 @@ class MLTranslateViewModel extends ChangeNotifier {
     _historyTimer?.cancel();
     _onDeviceTranslator?.close();
     _textController.dispose();
+    soundLevel.dispose();
+    inputFocus.dispose();
     super.dispose();
   }
 }

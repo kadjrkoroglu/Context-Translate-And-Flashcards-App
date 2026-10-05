@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:translate_app/presentation/utils/sound_level.dart';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:translate_app/core/errors/app_exception.dart';
@@ -22,6 +23,7 @@ class LiveTranslateViewModel extends ChangeNotifier {
 
   final TranslateUsecase _usecase;
   final LiveAudioService _audio;
+  final SoundLevel soundLevel = SoundLevel();
   final SettingsService _settings;
   final VoidCallback? _onSessionEnded;
 
@@ -162,7 +164,10 @@ class LiveTranslateViewModel extends ChangeNotifier {
     );
   }
 
-  void _onMicChunk(Uint8List chunk) => _connection?.sendAudio(chunk);
+  void _onMicChunk(Uint8List chunk) {
+    _connection?.sendAudio(chunk);
+    soundLevel.addPcm16(chunk);
+  }
 
   void _onEvent(LiveConnection source, LiveEvent event) {
     // Stale event from a swapped-out connection.
@@ -267,6 +272,7 @@ class LiveTranslateViewModel extends ChangeNotifier {
     _connection?.close();
     _connection = null;
     await _audio.stop().catchError((_) {});
+    if (!_disposed) soundLevel.reset();
 
     final session = _sessionId;
     _sessionId = null;
@@ -299,6 +305,7 @@ class LiveTranslateViewModel extends ChangeNotifier {
       _teardown();
     }
     _audio.dispose().catchError((_) {});
+    soundLevel.dispose();
     super.dispose();
   }
 }

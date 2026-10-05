@@ -33,6 +33,8 @@ class _DecksPageState extends State<DecksPage> {
 
     return AppBackground(
       child: Scaffold(
+        // Dialogs bring the keyboard; the buttons stay at the bottom.
+        resizeToAvoidBottomInset: false,
         backgroundColor: Colors.transparent,
         body: Consumer<DecksViewModel>(
           builder: (context, vm, _) {

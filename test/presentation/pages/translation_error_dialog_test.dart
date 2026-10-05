@@ -27,6 +27,7 @@ void main() {
       final input = TextEditingController();
       addTearDown(input.dispose);
       when(() => vm.textController).thenReturn(input);
+      when(() => vm.inputFocus).thenReturn(FocusNode());
       when(() => vm.error).thenReturn('failed');
       when(() => vm.lastException).thenReturn(exception);
       when(() => vm.isListening).thenReturn(false);
