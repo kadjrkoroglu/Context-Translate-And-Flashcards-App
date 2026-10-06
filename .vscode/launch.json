@@ -2,10 +2,9 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Translation App (with Gemini)",
+      "name": "Translation App",
       "request": "launch",
-      "type": "dart",
-      "toolArgs": ["--dart-define-from-file", "env.json"]
+      "type": "dart"
     }
   ]
 }
