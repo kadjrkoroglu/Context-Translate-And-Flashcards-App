@@ -116,100 +116,77 @@ class _HistoryPageState extends State<HistoryPage> {
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate((context, index) {
                         final item = viewModel.historyItems[index];
-                        return Dismissible(
-                          key: Key(item.id.toString()),
-                          direction: DismissDirection.endToStart,
-                          background: Container(
-                            alignment: Alignment.centerRight,
-                            padding: const EdgeInsets.only(right: 20),
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.redAccent.withValues(alpha: 0.8),
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            child: const Icon(
-                              Icons.delete_outline_rounded,
-                              color: Colors.white,
-                            ),
-                          ),
-                          onDismissed: (_) => viewModel.deleteItem(item.id),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8.0),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(24),
-                              child: BackdropFilter(
-                                filter: ImageFilter.blur(
-                                  sigmaX: 10,
-                                  sigmaY: 10,
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                  ),
                                 ),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.08),
+                                child: ListTile(
+                                  shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(24),
-                                    border: Border.all(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.1,
+                                  ),
+                                  onTap: () {
+                                    final mainVM = context
+                                        .read<MainViewModel>();
+                                    final mlVM = context
+                                        .read<MLTranslateViewModel>();
+                                    final geminiVM = context
+                                        .read<GeminiTranslateViewModel>();
+
+                                    if (item.isGemini) {
+                                      geminiVM.restore(
+                                        word: item.word,
+                                        shown: item.translation,
+                                        translations: item.translations,
+                                      );
+                                    } else {
+                                      mlVM.textController.text = item.word;
+                                    }
+
+                                    mainVM.restoreTranslation(
+                                      item.translation,
+                                      item.isGemini,
+                                    );
+                                    Navigator.pop(context);
+                                  },
+                                  contentPadding: const EdgeInsets.all(16),
+                                  title: Text(
+                                    item.word,
+                                    style: const TextStyle(
+                                      color: ip,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  subtitle: Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: Text(
+                                      item.translation,
+                                      style: TextStyle(
+                                        color: ip.withValues(alpha: 0.7),
+                                        fontSize: 16,
                                       ),
                                     ),
                                   ),
-                                  child: ListTile(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(24),
+                                  trailing: IconButton(
+                                    icon: Icon(
+                                      Icons.close_rounded,
+                                      size: 20,
+                                      color: ip.withValues(alpha: 0.3),
                                     ),
-                                    onTap: () {
-                                      final mainVM = context
-                                          .read<MainViewModel>();
-                                      final mlVM = context
-                                          .read<MLTranslateViewModel>();
-                                      final geminiVM = context
-                                          .read<GeminiTranslateViewModel>();
-
-                                      if (item.isGemini) {
-                                        geminiVM.restore(
-                                          word: item.word,
-                                          shown: item.translation,
-                                          translations: item.translations,
-                                        );
-                                      } else {
-                                        mlVM.textController.text = item.word;
-                                      }
-
-                                      mainVM.restoreTranslation(
-                                        item.translation,
-                                        item.isGemini,
-                                      );
-                                      Navigator.pop(context);
+                                    onPressed: () {
+                                      HapticFeedback.lightImpact();
+                                      viewModel.deleteItem(item.id);
                                     },
-                                    contentPadding: const EdgeInsets.all(16),
-                                    title: Text(
-                                      item.word,
-                                      style: const TextStyle(
-                                        color: ip,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                    subtitle: Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Text(
-                                        item.translation,
-                                        style: TextStyle(
-                                          color: ip.withValues(alpha: 0.7),
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                                    trailing: IconButton(
-                                      icon: Icon(
-                                        Icons.close_rounded,
-                                        size: 20,
-                                        color: ip.withValues(alpha: 0.3),
-                                      ),
-                                      onPressed: () {
-                                        HapticFeedback.lightImpact();
-                                        viewModel.deleteItem(item.id);
-                                      },
-                                    ),
                                   ),
                                 ),
                               ),
