@@ -27,7 +27,26 @@ class AppBackground extends StatelessWidget {
           colors: colors,
         ),
       ),
-      child: child,
+      // A still, soft light at the top and a shade at the bottom give depth.
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            center: Alignment(-0.3, -0.6),
+            radius: 0.95,
+            colors: [Color(0x12FFFFFF), Color(0x00FFFFFF)],
+          ),
+        ),
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment(0.3, 0.76),
+              radius: 1.1,
+              colors: [Color(0x29000000), Color(0x00000000)],
+            ),
+          ),
+          child: child,
+        ),
+      ),
     );
   }
 }

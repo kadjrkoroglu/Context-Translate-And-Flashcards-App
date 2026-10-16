@@ -55,11 +55,11 @@ class GlassThemeExtension extends ThemeExtension<GlassThemeExtension> {
 
 final ThemeData darkTheme = ThemeData(
   brightness: Brightness.dark,
-  scaffoldBackgroundColor: const Color(0xFF2D3436),
-  canvasColor: const Color(0xFF2D3436),
-  cardColor: const Color(0xFF2D3436),
+  scaffoldBackgroundColor: const Color(0xFF1E272E),
+  canvasColor: const Color(0xFF1E272E),
+  cardColor: const Color(0xFF1E272E),
   colorScheme: ColorScheme.dark(
-    surface: const Color(0xFF2D3436),
+    surface: const Color(0xFF1E272E),
     primary: Colors.grey.shade800,
     secondary: Colors.grey.shade700,
     tertiary: Colors.grey.shade600,
@@ -71,7 +71,7 @@ final ThemeData darkTheme = ThemeData(
     GlassThemeExtension(
       baseGlassColor: Colors.white.withValues(alpha: 0.08),
       borderGlassColor: Colors.white.withValues(alpha: 0.1),
-      backgroundGradient: [const Color(0xFF2D3436), const Color(0xFF2D3436)],
+      backgroundGradient: [const Color(0xFF1E272E), const Color(0xFF1E272E)],
       micGradient: [
         Colors.white.withValues(alpha: 0.08),
         Colors.white.withValues(alpha: 0.08)
