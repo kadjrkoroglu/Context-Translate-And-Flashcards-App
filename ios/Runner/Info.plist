@@ -7,20 +7,9 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Translate App</string>
+	<string>Decklingo</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.googleusercontent.apps.49581970803-90iqb3uuc3chg6n4h4sgrhphh3ddg3jl</string>
-			</array>
-		</dict>
-	</array>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -33,16 +22,27 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.49581970803-90iqb3uuc3chg6n4h4sgrhphh3ddg3jl</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Fotoğraftaki metni çevirmek için kamera izni gerekiyor</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Galeriden seçtiğiniz fotoğraftaki metni çevirmek için fotoğraflara erişim gerekiyor</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Ses kaydı için mikrofon izni gerekiyor</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Galeriden seçtiğiniz fotoğraftaki metni çevirmek için fotoğraflara erişim gerekiyor</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Konuşmanızı metne çevirmek için mikrofon izni gerekiyor</string>
 	<key>UIApplicationSceneManifest</key>
