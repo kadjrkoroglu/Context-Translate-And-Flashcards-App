@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/widgets/add_card_dialog.dart';
 import 'dart:ui';
+import 'package:translate_app/presentation/viewmodels/ai_study_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/pages/deck_detail_page.dart';
 import 'package:translate_app/presentation/pages/study_page.dart';
@@ -383,6 +384,9 @@ class _DeckCard extends StatelessWidget {
   }
 
   void _showDeleteConfirm(BuildContext context) {
+    final study = context.read<AiStudyViewModel>();
+    final endsSession =
+        study.hasUnfinishedSession && study.session!.deckId == deck.syncId;
     showDialog(
       context: context,
       builder: (ctx) => BackdropFilter(
@@ -398,7 +402,8 @@ class _DeckCard extends StatelessWidget {
             style: TextStyle(color: Colors.white),
           ),
           content: Text(
-            'Delete "${deck.name}" and all its cards?',
+            'Delete "${deck.name}" and all its cards?'
+            '${endsSession ? ' Its Study with AI session ends too.' : ''}',
             style: const TextStyle(color: Colors.white70),
           ),
           actions: [
@@ -412,6 +417,7 @@ class _DeckCard extends StatelessWidget {
             TextButton(
               onPressed: () {
                 vm.deleteDeck(deck.id);
+                if (endsSession) study.endSession();
                 Navigator.pop(ctx);
               },
               child: const Text(

@@ -34,4 +34,7 @@ abstract class TranslationRepository {
   });
 
   Future<StudyReply> answerStudy(String sessionId, String answer);
+
+  /// Ends the unfinished session; the usual break follows.
+  Future<StudyState> endStudy(String sessionId);
 }

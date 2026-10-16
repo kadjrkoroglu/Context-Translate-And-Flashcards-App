@@ -320,6 +320,62 @@ void main() {
     expect(vm.cooldownLeft, const Duration(hours: 2, minutes: 41));
   });
 
+  group('ending a session', () {
+    final afterEnd = StudyState(
+      nextAvailableAt: now.add(const Duration(hours: 3)),
+    );
+
+    test('ends it on the server and forgets the chat', () async {
+      await startSession();
+      when(() => repository.endStudy('s1')).thenAnswer((_) async => afterEnd);
+
+      expect(await vm.endSession(), isTrue);
+
+      expect(vm.hasUnfinishedSession, isFalse);
+      expect(vm.messages, isEmpty);
+      expect(settings.aiStudyChat, isNull);
+      expect(vm.cooldownLeft, const Duration(hours: 3));
+    });
+
+    test('loads the state first when it was never loaded', () async {
+      when(
+        () => repository.fetchStudyState(),
+      ).thenAnswer((_) async => StudyState(session: sessionOf(done: 4)));
+      when(() => repository.endStudy('s1')).thenAnswer((_) async => afterEnd);
+
+      expect(await vm.endSession(), isTrue);
+      verify(() => repository.endStudy('s1')).called(1);
+    });
+
+    test('already gone on the server: takes the server\'s state', () async {
+      await startSession();
+      when(() => repository.endStudy('s1')).thenThrow(
+        const AiServiceException(
+          'x',
+          AiFailure.failed,
+          code: 'session_not_found',
+        ),
+      );
+      when(
+        () => repository.fetchStudyState(),
+      ).thenAnswer((_) async => afterEnd);
+
+      expect(await vm.endSession(), isTrue);
+      expect(vm.hasUnfinishedSession, isFalse);
+    });
+
+    test('offline: the session stays', () async {
+      await startSession();
+      when(
+        () => repository.endStudy('s1'),
+      ).thenThrow(const NetworkException('offline'));
+
+      expect(await vm.endSession(), isFalse);
+      expect(vm.hasUnfinishedSession, isTrue);
+      expect(vm.messages, isNotEmpty);
+    });
+  });
+
   test('countdown format', () {
     expect(
       formatCountdown(const Duration(hours: 2, minutes: 41, seconds: 7)),

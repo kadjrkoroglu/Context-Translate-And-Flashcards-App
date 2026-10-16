@@ -90,6 +90,11 @@ class GeminiService {
     return StudyReply.fromJson(data);
   }
 
+  /// Ends the unfinished session; the usual break follows.
+  Future<StudyState> endStudy(String sessionId) async => StudyState.fromJson(
+    await _post('$_studyUrl/end', {'sessionId': sessionId}),
+  );
+
   Future<Map<String, dynamic>> _post(
     String url,
     Map<String, dynamic> payload,

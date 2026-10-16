@@ -89,6 +89,28 @@ class AiStudyViewModel extends ChangeNotifier {
     }
   }
 
+  /// Ends the unfinished session on the server (the break follows); false if
+  /// it could not be reached.
+  Future<bool> endSession() async {
+    if (_state == null) await refresh();
+    final id = session?.id;
+    if (id == null || !hasUnfinishedSession) return true;
+    try {
+      _setState(await _translate.endStudy(id));
+    } on AiServiceException catch (e) {
+      if (e.code != 'session_not_found') return false;
+      await refresh();
+    } catch (e) {
+      debugPrint('[STUDY] end failed: $e');
+      return false;
+    }
+    _messages.clear();
+    _unsent = null;
+    await _settings.setAiStudyChat(null);
+    notifyListeners();
+    return true;
+  }
+
   /// Resumes the unfinished session, or starts one with [deck].
   Future<void> open(DeckEntity? deck) async {
     if (_busy) return;

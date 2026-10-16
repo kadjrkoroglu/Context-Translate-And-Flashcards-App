@@ -4,12 +4,17 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/data/services/study_card_picker.dart';
+import 'package:translate_app/data/services/sync_service.dart';
 import 'package:translate_app/domain/entities/deck_entity.dart';
+import 'package:translate_app/domain/entities/study_session.dart';
 import 'package:translate_app/presentation/pages/study_chat_page.dart';
 import 'package:translate_app/presentation/pages/upgrade_page.dart';
 import 'package:translate_app/presentation/viewmodels/ai_study_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/ai_consent_dialog.dart';
 
 /// Decks screen, bottom left: Study with AI, Continue 4/10, or the countdown.
@@ -37,6 +42,59 @@ class _StudyWithAiButtonState extends State<StudyWithAiButton> {
       MaterialPageRoute(builder: (_) => StudyChatPage(deck: deck)),
     );
     await study.refresh();
+  }
+
+  // The session lives on the server, its deck only on the phone.
+  Future<void> _continue(StudySession session) async {
+    bool hasDeck() => context.read<DecksViewModel>().decks.any(
+      (d) => d.syncId == session.deckId,
+    );
+    if (hasDeck()) return _openChat(null);
+
+    final choice = await _MissingDeckSheet.show(
+      context,
+      session.deckName,
+      canSync: context.read<AuthViewModel>().isAuthenticated,
+    );
+    if (choice == null || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+
+    if (choice == _MissingDeckChoice.end) {
+      if (!await context.read<AiStudyViewModel>().endSession()) {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('Could not end the session. Check your connection.'),
+          ),
+        );
+      }
+      return;
+    }
+
+    final sync = context.read<SyncService>();
+    final decksVM = context.read<DecksViewModel>();
+    final favorites = context.read<FavoriteViewModel>();
+    final history = context.read<HistoryViewModel>();
+    final navigator = Navigator.of(context, rootNavigator: true);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) =>
+          const Center(child: CircularProgressIndicator(color: Colors.white)),
+    );
+    final error = await sync.syncAll() ?? sync.syncError;
+    await decksVM.loadDecks();
+    favorites.loadFavorites();
+    history.loadHistory();
+    navigator.pop();
+    if (!mounted) return;
+    if (hasDeck()) return _openChat(null);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          error ?? "The deck wasn't found. You can end the session instead.",
+        ),
+      ),
+    );
   }
 
   Future<void> _showCooldown() async {
@@ -93,7 +151,7 @@ class _StudyWithAiButtonState extends State<StudyWithAiButton> {
         icon: Icons.auto_awesome,
         label: 'Continue · ${session!.doneCount}/${session.total}',
         progress: session.doneCount / session.total,
-        onTap: () => _openChat(null),
+        onTap: () => _continue(session),
       );
     }
     if (hasChat && cooldown != null) {
@@ -353,6 +411,84 @@ class _DeckPickerSheet extends StatelessWidget {
           trailing: ready
               ? const Icon(Icons.auto_awesome, color: Colors.amberAccent)
               : null,
+        ),
+      ),
+    );
+  }
+}
+
+enum _MissingDeckChoice { sync, end }
+
+/// The unfinished session's deck isn't on this phone: sync it back or end.
+class _MissingDeckSheet extends StatelessWidget {
+  final String deckName;
+  final bool canSync;
+
+  const _MissingDeckSheet({required this.deckName, required this.canSync});
+
+  static Future<_MissingDeckChoice?> show(
+    BuildContext context,
+    String deckName, {
+    required bool canSync,
+  }) => showModalBottomSheet<_MissingDeckChoice>(
+    context: context,
+    barrierColor: Colors.black54,
+    backgroundColor: Colors.transparent,
+    useSafeArea: true,
+    builder: (_) => _MissingDeckSheet(deckName: deckName, canSync: canSync),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(14),
+    );
+    const padding = EdgeInsets.symmetric(vertical: 13);
+    return _GlassSheet(
+      title: 'Deck not on this phone',
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
+        child: Column(
+          children: [
+            Text(
+              'This session is from "$deckName", which isn\'t on this phone. '
+              '${canSync ? 'Sync to bring it back, or end the session. ' : ''}'
+              'Ending it starts the usual break before the next session.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+            ),
+            const SizedBox(height: 18),
+            if (canSync) ...[
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () =>
+                      Navigator.pop(context, _MissingDeckChoice.sync),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black87,
+                    shape: shape,
+                    padding: padding,
+                  ),
+                  child: const Text('Sync now'),
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context, _MissingDeckChoice.end),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.redAccent,
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.25)),
+                  shape: shape,
+                  padding: padding,
+                ),
+                child: const Text('End session'),
+              ),
+            ),
+          ],
         ),
       ),
     );

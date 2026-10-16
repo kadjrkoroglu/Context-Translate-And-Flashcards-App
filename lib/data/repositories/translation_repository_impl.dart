@@ -61,4 +61,8 @@ class TranslationRepositoryImpl implements TranslationRepository {
   @override
   Future<StudyReply> answerStudy(String sessionId, String answer) =>
       _geminiService.answerStudy(sessionId, answer);
+
+  @override
+  Future<StudyState> endStudy(String sessionId) =>
+      _geminiService.endStudy(sessionId);
 }

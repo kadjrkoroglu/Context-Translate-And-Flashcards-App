@@ -44,4 +44,7 @@ class TranslateUsecase {
 
   Future<StudyReply> answerStudy(String sessionId, String answer) =>
       _repository.answerStudy(sessionId, answer);
+
+  Future<StudyState> endStudy(String sessionId) =>
+      _repository.endStudy(sessionId);
 }

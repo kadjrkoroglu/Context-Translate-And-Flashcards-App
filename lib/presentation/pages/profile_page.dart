@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'package:provider/provider.dart';
 import 'package:translate_app/data/services/sync_service.dart';
+import 'package:translate_app/presentation/viewmodels/ai_study_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
@@ -292,6 +293,11 @@ class _ProfilePageState extends State<ProfilePage> {
             TextButton(
               onPressed: () async {
                 Navigator.pop(dialogContext);
+                final study = context.read<AiStudyViewModel>();
+                final settings = context.read<SettingsService>();
+                // Signing out closes everything, the open study session too.
+                await study.endSession();
+                await settings.setAiStudyChat(null);
                 await vm.signOut();
                 if (context.mounted) showRestartRequiredDialog(context);
               },
