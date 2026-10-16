@@ -231,12 +231,12 @@ class _HistoryPageState extends State<HistoryPage> {
     showDialog(
       context: context,
       builder: (context) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: AlertDialog(
-          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.8),
+          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.2),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+            borderRadius: BorderRadius.circular(28),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
           ),
           title: const Text(
             'Clear History',
@@ -251,7 +251,7 @@ class _HistoryPageState extends State<HistoryPage> {
               onPressed: () => Navigator.pop(context),
               child: const Text(
                 'Cancel',
-                style: TextStyle(color: Colors.white54),
+                style: TextStyle(color: Colors.white60),
               ),
             ),
             TextButton(

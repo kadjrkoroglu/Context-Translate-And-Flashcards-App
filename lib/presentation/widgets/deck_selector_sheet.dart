@@ -174,11 +174,12 @@ class DeckSelectorSheet extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: AlertDialog(
-          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.15),
+          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.2),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(28),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
           ),
           title: const Text(
             'Save Flashcard',
@@ -193,7 +194,7 @@ class DeckSelectorSheet extends StatelessWidget {
               onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text(
                 'Cancel',
-                style: TextStyle(color: Colors.white54),
+                style: TextStyle(color: Colors.white60),
               ),
             ),
             ElevatedButton(

@@ -194,7 +194,7 @@ class _ProfilePageState extends State<ProfilePage> {
       builder: (dialogContext) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: AlertDialog(
-          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.9),
+          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
             side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),

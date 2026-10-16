@@ -253,12 +253,12 @@ class GeminiInputBody extends StatelessWidget {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: AlertDialog(
-          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.15),
+          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
-            side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
           ),
           title: Text(
             text.title,

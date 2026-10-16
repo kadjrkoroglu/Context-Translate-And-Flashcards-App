@@ -30,12 +30,12 @@ class _AiConsentDialog extends StatelessWidget {
       height: 1.4,
     );
     return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+      filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
       child: AlertDialog(
-        backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.92),
+        backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.2),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-          side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+          borderRadius: BorderRadius.circular(28),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
         ),
         title: const Text(
           'Before you use AI',
@@ -74,7 +74,7 @@ class _AiConsentDialog extends StatelessWidget {
             onPressed: () => Navigator.pop(context, false),
             child: const Text(
               'Not now',
-              style: TextStyle(color: Colors.white54),
+              style: TextStyle(color: Colors.white60),
             ),
           ),
           TextButton(
