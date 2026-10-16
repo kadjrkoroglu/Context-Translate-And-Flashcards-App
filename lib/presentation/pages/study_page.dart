@@ -14,13 +14,38 @@ class StudyPage extends StatefulWidget {
   State<StudyPage> createState() => _StudyPageState();
 }
 
-class _StudyPageState extends State<StudyPage>
-    with SingleTickerProviderStateMixin {
+/// A rated card on its way off the screen.
+typedef _Leaving = ({dynamic card, StudyRating rating, Offset from, Offset to});
+
+class _StudyPageState extends State<StudyPage> with TickerProviderStateMixin {
   late AnimationController _flipController;
   late Animation<double> _flipAnimation;
   Offset _dragOffset = Offset.zero;
   bool _isDragging = false;
   int? _previousCardId;
+
+  // The rated card flies off, the next one grows into place, a dropped one slides back.
+  late final AnimationController _leave = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 260),
+  );
+  late final AnimationController _enter = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 280),
+    value: 1,
+  );
+  late final AnimationController _snapBack = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 200),
+  );
+  _Leaving? _leaving;
+  Offset _snapFrom = Offset.zero;
+
+  Offset get _snapOffset => Offset.lerp(
+    _snapFrom,
+    Offset.zero,
+    Curves.easeOutCubic.transform(_snapBack.value),
+  )!;
 
   @override
   void initState() {
@@ -37,6 +62,9 @@ class _StudyPageState extends State<StudyPage>
   @override
   void dispose() {
     _flipController.dispose();
+    _leave.dispose();
+    _enter.dispose();
+    _snapBack.dispose();
     super.dispose();
   }
 
@@ -47,6 +75,32 @@ class _StudyPageState extends State<StudyPage>
     } else {
       return offset.dy < -30 ? StudyRating.easy : StudyRating.hard;
     }
+  }
+
+  void _release(StudyViewModel vm, dynamic card, StudyRating? rating) {
+    if (rating != null && vm.isAnswerVisible) {
+      final direction = _dragOffset / _dragOffset.distance;
+      _leaving = (
+        card: card,
+        rating: rating,
+        from: _dragOffset,
+        to: _dragOffset + direction * 480,
+      );
+      _leave.forward(from: 0).whenComplete(() {
+        if (!mounted) return;
+        // Same card again (e.g. the last one rated Again): bring it back in.
+        if (_leaving?.card.id == _previousCardId) _enter.forward(from: 0);
+        setState(() => _leaving = null);
+      });
+      _rate(vm, rating);
+    } else {
+      _snapFrom = _dragOffset;
+      _snapBack.forward(from: 0);
+    }
+    setState(() {
+      _isDragging = false;
+      _dragOffset = Offset.zero;
+    });
   }
 
   Future<void> _rate(StudyViewModel vm, StudyRating rating) async {
@@ -70,6 +124,7 @@ class _StudyPageState extends State<StudyPage>
 
     if (_previousCardId != card.id) {
       _flipController.animateTo(0, duration: Duration.zero);
+      if (_previousCardId != null) _enter.forward(from: 0);
       _previousCardId = card.id;
     }
     if (vm.isAnswerVisible && _flipController.value == 0) {
@@ -122,7 +177,14 @@ class _StudyPageState extends State<StudyPage>
             Expanded(
               child: Center(
                 child: GestureDetector(
-                  onPanStart: (_) => setState(() => _isDragging = true),
+                  onPanStart: (_) => setState(() {
+                    // Catch a card that is still sliding back.
+                    if (_snapBack.isAnimating) {
+                      _dragOffset = _snapOffset;
+                      _snapBack.value = 1;
+                    }
+                    _isDragging = true;
+                  }),
                   onPanUpdate: (d) => setState(() {
                     if (!vm.isAnswerVisible) return;
                     final before = _getRatingFromOffset(_dragOffset);
@@ -132,21 +194,21 @@ class _StudyPageState extends State<StudyPage>
                       HapticFeedback.selectionClick();
                     }
                   }),
-                  onPanEnd: (_) {
-                    if (activeRating != null && vm.isAnswerVisible) {
-                      _rate(vm, activeRating);
-                    }
-                    setState(() {
-                      _isDragging = false;
-                      _dragOffset = Offset.zero;
-                    });
-                  },
-                  child: _FlashcardStack(
-                    activeRating: activeRating,
-                    flipAnimation: _flipAnimation,
-                    dragOffset: _dragOffset,
-                    isDragging: _isDragging && vm.isAnswerVisible,
-                    card: card,
+                  onPanEnd: (_) => _release(vm, card, activeRating),
+                  child: AnimatedBuilder(
+                    animation: Listenable.merge([_leave, _enter, _snapBack]),
+                    builder: (context, _) => _FlashcardStack(
+                      activeRating: activeRating,
+                      flipAnimation: _flipAnimation,
+                      offset: _isDragging && vm.isAnswerVisible
+                          ? _dragOffset
+                          : _snapOffset,
+                      enter: Curves.easeOutCubic.transform(_enter.value),
+                      hidden: _leaving?.card.id == card.id,
+                      leaving: _leaving,
+                      leaveProgress: _leave.value,
+                      card: card,
+                    ),
                   ),
                 ),
               ),
@@ -338,46 +400,80 @@ class _StudyProgressBar extends StatelessWidget {
 class _FlashcardStack extends StatelessWidget {
   final StudyRating? activeRating;
   final Animation<double> flipAnimation;
-  final Offset dragOffset;
-  final bool isDragging;
+  final Offset offset;
+
+  /// 0 → 1 while the card grows into place.
+  final double enter;
+  final bool hidden;
+  final _Leaving? leaving;
+  final double leaveProgress;
   final dynamic card;
   const _FlashcardStack({
     required this.activeRating,
     required this.flipAnimation,
-    required this.dragOffset,
-    required this.isDragging,
+    required this.offset,
+    required this.enter,
+    required this.hidden,
+    required this.leaving,
+    required this.leaveProgress,
     required this.card,
   });
 
   @override
-  Widget build(BuildContext context) => Stack(
-    alignment: Alignment.center,
-    children: [
-      if (activeRating != null) _RatingFeedback(rating: activeRating!),
-      Transform.translate(
-        offset: isDragging ? dragOffset : Offset.zero,
-        child: AnimatedBuilder(
-          animation: flipAnimation,
-          builder: (context, _) {
-            final angle = flipAnimation.value;
-            final isBack = angle > pi / 2;
-            return Transform(
-              transform: Matrix4.identity()
-                ..setEntry(3, 2, 0.001)
-                ..rotateY(angle),
-              alignment: Alignment.center,
-              child: isBack
-                  ? Transform(
-                      transform: Matrix4.identity()..rotateY(pi),
-                      alignment: Alignment.center,
-                      child: _CardSide(text: card.translation, isBack: true),
-                    )
-                  : _CardSide(text: card.word, isBack: false),
-            );
-          },
+  Widget build(BuildContext context) {
+    final leaving = this.leaving;
+    final fade = 1 - leaveProgress;
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        if (activeRating != null) _RatingFeedback(rating: activeRating!),
+        if (leaving != null)
+          Opacity(
+            opacity: fade,
+            child: _RatingFeedback(rating: leaving.rating),
+          ),
+        Opacity(
+          opacity: hidden ? 0 : enter,
+          child: Transform.scale(
+            scale: 0.9 + 0.1 * enter,
+            child: Transform.translate(offset: offset, child: _flippingCard()),
+          ),
         ),
-      ),
-    ],
+        if (leaving != null)
+          Opacity(
+            opacity: fade,
+            child: Transform.translate(
+              offset: Offset.lerp(
+                leaving.from,
+                leaving.to,
+                Curves.easeOutCubic.transform(leaveProgress),
+              )!,
+              child: _CardSide(text: leaving.card.translation, isBack: true),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _flippingCard() => AnimatedBuilder(
+    animation: flipAnimation,
+    builder: (context, _) {
+      final angle = flipAnimation.value;
+      final isBack = angle > pi / 2;
+      return Transform(
+        transform: Matrix4.identity()
+          ..setEntry(3, 2, 0.001)
+          ..rotateY(angle),
+        alignment: Alignment.center,
+        child: isBack
+            ? Transform(
+                transform: Matrix4.identity()..rotateY(pi),
+                alignment: Alignment.center,
+                child: _CardSide(text: card.translation, isBack: true),
+              )
+            : _CardSide(text: card.word, isBack: false),
+      );
+    },
   );
 }
 
