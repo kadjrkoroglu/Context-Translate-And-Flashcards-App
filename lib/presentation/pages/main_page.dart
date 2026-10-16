@@ -545,7 +545,15 @@ class MainPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  _buildTranslateButtonBody(context, viewModel, gVM),
+                  // Shown once there is text to translate.
+                  AnimatedOpacity(
+                    opacity: hasText ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 200),
+                    child: IgnorePointer(
+                      ignoring: !hasText,
+                      child: _buildTranslateButtonBody(context, viewModel, gVM),
+                    ),
+                  ),
                 ],
               ),
             ),
