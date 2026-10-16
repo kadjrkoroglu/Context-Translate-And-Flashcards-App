@@ -48,7 +48,6 @@ class MLTranslateViewModel extends ChangeNotifier {
   MLTranslateViewModel(this._settingsService, this._historyViewModel) {
     _sourceLanguage = _settingsService.mlSourceLang;
     _targetLanguage = _settingsService.mlTargetLang;
-    _initSpeech();
     fetchDownloadedModels();
   }
 
@@ -81,7 +80,8 @@ class MLTranslateViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _initSpeech() async {
+  Future<void> _initSpeech() async {
+    if (_speechEnabled) return;
     _speechEnabled = await _speechToText.initialize(
       onStatus: (status) {
         if (status == 'done' || status == 'notListening') {
@@ -307,6 +307,9 @@ class MLTranslateViewModel extends ChangeNotifier {
   }
 
   void startListening(TextEditingController outputController) async {
+    // Mic and speech permissions are asked on the first tap, not at launch.
+    await _initSpeech();
+    if (!_speechEnabled) return;
     final languageCode = MlLanguages.mapNameToBCP(_sourceLanguage);
     soundLevel.reset();
     await _speechToText.listen(

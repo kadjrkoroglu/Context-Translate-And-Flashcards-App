@@ -52,7 +52,6 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   ) {
     _sourceLanguage = _settingsService.geminiSourceLang;
     _targetLanguage = _settingsService.geminiTargetLang;
-    _initSpeech();
   }
 
   void _setLoading(bool value) {
@@ -190,6 +189,9 @@ class GeminiTranslateViewModel extends ChangeNotifier {
   }
 
   Future<void> startListening() async {
+    // Mic and speech permissions are asked on the first tap, not at launch.
+    await _initSpeech();
+    if (!_speechEnabled) return;
     // Auto-detect: the phone's own language.
     final languageCode = _sourceLanguage == autoDetect
         ? null
