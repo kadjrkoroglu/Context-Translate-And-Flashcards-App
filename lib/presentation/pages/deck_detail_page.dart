@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/domain/entities/deck_entity.dart';
@@ -194,6 +195,7 @@ class _DeckDetailPageState extends State<DeckDetailPage> {
                             child: GestureDetector(
                               onLongPress: () {
                                 if (!_isSelectionMode) {
+                                  HapticFeedback.mediumImpact();
                                   _toggleSelection(card.id);
                                 }
                               },

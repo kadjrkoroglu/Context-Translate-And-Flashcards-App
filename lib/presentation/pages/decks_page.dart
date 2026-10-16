@@ -11,6 +11,7 @@ import 'package:translate_app/domain/usecases/deck_usecase.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
 import 'package:translate_app/presentation/widgets/study_with_ai_button.dart';
 import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
+import 'package:translate_app/presentation/utils/haptics.dart';
 
 class DecksPage extends StatefulWidget {
   const DecksPage({super.key});
@@ -295,7 +296,10 @@ class _DeckCard extends StatelessWidget {
                   ),
                 ).then((_) => vm.loadDecks());
               },
-              onLongPress: () => _showDeckOptions(context),
+              onLongPress: () {
+                longPressHaptic();
+                _showDeckOptions(context);
+              },
             ),
           ),
         ),

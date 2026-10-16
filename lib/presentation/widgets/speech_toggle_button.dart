@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/data/services/tts_service.dart';
 
@@ -25,6 +26,7 @@ class _SpeechToggleButtonState extends State<SpeechToggleButton> {
 
   Future<void> _toggle(TtsService tts) async {
     if (_speaking) {
+      HapticFeedback.lightImpact();
       setState(() => _speaking = false);
       await tts.stop();
       return;
@@ -32,6 +34,7 @@ class _SpeechToggleButtonState extends State<SpeechToggleButton> {
 
     if (widget.text.trim().isEmpty) return;
 
+    HapticFeedback.lightImpact();
     setState(() => _speaking = true);
     try {
       await tts.speak(widget.text.trim(), widget.language, onDone: _finish);

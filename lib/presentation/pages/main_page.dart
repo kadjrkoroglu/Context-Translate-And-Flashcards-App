@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart' show Drag;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/pages/ml_translate_page.dart';
 import 'package:translate_app/presentation/pages/gemini_translate_page.dart';
@@ -22,6 +23,7 @@ import 'package:translate_app/presentation/viewmodels/live_translate_viewmodel.d
 import 'package:translate_app/presentation/widgets/glass_page_selector.dart';
 import 'package:translate_app/presentation/widgets/live_translate_body.dart';
 import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
+import 'package:translate_app/presentation/utils/haptics.dart';
 import 'package:translate_app/theme/theme.dart';
 import 'dart:ui';
 import 'dart:math' as math;
@@ -125,6 +127,7 @@ class MainPage extends StatelessWidget {
                                   onPageChanged: (index) {
                                     // Keep restored text when history/favorites switch pages.
                                     if (!viewModel.isRestoring) {
+                                      HapticFeedback.selectionClick();
                                       geminiViewModel.clear(
                                         viewModel.outputController,
                                       );
@@ -420,14 +423,17 @@ class MainPage extends StatelessWidget {
           onTap: () async {
             if (viewModel.isLivePage) {
               if (liveVM.isActive) {
+                HapticFeedback.lightImpact();
                 liveVM.stop();
               } else if (await _ensureLiveAccess(context) &&
                   context.mounted &&
                   await ensureAiConsent(context)) {
+                HapticFeedback.lightImpact();
                 liveVM.start();
               }
               return;
             }
+            HapticFeedback.lightImpact();
             if (viewModel.isMLPage) {
               mlVM.isListening
                   ? mlVM.stopListening()
@@ -532,10 +538,10 @@ class MainPage extends StatelessWidget {
                       duration: const Duration(milliseconds: 200),
                       child: IgnorePointer(
                         ignoring: !hasText,
-                        child: _buildCornerButton(
-                          Icons.close_rounded,
-                          () => gVM.clear(viewModel.outputController),
-                        ),
+                        child: _buildCornerButton(Icons.close_rounded, () {
+                          HapticFeedback.lightImpact();
+                          gVM.clear(viewModel.outputController);
+                        }),
                       ),
                     ),
                   ),
@@ -585,6 +591,7 @@ class MainPage extends StatelessWidget {
     if (!context.mounted) return false;
     final entitlements = entitlementsVM.entitlements;
     if (entitlements != null && !entitlements.entitlements.live) {
+      HapticFeedback.warningNotification();
       Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const UpgradePage()),
@@ -641,7 +648,7 @@ class MainPage extends StatelessWidget {
           child: ElevatedButton(
             onPressed: () async {
               if (!await ensureAiConsent(context)) return;
-              gVM.translate(viewModel.outputController);
+              translateWithHaptics(gVM, viewModel.outputController);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white.withValues(alpha: 0.1),

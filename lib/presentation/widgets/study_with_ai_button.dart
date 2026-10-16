@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/data/services/study_card_picker.dart';
 import 'package:translate_app/data/services/sync_service.dart';
@@ -36,6 +37,7 @@ class _StudyWithAiButtonState extends State<StudyWithAiButton> {
 
   Future<void> _openChat(DeckEntity? deck) async {
     if (!await ensureAiConsent(context) || !mounted) return;
+    HapticFeedback.lightImpact();
     final study = context.read<AiStudyViewModel>();
     await Navigator.push(
       context,
@@ -111,6 +113,7 @@ class _StudyWithAiButtonState extends State<StudyWithAiButton> {
     if (!mounted) return;
     final entitlements = entitlementsVM.entitlements;
     if (entitlements != null && !entitlements.entitlements.chat) {
+      HapticFeedback.warningNotification();
       Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const UpgradePage()),

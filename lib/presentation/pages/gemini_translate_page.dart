@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:translate_app/core/languages.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
@@ -248,6 +249,7 @@ class GeminiInputBody extends StatelessWidget {
   static void _showErrorDialog(BuildContext context, AppException? exception) {
     final text = aiErrorText(exception);
     _errorDialogOpen = true;
+    HapticFeedback.warningNotification();
     showDialog<void>(
       context: context,
       builder: (dialogContext) => BackdropFilter(

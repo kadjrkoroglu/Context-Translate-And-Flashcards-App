@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
@@ -67,6 +68,7 @@ class AddCardDialog {
                     }
                     return;
                   }
+                  HapticFeedback.lightImpact();
                   frontCtrl.clear();
                   backCtrl.clear();
                   frontFocus.requestFocus();

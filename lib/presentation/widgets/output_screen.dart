@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
@@ -10,6 +11,7 @@ import 'package:translate_app/presentation/widgets/ai_consent_dialog.dart';
 import 'package:translate_app/presentation/widgets/deck_selector_sheet.dart';
 import 'package:translate_app/presentation/widgets/speech_toggle_button.dart';
 import 'package:translate_app/presentation/utils/font_size_helper.dart';
+import 'package:translate_app/presentation/utils/haptics.dart';
 
 class OutputTranslationField extends StatelessWidget {
   final TextEditingController controller;
@@ -118,7 +120,7 @@ class _TranslateAgainButton extends StatelessWidget {
                 ? null
                 : () async {
                     if (await ensureAiConsent(context)) {
-                      vm.translate(controller);
+                      translateWithHaptics(vm, controller);
                     }
                   },
             borderRadius: BorderRadius.circular(12),
@@ -319,6 +321,7 @@ class _ToneDropdownState extends State<_ToneDropdown> {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
+        if (!isSelected) HapticFeedback.selectionClick();
         viewModel.setSelectedToneIndex(index, widget.controller);
         _closeMenu();
       },
@@ -436,6 +439,7 @@ class _FavoriteButton extends StatelessWidget {
           constraints: const BoxConstraints(minWidth: 36),
           onPressed: () {
             if (word.isNotEmpty && translation.isNotEmpty) {
+              HapticFeedback.lightImpact();
               favVM.toggleFavorite(
                 word: word,
                 translation: translation,

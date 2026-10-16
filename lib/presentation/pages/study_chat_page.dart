@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/domain/entities/deck_entity.dart';
@@ -59,11 +60,19 @@ class _StudyChatPageState extends State<StudyChatPage> {
     super.dispose();
   }
 
-  void _send(AiStudyViewModel vm) {
+  Future<void> _send(AiStudyViewModel vm) async {
     final text = _input.text;
-    if (text.trim().isEmpty || vm.isBusy) return;
+    if (text.trim().isEmpty || vm.isBusy || !vm.hasUnfinishedSession) return;
     _input.clear();
-    vm.send(text);
+    final before = vm.messages.length + 1;
+    await vm.send(text);
+    final replies = vm.messages.skip(before);
+    // Success for a correct answer or the finish, a light tap for a tutor reply.
+    if (vm.session?.completed == true || replies.any((m) => m.correct)) {
+      HapticFeedback.successNotification();
+    } else if (replies.any((m) => m.kind == StudyMessageKind.tutor)) {
+      HapticFeedback.lightImpact();
+    }
   }
 
   // Follows new messages to the bottom.

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
@@ -219,6 +220,7 @@ class DeckSelectorSheet extends StatelessWidget {
         }
         return;
       }
+      HapticFeedback.successNotification();
       if (context.mounted) Navigator.pop(context);
     }
   }

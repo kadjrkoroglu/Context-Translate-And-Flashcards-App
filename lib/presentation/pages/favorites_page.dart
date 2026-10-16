@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
@@ -172,8 +173,10 @@ class _FavoritesPageState extends State<FavoritesPage> {
                                       Icons.favorite_rounded,
                                       color: Colors.redAccent,
                                     ),
-                                    onPressed: () =>
-                                        viewModel.removeFavorite(favorite.id),
+                                    onPressed: () {
+                                      HapticFeedback.lightImpact();
+                                      viewModel.removeFavorite(favorite.id);
+                                    },
                                   ),
                                 ),
                               ),

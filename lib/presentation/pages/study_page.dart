@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../viewmodels/study_viewmodel.dart';
@@ -46,6 +47,13 @@ class _StudyPageState extends State<StudyPage>
     } else {
       return offset.dy < -30 ? StudyRating.easy : StudyRating.hard;
     }
+  }
+
+  Future<void> _rate(StudyViewModel vm, StudyRating rating) async {
+    await vm.rateCard(rating);
+    vm.isFinished
+        ? HapticFeedback.successNotification()
+        : HapticFeedback.lightImpact();
   }
 
   @override
@@ -116,11 +124,17 @@ class _StudyPageState extends State<StudyPage>
                 child: GestureDetector(
                   onPanStart: (_) => setState(() => _isDragging = true),
                   onPanUpdate: (d) => setState(() {
-                    if (vm.isAnswerVisible) _dragOffset += d.delta;
+                    if (!vm.isAnswerVisible) return;
+                    final before = _getRatingFromOffset(_dragOffset);
+                    _dragOffset += d.delta;
+                    final after = _getRatingFromOffset(_dragOffset);
+                    if (after != null && after != before) {
+                      HapticFeedback.selectionClick();
+                    }
                   }),
                   onPanEnd: (_) {
                     if (activeRating != null && vm.isAnswerVisible) {
-                      vm.rateCard(activeRating);
+                      _rate(vm, activeRating);
                     }
                     setState(() {
                       _isDragging = false;
@@ -469,7 +483,10 @@ class _StudyActionArea extends StatelessWidget {
     padding: const EdgeInsets.only(bottom: 80.0),
     child: !vm.isAnswerVisible
         ? ElevatedButton.icon(
-            onPressed: () => vm.showAnswer(),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              vm.showAnswer();
+            },
             icon: const Icon(Icons.flip_rounded),
             label: const Text(
               'SHOW ANSWER',

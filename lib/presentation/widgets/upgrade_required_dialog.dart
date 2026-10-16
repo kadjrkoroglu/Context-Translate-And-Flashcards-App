@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:translate_app/presentation/pages/upgrade_page.dart';
 
 /// Shown when a free-tier limit is hit.
@@ -8,6 +9,7 @@ Future<void> showUpgradeRequiredDialog(
   required String title,
   required String message,
 }) {
+  HapticFeedback.warningNotification();
   return showDialog<void>(
     context: context,
     builder: (dialogContext) => BackdropFilter(
