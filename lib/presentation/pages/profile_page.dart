@@ -263,7 +263,7 @@ class _ProfilePageState extends State<ProfilePage> {
     Navigator.of(context, rootNavigator: true).pop();
     if (deleted) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('Your account was deleted.')),
+        const SnackBar(content: Text('Your account has been deleted.')),
       );
     } else if (vm.error != null) {
       messenger.showSnackBar(SnackBar(content: Text(vm.error!)));
