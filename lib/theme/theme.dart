@@ -78,6 +78,19 @@ final ThemeData darkTheme = ThemeData(
       ],
     ),
   ],
+  // Small, see-through glass instead of the default white bar.
+  snackBarTheme: SnackBarThemeData(
+    behavior: SnackBarBehavior.floating,
+    backgroundColor: const Color(0xFF2D3743).withValues(alpha: 0.85),
+    contentTextStyle: const TextStyle(color: Colors.white, fontSize: 14),
+    actionTextColor: Colors.white,
+    elevation: 0,
+    insetPadding: const EdgeInsets.fromLTRB(32, 0, 32, 20),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(14),
+      side: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+    ),
+  ),
   textSelectionTheme: const TextSelectionThemeData(
     cursorColor: Colors.white,
     selectionColor: Colors.white24,
