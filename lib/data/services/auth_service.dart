@@ -1,7 +1,12 @@
+import 'dart:convert';
+import 'dart:math';
+
+import 'package:crypto/crypto.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/data/services/account_service.dart';
 
@@ -115,36 +120,50 @@ class AuthService {
 
   /// Returns null if the user closes the Apple sheet.
   Future<UserCredential?> signInWithApple() async {
-    final provider = AppleAuthProvider()
-      ..addScope('email')
-      ..addScope('name');
+    final rawNonce = _nonce();
+    final AuthorizationCredentialAppleID apple;
     try {
-      final anonymousUser = _auth.currentUser;
-      if (anonymousUser != null && anonymousUser.isAnonymous) {
-        try {
-          // Same as Google: keep the guest's UID.
-          return await anonymousUser.linkWithProvider(provider);
-        } on FirebaseAuthException catch (e) {
-          if (e.code == 'credential-already-in-use' ||
-              e.code == 'email-already-in-use') {
-            final credential = e.credential;
-            return credential != null
-                ? await _auth.signInWithCredential(credential)
-                : await _auth.signInWithProvider(provider);
-          }
-          rethrow;
-        }
-      }
-      return await _auth.signInWithProvider(provider);
-    } on FirebaseAuthException catch (e) {
-      if (_isCancel(e.code)) return null;
+      apple = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: sha256.convert(utf8.encode(rawNonce)).toString(),
+      );
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) return null;
       throw AuthException(
         'Apple sign-in failed',
         details: e.message,
-        code: e.code,
+        code: e.code.name,
       );
-    } on PlatformException catch (e) {
-      if (_isCancel(e.code)) return null;
+    }
+    final idToken = apple.identityToken;
+    if (idToken == null) {
+      throw const AuthException('Apple sign-in failed', code: 'missing-token');
+    }
+    final credential = AppleAuthProvider.credentialWithIDToken(
+      idToken,
+      rawNonce,
+      AppleFullPersonName(
+        givenName: apple.givenName,
+        familyName: apple.familyName,
+      ),
+    );
+    try {
+      final result = await _linkGuestOrSignIn(credential);
+      // Apple sends the name only the first time; Firebase doesn't keep it on a link.
+      final name = [
+        apple.givenName,
+        apple.familyName,
+      ].where((part) => part != null && part.trim().isNotEmpty).join(' ');
+      final user = result.user;
+      if (user != null && name.isNotEmpty && (user.displayName ?? '').isEmpty) {
+        await user.updateDisplayName(name);
+        await user.reload();
+      }
+      return result;
+    } on FirebaseAuthException catch (e) {
       throw AuthException(
         'Apple sign-in failed',
         details: e.message,
@@ -153,7 +172,34 @@ class AuthService {
     }
   }
 
-  static bool _isCancel(String code) => code.toLowerCase().contains('cancel');
+  // Same as Google: a guest keeps its UID.
+  Future<UserCredential> _linkGuestOrSignIn(AuthCredential credential) async {
+    final anonymousUser = _auth.currentUser;
+    if (anonymousUser == null || !anonymousUser.isAnonymous) {
+      return _auth.signInWithCredential(credential);
+    }
+    try {
+      return await anonymousUser.linkWithCredential(credential);
+    } on FirebaseAuthException catch (e) {
+      final existing = e.credential;
+      if ((e.code == 'credential-already-in-use' ||
+              e.code == 'email-already-in-use') &&
+          existing != null) {
+        return _auth.signInWithCredential(existing);
+      }
+      rethrow;
+    }
+  }
+
+  static String _nonce([int length = 32]) {
+    const chars =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(
+      length,
+      (_) => chars[random.nextInt(chars.length)],
+    ).join();
+  }
 
   /// Apple users confirm again so its token can be revoked; the server deletes the rest.
   Future<void> deleteAccount() async {
