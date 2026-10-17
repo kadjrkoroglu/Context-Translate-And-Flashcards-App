@@ -176,6 +176,8 @@ class AuthViewModel extends ChangeNotifier {
     _clearError();
     try {
       await _authUsecase.executeSignInWithGoogle();
+      // A linked guest keeps its UID, so the auth stream does not fire.
+      _user = _authUsecase.currentUser;
       _syncAfterAuth();
       _setLoading(false);
       return true;
@@ -192,7 +194,11 @@ class AuthViewModel extends ChangeNotifier {
     _clearError();
     try {
       final user = await _authUsecase.executeSignInWithApple();
-      if (user != null) _syncAfterAuth();
+      if (user != null) {
+        // A linked guest keeps its UID, so the auth stream does not fire.
+        _user = _authUsecase.currentUser;
+        _syncAfterAuth();
+      }
       _setLoading(false);
       return user != null;
     } catch (e) {
