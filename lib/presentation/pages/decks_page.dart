@@ -109,7 +109,7 @@ class _DecksPageState extends State<DecksPage> {
             );
           },
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButtonLocation: const _EdgeGapFabLocation(),
         floatingActionButton: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
@@ -594,4 +594,19 @@ class _CountBadges extends StatelessWidget {
       ),
     );
   }
+}
+
+/// The buttons sit as far from the bottom edge as from the sides.
+class _EdgeGapFabLocation extends FloatingActionButtonLocation {
+  const _EdgeGapFabLocation();
+
+  static const double gap = 16;
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry geometry) => Offset(
+    (geometry.scaffoldSize.width - geometry.floatingActionButtonSize.width) / 2,
+    geometry.scaffoldSize.height -
+        geometry.floatingActionButtonSize.height -
+        gap,
+  );
 }
