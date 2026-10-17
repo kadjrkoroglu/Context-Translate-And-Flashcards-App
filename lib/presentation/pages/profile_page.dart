@@ -94,7 +94,11 @@ class _ProfilePageState extends State<ProfilePage> {
               _buildProfileAvatar(user, isAuthenticated, glassTheme, textColor),
               const SizedBox(height: 20),
               Text(
-                isAuthenticated ? (user?.displayName ?? 'User') : 'Guest',
+                isAuthenticated
+                    ? ((user?.displayName ?? '').trim().isEmpty
+                          ? 'User'
+                          : user!.displayName!)
+                    : 'Guest',
                 style: const TextStyle(
                   color: textColor,
                   fontSize: 22,
@@ -333,13 +337,28 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundImage: (isAuthenticated && user?.photoURL != null)
             ? NetworkImage(user!.photoURL!)
             : null,
-        child: (!isAuthenticated || user?.photoURL == null)
-            ? Icon(
-                Icons.person_outline_rounded,
-                size: 40,
-                color: textColor.withValues(alpha: 0.7),
-              )
-            : null,
+        child: (isAuthenticated && user?.photoURL != null)
+            ? null
+            : _avatarFallback(isAuthenticated ? user : null, textColor),
+      ),
+    );
+  }
+
+  Widget _avatarFallback(dynamic user, Color textColor) {
+    final initials = profileInitials(user?.displayName, user?.email);
+    if (initials.isEmpty) {
+      return Icon(
+        Icons.person_outline_rounded,
+        size: 40,
+        color: textColor.withValues(alpha: 0.7),
+      );
+    }
+    return Text(
+      initials,
+      style: TextStyle(
+        color: textColor,
+        fontSize: 28,
+        fontWeight: FontWeight.w600,
       ),
     );
   }
@@ -751,4 +770,19 @@ class _SettingsRow extends StatelessWidget {
       ),
     );
   }
+}
+
+/// "Kadir Köroğlu" → "KK"; with no name, the email's first letter.
+String profileInitials(String? name, String? email) {
+  final words = (name ?? '')
+      .trim()
+      .split(RegExp(r'\s+'))
+      .where((word) => word.isNotEmpty)
+      .toList();
+  if (words.isNotEmpty) {
+    final last = words.length > 1 ? words.last.characters.first : '';
+    return (words.first.characters.first + last).toUpperCase();
+  }
+  final mail = (email ?? '').trim();
+  return mail.isEmpty ? '' : mail.characters.first.toUpperCase();
 }
