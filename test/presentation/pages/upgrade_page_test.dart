@@ -26,7 +26,7 @@ void main() {
   testWidgets('Premium is preselected and offers the trial', (tester) async {
     await tester.pumpWidget(subject(AppTier.free));
 
-    expect(find.text('Live translation'), findsOneWidget);
+    expect(find.text('AI Live translation'), findsOneWidget);
     expect(find.text('Start 14-day free trial'), findsOneWidget);
     expect(find.text(r'then $9.99/month · cancel anytime'), findsOneWidget);
     expect(cta(tester).onPressed, isNotNull);
@@ -37,7 +37,7 @@ void main() {
     await tester.tap(find.text('Standard'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Live translation'), findsNothing);
+    expect(find.text('AI Live translation'), findsNothing);
     expect(find.text('Unlimited AI translations'), findsOneWidget);
     expect(find.text(r'then $5.99/month · cancel anytime'), findsOneWidget);
   });

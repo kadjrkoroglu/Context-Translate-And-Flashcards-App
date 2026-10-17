@@ -57,9 +57,9 @@ List<_Feature> _featuresOf(_Plan plan, {required bool trial}) => switch (plan) {
   _Plan.premium => [
     _Feature(
       Icons.graphic_eq_rounded,
-      'Live translation',
-      'Speech translated as it is spoken, with live captions. '
-          '60 min/month${trial ? '*' : ''}',
+      'AI Live translation',
+      'Speech translated as it is spoken, keeping tone and emphasis, with '
+          'live captions. 60 min/month${trial ? '*' : ''}',
     ),
     const _Feature(
       Icons.school_rounded,

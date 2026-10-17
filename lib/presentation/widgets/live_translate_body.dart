@@ -374,7 +374,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              active ? 'Start speaking' : 'Live Translation',
+              active ? 'Start speaking' : 'AI Live Translation',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 20,
@@ -385,8 +385,9 @@ class _EmptyState extends StatelessWidget {
             Text(
               active
                   ? 'The translation appears here as the speaker talks.'
-                  : 'Tap the mic and let someone speak. You hear the '
-                        'translation as they talk, and it is written here too.',
+                  : 'Tap the mic and let someone speak. AI translates as '
+                        'they talk, keeping their tone and emphasis, and '
+                        'writes it here too.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.6),
