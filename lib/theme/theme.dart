@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:swipeable_page_route/swipeable_page_route.dart';
 
 class GlassThemeExtension extends ThemeExtension<GlassThemeExtension> {
   final Color baseGlassColor;
@@ -90,6 +91,10 @@ final ThemeData darkTheme = ThemeData(
       borderRadius: BorderRadius.circular(14),
       side: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
     ),
+  ),
+  // Swipe back from anywhere on the screen, not only the left edge.
+  pageTransitionsTheme: const PageTransitionsTheme(
+    builders: {TargetPlatform.iOS: SwipeablePageTransitionsBuilder()},
   ),
   textSelectionTheme: const TextSelectionThemeData(
     cursorColor: Colors.white,

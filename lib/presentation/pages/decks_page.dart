@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:swipeable_page_route/swipeable_page_route.dart';
 import 'package:translate_app/presentation/widgets/add_card_dialog.dart';
 import 'dart:ui';
 import 'package:translate_app/presentation/viewmodels/ai_study_viewmodel.dart';
@@ -287,7 +288,9 @@ class _DeckCard extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
+                  // Swiping a card right rates it, so going back stays on the edge.
+                  SwipeablePageRoute(
+                    canOnlySwipeFromEdge: true,
                     builder: (_) => ChangeNotifierProvider(
                       create: (ctx) =>
                           StudyViewModel(deck, ctx.read<DeckUsecase>()),

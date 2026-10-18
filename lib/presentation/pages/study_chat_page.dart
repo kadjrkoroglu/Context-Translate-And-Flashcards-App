@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:swipeable_page_route/swipeable_page_route.dart';
 import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/domain/entities/deck_entity.dart';
 import 'package:translate_app/domain/entities/study_session.dart';
@@ -21,7 +22,9 @@ const _helpColor = Colors.amberAccent;
 void openFlashcards(BuildContext context, DeckEntity deck) {
   Navigator.push(
     context,
-    MaterialPageRoute(
+    // Swiping a card right rates it, so going back stays on the edge.
+    SwipeablePageRoute(
+      canOnlySwipeFromEdge: true,
       builder: (_) => ChangeNotifierProvider(
         create: (ctx) => StudyViewModel(deck, ctx.read<DeckUsecase>()),
         child: const StudyPage(),
