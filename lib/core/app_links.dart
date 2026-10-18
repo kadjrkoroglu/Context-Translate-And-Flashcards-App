@@ -8,8 +8,7 @@ class AppLinks {
   static const termsOfUse =
       'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 
-  // TODO: replace with the real support address before release.
-  static const supportEmail = 'support@example.com';
+  static const supportEmail = 'kadjrkoroglu@gmail.com';
 
   static const manageSubscriptions =
       'https://apps.apple.com/account/subscriptions';
@@ -22,7 +21,7 @@ class AppLinks {
       scheme: 'mailto',
       path: supportEmail,
       query:
-          'subject=${Uri.encodeComponent('Context Translate support')}'
+          'subject=${Uri.encodeComponent('Decklingo support')}'
           '&body=${Uri.encodeComponent(body)}',
     ),
   );
