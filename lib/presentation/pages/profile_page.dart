@@ -8,7 +8,7 @@ import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
-import 'package:translate_app/presentation/widgets/restart_required_dialog.dart';
+import 'package:translate_app/presentation/widgets/app_restart.dart';
 import 'package:translate_app/presentation/pages/auth/login_page.dart';
 import 'package:translate_app/core/app_links.dart';
 import 'package:translate_app/data/services/local_storage_service.dart';
@@ -293,7 +293,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 await study.endSession();
                 await settings.setAiStudyChat(null);
                 await vm.signOut();
-                if (context.mounted) showRestartRequiredDialog(context);
+                // Start over as a fresh guest, like reopening the app.
+                if (context.mounted) AppRestart.restart(context);
               },
               child: Text(
                 l10n.signOut,

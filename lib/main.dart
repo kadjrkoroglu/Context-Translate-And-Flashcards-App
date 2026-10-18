@@ -29,6 +29,7 @@ import 'package:translate_app/data/services/live_audio_service.dart';
 import 'package:translate_app/data/services/text_recognition_service.dart';
 import 'package:translate_app/presentation/viewmodels/live_translate_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/ai_study_viewmodel.dart';
+import 'package:translate_app/presentation/widgets/app_restart.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:translate_app/data/services/settings_service.dart';
@@ -74,76 +75,80 @@ void main() async {
   );
 
   runApp(
-    MultiProvider(
-      providers: [
-        Provider<TtsService>(create: (_) => TtsService()),
-        ChangeNotifierProvider(
-          create: (_) => EntitlementsViewModel(entitlementsUsecase),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => AuthViewModel(
-            authUsecase,
-            syncService,
-            context.read<EntitlementsViewModel>(),
+    AppRestart(
+      child: MultiProvider(
+        providers: [
+          Provider<TtsService>(create: (_) => TtsService()),
+          ChangeNotifierProvider(
+            create: (_) => EntitlementsViewModel(entitlementsUsecase),
           ),
-        ),
-        ChangeNotifierProvider(create: (_) => MainViewModel()),
-        ChangeNotifierProvider<SyncService>.value(value: syncService),
-        Provider<SettingsService>.value(value: settingsService),
-        Provider<LocalStorageService>.value(value: localStorage),
-        Provider<AuthUsecase>.value(value: authUsecase),
-        Provider<HistoryUsecase>.value(value: historyUsecase),
-        Provider<FavoriteUsecase>.value(value: favoriteUsecase),
-        Provider<DeckUsecase>.value(value: deckUsecase),
-        Provider<TranslateUsecase>.value(value: translateUsecase),
-        ChangeNotifierProvider(
-          create: (context) => LiveTranslateViewModel(
-            translateUsecase,
-            LiveAudioService(),
-            settingsService,
-            onSessionEnded: () => context.read<EntitlementsViewModel>().load(),
+          ChangeNotifierProvider(
+            create: (context) => AuthViewModel(
+              authUsecase,
+              syncService,
+              context.read<EntitlementsViewModel>(),
+            ),
           ),
-        ),
-        Provider<TextRecognitionService>(
-          create: (_) => TextRecognitionService(),
-          dispose: (_, service) => service.dispose(),
-        ),
-        ChangeNotifierProvider(
-          create: (context) =>
-              FavoriteViewModel(context.read<FavoriteUsecase>()),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => HistoryViewModel(context.read<HistoryUsecase>()),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => DecksViewModel(
-            context.read<DeckUsecase>(),
-            context.read<EntitlementsViewModel>(),
+          ChangeNotifierProvider(create: (_) => MainViewModel()),
+          ChangeNotifierProvider<SyncService>.value(value: syncService),
+          Provider<SettingsService>.value(value: settingsService),
+          Provider<LocalStorageService>.value(value: localStorage),
+          Provider<AuthUsecase>.value(value: authUsecase),
+          Provider<HistoryUsecase>.value(value: historyUsecase),
+          Provider<FavoriteUsecase>.value(value: favoriteUsecase),
+          Provider<DeckUsecase>.value(value: deckUsecase),
+          Provider<TranslateUsecase>.value(value: translateUsecase),
+          ChangeNotifierProvider(
+            create: (context) => LiveTranslateViewModel(
+              translateUsecase,
+              LiveAudioService(),
+              settingsService,
+              onSessionEnded: () =>
+                  context.read<EntitlementsViewModel>().load(),
+            ),
           ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => AiStudyViewModel(
-            context.read<TranslateUsecase>(),
-            context.read<DeckUsecase>(),
-            context.read<SettingsService>(),
-            onCardsChanged: () => context.read<DecksViewModel>().loadDecks(),
+          Provider<TextRecognitionService>(
+            create: (_) => TextRecognitionService(),
+            dispose: (_, service) => service.dispose(),
           ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => GeminiTranslateViewModel(
-            context.read<TranslateUsecase>(),
-            context.read<SettingsService>(),
-            context.read<HistoryViewModel>(),
+          ChangeNotifierProvider(
+            create: (context) =>
+                FavoriteViewModel(context.read<FavoriteUsecase>()),
           ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => MLTranslateViewModel(
-            context.read<SettingsService>(),
-            context.read<HistoryViewModel>(),
+          ChangeNotifierProvider(
+            create: (context) =>
+                HistoryViewModel(context.read<HistoryUsecase>()),
           ),
-        ),
-      ],
-      child: const MyApp(),
+          ChangeNotifierProvider(
+            create: (context) => DecksViewModel(
+              context.read<DeckUsecase>(),
+              context.read<EntitlementsViewModel>(),
+            ),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => AiStudyViewModel(
+              context.read<TranslateUsecase>(),
+              context.read<DeckUsecase>(),
+              context.read<SettingsService>(),
+              onCardsChanged: () => context.read<DecksViewModel>().loadDecks(),
+            ),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => GeminiTranslateViewModel(
+              context.read<TranslateUsecase>(),
+              context.read<SettingsService>(),
+              context.read<HistoryViewModel>(),
+            ),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => MLTranslateViewModel(
+              context.read<SettingsService>(),
+              context.read<HistoryViewModel>(),
+            ),
+          ),
+        ],
+        child: const MyApp(),
+      ),
     ),
   );
 }
