@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 /// Shown after sign-out, and whenever a translate is attempted with no
 /// Firebase session at all (a guest session is only granted on app launch).
@@ -15,19 +16,15 @@ Future<void> showRestartRequiredDialog(BuildContext context) {
           borderRadius: BorderRadius.circular(28),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
         ),
-        title: const Text(
-          'Restart Required',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: const Text(
-          'Please close and reopen the app to keep translating as a guest, '
-          'or sign back in.',
+        title: Text(l10n.restartTitle, style: TextStyle(color: Colors.white)),
+        content: Text(
+          l10n.restartBody,
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('OK', style: TextStyle(color: Colors.white)),
+            child: Text(l10n.ok, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class DeckSelectorSheet extends StatelessWidget {
   final String word;
@@ -93,7 +94,7 @@ class DeckSelectorSheet extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Save to Deck',
+                  l10n.saveToDeck,
                   style: TextStyle(
                     color: ip,
                     fontSize: 20,
@@ -118,7 +119,7 @@ class DeckSelectorSheet extends StatelessWidget {
       hasScrollBody: false,
       child: Center(
         child: Text(
-          'No decks found.\nCreate a deck first.',
+          l10n.noDecksFound,
           textAlign: TextAlign.center,
           style: TextStyle(color: ip.withValues(alpha: 0.5), height: 1.5),
         ),
@@ -181,21 +182,18 @@ class DeckSelectorSheet extends StatelessWidget {
             borderRadius: BorderRadius.circular(28),
             side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
           ),
-          title: const Text(
-            'Save Flashcard',
+          title: Text(
+            l10n.saveFlashcard,
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           content: Text(
-            'Save word to ${deck.name}?',
+            l10n.saveWordToDeck(deck.name),
             style: const TextStyle(color: Colors.white70),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white60),
-              ),
+              child: Text(l10n.cancel, style: TextStyle(color: Colors.white60)),
             ),
             ElevatedButton(
               onPressed: () => Navigator.pop(dialogContext, true),
@@ -206,7 +204,7 @@ class DeckSelectorSheet extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Save'),
+              child: Text(l10n.save),
             ),
           ],
         ),

@@ -5,6 +5,7 @@ import 'package:translate_app/presentation/pages/main_page.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
 import 'package:translate_app/data/services/settings_service.dart';
 import 'package:provider/provider.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({super.key});
@@ -82,8 +83,8 @@ class WelcomePage extends StatelessWidget {
                 ),
                 const Spacer(flex: 3),
 
-                const Text(
-                  'Don\'t waste time, add and study!',
+                Text(
+                  l10n.welcomeHeadline,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
@@ -95,7 +96,7 @@ class WelcomePage extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 Text(
-                  'Translate and create flashcards quickly. Master new languages with smart spaced-repetition.',
+                  l10n.welcomeSubtitle,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.7),
@@ -143,8 +144,8 @@ class WelcomePage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(28),
                           ),
                         ),
-                        child: const Text(
-                          'Get Started',
+                        child: Text(
+                          l10n.getStarted,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -190,8 +191,8 @@ class WelcomePage extends StatelessWidget {
                             borderRadius: BorderRadius.circular(28),
                           ),
                         ),
-                        child: const Text(
-                          'Sign in and Sync',
+                        child: Text(
+                          l10n.signInAndSync,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,

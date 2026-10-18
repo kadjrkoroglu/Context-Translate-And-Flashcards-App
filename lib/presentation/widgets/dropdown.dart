@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:translate_app/core/languages.dart';
 import 'dart:math' as math;
 import 'dart:ui';
+import 'package:translate_app/l10n/l10n.dart';
 
 class LanguageDropdown extends StatefulWidget {
   final String value;
@@ -238,7 +239,7 @@ class _LanguageDropdownState extends State<LanguageDropdown> {
       return Padding(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 2),
         child: Text(
-          data,
+          data == 'RECENTS' ? l10n.recents : l10n.allLanguages,
           style: const TextStyle(
             color: Colors.white38,
             fontSize: 10,
@@ -266,7 +267,7 @@ class _LanguageDropdownState extends State<LanguageDropdown> {
           children: [
             Expanded(
               child: Text(
-                lang,
+                languageLabel(lang),
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 14,
@@ -329,8 +330,8 @@ class _LanguageDropdownState extends State<LanguageDropdown> {
                                 )
                               : Text(
                                   isPlaceholder
-                                      ? (widget.labelText ?? 'Select')
-                                      : widget.value,
+                                      ? (widget.labelText ?? l10n.select)
+                                      : languageLabel(widget.value),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(

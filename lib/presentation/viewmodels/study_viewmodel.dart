@@ -3,6 +3,7 @@ import 'package:translate_app/domain/entities/card_entity.dart';
 import 'package:translate_app/domain/entities/deck_entity.dart';
 import 'package:translate_app/domain/usecases/deck_usecase.dart';
 import '../../data/services/srs_service.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class StudyViewModel extends ChangeNotifier {
   final DeckUsecase _deckUsecase;
@@ -92,7 +93,7 @@ class StudyViewModel extends ChangeNotifier {
         _isFinished = true;
       }
     } catch (e) {
-      _setError('Failed to initialize study session');
+      _setError(l10n.failedInitStudy);
       _isFinished = true;
     } finally {
       _setLoading(false);
@@ -168,7 +169,7 @@ class StudyViewModel extends ChangeNotifier {
       updatedCard.lastModified = DateTime.now();
       await _deckUsecase.executeUpdateCard(updatedCard);
     } catch (e) {
-      _setError('Failed to save rating');
+      _setError(l10n.failedSaveRating);
       return;
     }
 

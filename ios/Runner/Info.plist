@@ -4,6 +4,11 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>tr</string>
+	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -38,13 +43,13 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>Fotoğraftaki metni çevirmek için kamera izni gerekiyor</string>
+	<string>Decklingo uses the camera to read and translate text in photos.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Ses kaydı için mikrofon izni gerekiyor</string>
+	<string>Decklingo uses the microphone for voice input and Live translation.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Galeriden seçtiğiniz fotoğraftaki metni çevirmek için fotoğraflara erişim gerekiyor</string>
+	<string>Decklingo opens the photo you choose to read and translate its text.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Konuşmanızı metne çevirmek için mikrofon izni gerekiyor</string>
+	<string>Decklingo turns your speech into text so it can be translated.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

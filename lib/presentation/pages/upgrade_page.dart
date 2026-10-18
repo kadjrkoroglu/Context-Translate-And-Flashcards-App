@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:translate_app/domain/entities/entitlements_entity.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 enum _Plan { standard, premium }
 
@@ -28,27 +29,19 @@ class _Feature {
   const _Feature(this.icon, this.title, this.detail);
 }
 
-const _sharedFeatures = [
+List<_Feature> get _sharedFeatures => [
   _Feature(
     Icons.auto_awesome_rounded,
-    'Unlimited AI translations',
-    'Standard, formal and slang versions of every sentence.',
+    l10n.featTranslations,
+    l10n.featTranslationsDetail,
   ),
-  _Feature(
-    Icons.photo_camera_rounded,
-    'AI photo translation',
-    'Point the camera at signs, menus and documents.',
-  ),
+  _Feature(Icons.photo_camera_rounded, l10n.featPhoto, l10n.featPhotoDetail),
   _Feature(
     Icons.library_add_rounded,
-    'Words from photos to your decks',
-    'AI picks out the useful words; add them in one tap.',
+    l10n.featPhotoWords,
+    l10n.featPhotoWordsDetail,
   ),
-  _Feature(
-    Icons.quiz_rounded,
-    'Unlimited decks and cards',
-    'Save every word you want to learn and study it later.',
-  ),
+  _Feature(Icons.quiz_rounded, l10n.featDecks, l10n.featDecksDetail),
 ];
 
 // Spelled out per plan (no "everything in Standard"); Premium-only first.
@@ -57,26 +50,19 @@ List<_Feature> _featuresOf(_Plan plan, {required bool trial}) => switch (plan) {
   _Plan.premium => [
     _Feature(
       Icons.graphic_eq_rounded,
-      'AI Live translation',
-      'Speech translated as it is spoken, keeping tone and emphasis, with '
-          'live captions. 60 min/month${trial ? '*' : ''}',
+      l10n.featLive,
+      '${l10n.featLiveDetail}${trial ? '*' : ''}',
     ),
-    const _Feature(
-      Icons.school_rounded,
-      'Study with AI',
-      'An AI tutor quizzes you on your saved words and checks every answer.',
-    ),
+    _Feature(Icons.school_rounded, l10n.studyWithAi, l10n.featStudyDetail),
     ..._sharedFeatures,
   ],
 };
 
 /// Billing isn't wired up yet; every purchase button says so.
 void showSubscriptionsComingSoon(BuildContext context) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text("Coming soon — subscriptions aren't live yet."),
-    ),
-  );
+  ScaffoldMessenger.of(
+    context,
+  ).showSnackBar(SnackBar(content: Text(l10n.comingSoon)));
 }
 
 /// Plans screen: pick Standard or Premium (Premium preselected), see exactly
@@ -119,8 +105,8 @@ class _UpgradePageState extends State<UpgradePage> {
         body: ListView(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
           children: [
-            const Text(
-              'Translate more.\nRemember more.',
+            Text(
+              l10n.plansHeadline,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 28,
@@ -130,9 +116,7 @@ class _UpgradePageState extends State<UpgradePage> {
             ),
             const SizedBox(height: 8),
             Text(
-              trial
-                  ? 'Try any plan free for 14 days. Cancel anytime.'
-                  : 'Your plan: ${tier.label}',
+              trial ? l10n.plansTrialLine : l10n.yourPlanLine(tier.label),
               style: const TextStyle(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 18),
@@ -153,7 +137,7 @@ class _UpgradePageState extends State<UpgradePage> {
                   Expanded(
                     child: _PlanTile(
                       plan: _premium,
-                      badge: 'Recommended',
+                      badge: l10n.recommended,
                       selected: _selected == _Plan.premium,
                       current: onPremium,
                       trial: trial,
@@ -182,14 +166,14 @@ class _UpgradePageState extends State<UpgradePage> {
             ],
             if (trial && _selected == _Plan.premium) ...[
               const SizedBox(height: 10),
-              const Text(
-                '* The Premium trial includes 5 minutes of Live translation.',
+              Text(
+                l10n.liveTrialNote,
                 style: TextStyle(color: Colors.white54, fontSize: 12),
               ),
             ],
             const SizedBox(height: 16),
             Text(
-              '${trial ? _trialTerms : ''}$_renewalTerms',
+              '${trial ? l10n.trialTerms : ''}${l10n.renewalTerms}',
               style: const TextStyle(
                 color: Colors.white54,
                 fontSize: 12,
@@ -203,12 +187,12 @@ class _UpgradePageState extends State<UpgradePage> {
               children: [
                 for (final (label, onPressed) in [
                   (
-                    'Restore purchases',
+                    l10n.restorePurchases,
                     () => showSubscriptionsComingSoon(context),
                   ),
-                  ('Terms of Use', () => AppLinks.open(AppLinks.termsOfUse)),
+                  (l10n.termsOfUse, () => AppLinks.open(AppLinks.termsOfUse)),
                   (
-                    'Privacy Policy',
+                    l10n.privacyPolicy,
                     () => AppLinks.open(AppLinks.privacyPolicy),
                   ),
                 ])
@@ -236,17 +220,6 @@ class _UpgradePageState extends State<UpgradePage> {
     );
   }
 
-  static const _trialTerms =
-      'After the 14-day free trial, the subscription starts automatically '
-      'unless you cancel at least 24 hours before the trial ends. One free '
-      'trial per account. ';
-
-  static const _renewalTerms =
-      'Subscriptions renew automatically each month at the price shown '
-      'unless you cancel at least 24 hours before the current period ends. '
-      'Payment is charged to your Apple ID. You can manage or cancel your '
-      'subscription in your App Store account settings.';
-
   static ({String label, String? subtitle, bool enabled}) _ctaFor(
     _Plan selected, {
     required bool onStandard,
@@ -255,21 +228,21 @@ class _UpgradePageState extends State<UpgradePage> {
     final plan = selected == _Plan.premium ? _premium : _standard;
     if ((selected == _Plan.premium && onPremium) ||
         (selected == _Plan.standard && onStandard)) {
-      return (label: 'Current plan', subtitle: null, enabled: false);
+      return (label: l10n.currentPlan, subtitle: null, enabled: false);
     }
     if (selected == _Plan.standard && onPremium) {
-      return (label: 'Included in Premium', subtitle: null, enabled: false);
+      return (label: l10n.includedInPremium, subtitle: null, enabled: false);
     }
     if (onStandard) {
       return (
-        label: 'Upgrade to Premium',
-        subtitle: '${plan.price}/month · cancel anytime',
+        label: l10n.upgradeToPremium,
+        subtitle: l10n.perMonthCancelAnytime(plan.price),
         enabled: true,
       );
     }
     return (
-      label: 'Start 14-day free trial',
-      subtitle: 'then ${plan.price}/month · cancel anytime',
+      label: l10n.startTrial,
+      subtitle: l10n.thenPerMonth(plan.price),
       enabled: true,
     );
   }
@@ -295,14 +268,14 @@ class _PlanTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final note = current
-        ? 'Your plan'
+        ? l10n.yourPlan
         : trial
-        ? '14 days free'
+        ? l10n.fourteenDaysFree
         : null;
     return Semantics(
       button: true,
       selected: selected,
-      label: '${plan.name}, ${plan.price} per month',
+      label: l10n.planSemantics(plan.name, plan.price),
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
@@ -365,7 +338,7 @@ class _PlanTile extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                '${plan.price}/month',
+                l10n.pricePerMonth(plan.price),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 14,
@@ -455,16 +428,20 @@ class _TrialTimeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final steps = [
-      (Icons.lock_open_rounded, 'Today', 'Full access to ${plan.name} starts.'),
+      (
+        Icons.lock_open_rounded,
+        l10n.trialToday,
+        l10n.trialTodayDetail(plan.name),
+      ),
       (
         Icons.notifications_active_rounded,
-        'Day 12',
-        "We'll remind you that your trial is ending.",
+        l10n.trialDay12,
+        l10n.trialDay12Detail,
       ),
       (
         Icons.event_available_rounded,
-        'Day 14',
-        'Your subscription starts at ${plan.price}/month unless you cancel.',
+        l10n.trialDay14,
+        l10n.trialDay14Detail(plan.price),
       ),
     ];
     return Container(
@@ -477,8 +454,8 @@ class _TrialTimeline extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'How the free trial works',
+          Text(
+            l10n.howTrialWorks,
             style: TextStyle(
               color: Colors.white70,
               fontSize: 13,

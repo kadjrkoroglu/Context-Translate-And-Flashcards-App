@@ -1,0 +1,612 @@
+{
+  "@@locale": "en",
+  "tabLive": "Live",
+  "tabAi": "AI",
+  "tabBasic": "Basic",
+  "photoTranslationTitle": "Photo Translation",
+  "photoTranslationUpsell": "Translating text in photos is available on the Standard and Premium plans.",
+  "chooseTargetFirst": "Choose a target language first.",
+  "translate": "Translate",
+  "welcomeHeadline": "Translate it. Save it. Learn it.",
+  "welcomeSubtitle": "Translate with AI, save the words you meet and learn them with spaced repetition.",
+  "getStarted": "Get Started",
+  "signInAndSync": "Sign in and Sync",
+  "signIn": "Sign In",
+  "welcomeBack": "Welcome Back",
+  "googleLoginFailed": "Google Login failed",
+  "continueWithApple": "Continue with Apple",
+  "continueWithGoogle": "Continue with Google",
+  "legalPrefix": "By continuing you agree to the ",
+  "legalAnd": " and ",
+  "legalSuffix": ".",
+  "termsOfUse": "Terms of Use",
+  "privacyPolicy": "Privacy Policy",
+  "profileTitle": "Profile",
+  "signOut": "Sign Out",
+  "userFallback": "User",
+  "guest": "Guest",
+  "signInToSyncProgress": "Sign in to sync your progress",
+  "helpFaq": "Help & FAQ",
+  "contactUs": "Contact us",
+  "restorePurchases": "Restore purchases",
+  "deleteAccount": "Delete account",
+  "deleteAccountTitle": "Delete account?",
+  "deleteAccountBody": "Your account, decks, cards, favorites and history are deleted on all devices. This cannot be undone.\n\nAn App Store subscription is not cancelled by this; manage it in Settings > your name > Subscriptions.",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "accountDeleted": "Your account has been deleted.",
+  "signOutConfirm": "Are you sure you want to sign out?",
+  "syncing": "Syncing...",
+  "synced": "Synced",
+  "syncNow": "Sync Now",
+  "cloudSync": "Cloud Sync",
+  "syncAcrossDevices": "Sync your data across devices",
+  "syncFailedRetry": "Sync failed. Please try again.",
+  "syncFailedConnection": "Sync failed. Please check your connection and try again.",
+  "synchronize": "Synchronize",
+  "syncSignInBody": "Sign in to sync your decks, favorites and history across all your devices.",
+  "faqQ1": "How many translations can I make?",
+  "faqA1": "Free: 10 AI translations a day. Standard and Premium: unlimited. Basic translation runs on your phone and is always free.",
+  "faqQ2": "Do my photos leave my phone?",
+  "faqA2": "No. The text is read on your phone and only that text is sent to be translated.",
+  "faqQ3": "What is Live translation?",
+  "faqA3": "Premium translates speech as it is spoken, with captions: 60 minutes a month (5 minutes in the free trial). The minutes renew every month.",
+  "faqQ4": "How does Study with AI work?",
+  "faqA4": "Premium: an AI tutor quizzes you on 10 words from a deck. A word counts once you answer it correctly. After a session there is a 3-hour break.",
+  "faqQ5": "How do I sync my decks between devices?",
+  "faqA5": "Sign in on the Profile page, then tap Sync Now.",
+  "faqQ6": "Can I translate without internet?",
+  "faqA6": "Yes, on the Basic page. Each language downloads once (about 30 MB) and then works offline.",
+  "faqQ7": "How do I cancel my subscription?",
+  "faqA7": "On your iPhone: Settings > your name > Subscriptions. Deleting the app or your account does not cancel it.",
+  "stillNeedHelp": "Still need help?",
+  "decksTitle": "Decks",
+  "newDeck": "New Deck",
+  "createFirstDeck": "Create your first deck to start learning!",
+  "deckName": "Deck Name",
+  "create": "Create",
+  "cardCount": "{count, plural, =1{1 card} other{{count} cards}}",
+  "@cardCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "addCard": "Add Card",
+  "browseCards": "Browse Cards",
+  "deckSettings": "Deck Settings",
+  "deleteDeck": "Delete Deck",
+  "deleteDeckTitle": "Delete Deck?",
+  "deleteDeckBody": "Delete \"{name}\" and all its cards?",
+  "@deleteDeckBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteDeckEndsSession": " Its Study with AI session ends too.",
+  "dailyNewLimit": "Daily New Cards Limit",
+  "dailyReviewLimit": "Daily Reviews Limit",
+  "save": "Save",
+  "deleteCardsTitle": "{count, plural, =1{Delete 1 card?} other{Delete {count} cards?}}",
+  "@deleteCardsTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cannotUndo": "This action cannot be undone.",
+  "selectedCount": "{count} selected",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noCardsYet": "No cards yet",
+  "featTranslations": "Unlimited AI translations",
+  "featTranslationsDetail": "Standard, formal and slang versions of every sentence.",
+  "featPhoto": "AI photo translation",
+  "featPhotoDetail": "Point the camera at signs, menus and documents.",
+  "featPhotoWords": "Words from photos to your decks",
+  "featPhotoWordsDetail": "AI picks out the useful words; add them in one tap.",
+  "featDecks": "Unlimited decks and cards",
+  "featDecksDetail": "Save every word you want to learn and study it later.",
+  "featLive": "AI Live translation",
+  "featLiveDetail": "Speech translated as it is spoken, keeping tone and emphasis, with live captions. 60 min/month",
+  "studyWithAi": "Study with AI",
+  "featStudyDetail": "An AI tutor quizzes you on your saved words and checks every answer.",
+  "comingSoon": "Coming soon — subscriptions aren't live yet.",
+  "plansHeadline": "Turn every translation\ninto a lesson.",
+  "plansTrialLine": "Try any plan free for 14 days. Cancel anytime.",
+  "yourPlanLine": "Your plan: {tier}",
+  "@yourPlanLine": {
+    "placeholders": {
+      "tier": {
+        "type": "String"
+      }
+    }
+  },
+  "recommended": "Recommended",
+  "liveTrialNote": "* The Premium trial includes 5 minutes of Live translation.",
+  "trialTerms": "After the 14-day free trial, the subscription starts automatically unless you cancel at least 24 hours before the trial ends. One free trial per account. ",
+  "renewalTerms": "Subscriptions renew automatically each month at the price shown unless you cancel at least 24 hours before the current period ends. Payment is charged to your Apple ID. You can manage or cancel your subscription in your App Store account settings.",
+  "currentPlan": "Current plan",
+  "includedInPremium": "Included in Premium",
+  "upgradeToPremium": "Upgrade to Premium",
+  "perMonthCancelAnytime": "{price}/month · cancel anytime",
+  "@perMonthCancelAnytime": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "startTrial": "Start 14-day free trial",
+  "thenPerMonth": "then {price}/month · cancel anytime",
+  "@thenPerMonth": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "yourPlan": "Your plan",
+  "fourteenDaysFree": "14 days free",
+  "planSemantics": "{name}, {price} per month",
+  "@planSemantics": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "pricePerMonth": "{price}/month",
+  "@pricePerMonth": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "trialToday": "Today",
+  "trialTodayDetail": "Full access to {name} starts.",
+  "@trialTodayDetail": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "trialDay12": "Day 12",
+  "trialDay12Detail": "We'll remind you that your trial is ending.",
+  "trialDay14": "Day 14",
+  "trialDay14Detail": "Your subscription starts at {price}/month unless you cancel.",
+  "@trialDay14Detail": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "howTrialWorks": "How the free trial works",
+  "tierFree": "Free",
+  "tierStandardTrial": "Standard (free trial)",
+  "tierPremiumTrial": "Premium (free trial)",
+  "autoDetect": "Auto-detect",
+  "liveConnecting": "Connecting…",
+  "liveListening": "Listening",
+  "liveStopped": "Stopped",
+  "liveReady": "Ready",
+  "muteVoice": "Mute translated voice",
+  "unmute": "Unmute",
+  "clear": "Clear",
+  "timeLeft": "{time} left",
+  "@timeLeft": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "minutesLeft": "{minutes} min left",
+  "@minutesLeft": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "secondsLeft": "{seconds} s left",
+  "@secondsLeft": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "trialTime": "Trial · {time}",
+  "@trialTime": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "startSpeaking": "Start speaking",
+  "liveTitle": "AI Live Translation",
+  "liveActiveHint": "The translation appears here as the speaker talks.",
+  "liveIdleHint": "Tap the mic and let someone speak. AI translates as they talk, keeping their tone and emphasis, and writes it here too.",
+  "liveTrialIncludes": "Your trial includes {minutes} minutes of Live. Premium includes 60 minutes every month.",
+  "@liveTrialIncludes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "micOff": "Microphone access is off. Allow it in Settings > Privacy > Microphone.",
+  "trialMinutesUsedShort": "You've used your trial minutes. Premium includes 60 minutes of Live translation every month.",
+  "liveMonthUsed": "You have used this month's live translation time.",
+  "liveMonthUsedResets": "You have used this month's live translation time. It resets on {day}/{month}.",
+  "@liveMonthUsedResets": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "month": {
+        "type": "int"
+      }
+    }
+  },
+  "liveStoppedRetry": "Live translation stopped. Tap the mic to try again.",
+  "trialMinutesUsedTitle": "Trial minutes used",
+  "trialMinutesUsedBody": "You've used your free trial minutes of Live translation. Premium includes 60 minutes every month once your subscription starts.",
+  "ok": "OK",
+  "couldNotEndSession": "Could not end the session. Check your connection.",
+  "deckNotFoundEnd": "The deck wasn't found. You can end the session instead.",
+  "continueProgress": "Continue · {done}/{total}",
+  "@continueProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "addMoreWords": "{count, plural, =1{Add 1 more word} other{Add {count} more words}}",
+  "@addMoreWords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "needsTenWords": "Study with AI needs a deck with at least 10 words.",
+  "pickDeck": "Pick a deck. Each session practises 10 of its words.",
+  "wordCount": "{count, plural, =1{1 word} other{{count} words}}",
+  "@wordCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deckNotOnPhone": "Deck not on this phone",
+  "missingDeckIntro": "This session is from \"{deck}\", which isn't on this phone. ",
+  "@missingDeckIntro": {
+    "placeholders": {
+      "deck": {
+        "type": "String"
+      }
+    }
+  },
+  "missingDeckSync": "Sync to bring it back, or end the session. ",
+  "missingDeckEndNote": "Ending it starts the usual break before the next session.",
+  "syncNowLower": "Sync now",
+  "endSession": "End session",
+  "nextSession": "Next session",
+  "readyNow": "Ready now",
+  "breakNote": "Words stick better with a break between sessions. Meanwhile you can review them with flashcards.",
+  "reviewWithFlashcards": "Review {deck} with flashcards",
+  "@reviewWithFlashcards": {
+    "placeholders": {
+      "deck": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionComplete": "Session complete",
+  "firstTryCount": "{count} first try",
+  "@firstTryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "withHelpCount": "{count} with help",
+  "@withHelpCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nextSessionIn": "Next session in ",
+  "reviewWithFlashcardsShort": "Review with flashcards",
+  "done": "Done",
+  "gettingWordsReady": "Getting your words ready",
+  "studyIsPremium": "Study with AI is part of Premium.",
+  "nextSessionStartsIn": "Your next session starts in {time}.",
+  "@nextSessionStartsIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "seePlans": "See plans",
+  "tryAgain": "Try again",
+  "noInternet": "No internet connection.",
+  "tooManyMessages": "Too many messages at once. Wait a moment and try again.",
+  "aiBusy": "The AI is busy right now. Try again in a few seconds.",
+  "studyUnavailable": "Study with AI is unavailable right now. Try again later.",
+  "replyTooLong": "The reply took too long. Try again.",
+  "couldNotGetReply": "Couldn't get a reply. Try again.",
+  "retry": "Retry",
+  "typeAnswer": "Type your answer",
+  "errConnectionTitle": "Connection Error",
+  "errConnectionMsg": "No internet connection. Check your connection and try again.",
+  "errUnavailableTitle": "Service Unavailable",
+  "errUnavailableMsg": "Translation is temporarily unavailable. Please try again later.",
+  "errBusyTitle": "AI Is Busy",
+  "errBusyMsg": "Too many requests right now. Try again in a few seconds.",
+  "errTimeoutTitle": "Took Too Long",
+  "errTimeoutMsg": "The translation took too long. Please try again.",
+  "errBlockedTitle": "Can't Translate This",
+  "errBlockedMsg": "This text couldn't be translated.",
+  "errFailedTitle": "Something Went Wrong",
+  "errFailedMsg": "Translation could not be completed. Please try again.",
+  "listening": "Listening...",
+  "enterText": "Enter text",
+  "dailyLimitTitle": "Daily Limit Reached",
+  "dailyLimitBody": "You've used your 10 free AI translations for today. You can keep using offline translation, or upgrade for unlimited AI translations.",
+  "slowDownTitle": "Slow Down",
+  "slowDownBody": "You're sending requests too fast. Please wait a few seconds and try again.",
+  "upgrade": "Upgrade",
+  "deckLimitTitle": "Deck Limit Reached",
+  "deckLimitBody": "{count, plural, =1{The free plan includes 1 deck. Upgrade for unlimited decks and cards.} other{The free plan includes {count} decks. Upgrade for unlimited decks and cards.}}",
+  "@deckLimitBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cardLimitTitle": "Card Limit Reached",
+  "cardLimitBody": "The free plan allows up to {count} cards per deck. Upgrade for unlimited cards.",
+  "@cardLimitBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "backToDecks": "Back to Decks",
+  "sessionFinished": "Session Finished!",
+  "noCardsAvailable": "No cards available",
+  "cardProgress": "Card {index} / {total}",
+  "@cardProgress": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "rateAgain": "🔴 ← AGAIN",
+  "rateGood": "🟢 GOOD →",
+  "rateEasy": "🔵 ↑ EASY",
+  "rateHard": "🟠 ↓ HARD",
+  "showAnswer": "SHOW ANSWER",
+  "swipeToRate": "Swipe to Rate",
+  "rateLegend": "🔴 Again  •  🟠 Hard  •  🟢 Good  •  🔵 Easy",
+  "historyTitle": "History",
+  "clearAll": "Clear All",
+  "noHistoryYet": "No history yet",
+  "clearHistoryTitle": "Clear History",
+  "clearHistoryConfirm": "Are you sure you want to delete all history?",
+  "translationHint": "Translation",
+  "toneStandard": "Standard",
+  "toneFormal": "Formal",
+  "toneSlang": "Slang",
+  "toneLabel": "Tone",
+  "saveToDeck": "Save to Deck",
+  "noDecksFound": "No decks found.\nCreate a deck first.",
+  "saveFlashcard": "Save Flashcard",
+  "saveWordToDeck": "Save word to {deck}?",
+  "@saveWordToDeck": {
+    "placeholders": {
+      "deck": {
+        "type": "String"
+      }
+    }
+  },
+  "consentTitle": "Before you use AI",
+  "consentBody1": "AI translation, photo translation, Live and Study with AI send the text you enter, the text read from your photo, your voice in Live and your answers to Google Gemini to be processed.",
+  "consentBody2": "Your photos never leave your phone. Basic translation works on your phone without this.",
+  "notNow": "Not now",
+  "allow": "Allow",
+  "cardFront": "Front",
+  "cardBack": "Back",
+  "add": "Add",
+  "favoritesTitle": "Favorites",
+  "noFavoritesYet": "No favorites yet",
+  "restartTitle": "Restart Required",
+  "restartBody": "Please close and reopen the app to keep translating as a guest, or sign back in.",
+  "didYouMean": "Did you mean: ",
+  "translateFrom": "Translate from: ",
+  "langEnglish": "English",
+  "langGerman": "German",
+  "langFrench": "French",
+  "langSpanish": "Spanish",
+  "langItalian": "Italian",
+  "langRussian": "Russian",
+  "langJapanese": "Japanese",
+  "langChinese": "Chinese",
+  "langKorean": "Korean",
+  "langArabic": "Arabic",
+  "langPortuguese": "Portuguese",
+  "langHindi": "Hindi",
+  "langUrdu": "Urdu",
+  "langPersian": "Persian",
+  "langDutch": "Dutch",
+  "langSwedish": "Swedish",
+  "langNorwegian": "Norwegian",
+  "langDanish": "Danish",
+  "langFinnish": "Finnish",
+  "langPolish": "Polish",
+  "langGreek": "Greek",
+  "langHebrew": "Hebrew",
+  "langTurkish": "Turkish",
+  "recents": "RECENTS",
+  "allLanguages": "ALL LANGUAGES",
+  "select": "Select",
+  "couldNotTakePhoto": "Could not take the photo. Try again.",
+  "couldNotOpenPhotos": "Could not open your photos.",
+  "tips": "Tips",
+  "more": "More",
+  "copyTranslation": "Copy translation",
+  "copyOriginal": "Copy original text",
+  "translationCopied": "Translation copied",
+  "originalCopied": "Original text copied",
+  "tip1": "Hold the phone flat over the text.",
+  "tip2": "Good light helps; use the flash in the dark.",
+  "tip3": "Tap the screen to focus.",
+  "tip4": "Pinch to zoom in on small text.",
+  "tip5": "Press and hold a translation to select and copy it.",
+  "tip6": "Swipe up the word list to add words to a deck.",
+  "tipsTitle": "Tips for better results",
+  "back": "Back",
+  "swapLanguages": "Swap languages",
+  "cameraOffTitle": "Camera access is off",
+  "cameraOffBody": "Allow camera access for Decklingo in Settings > Privacy > Camera, or pick a photo from your gallery.",
+  "cameraUnavailableTitle": "Camera unavailable",
+  "cameraUnavailableBody": "The camera could not be started on this device. You can still pick a photo from your gallery.",
+  "holdStraight": "Hold the phone straight and parallel to the text for the best fit.",
+  "flashOff": "Flash off",
+  "flashAuto": "Flash auto",
+  "chooseFromGallery": "Choose from gallery",
+  "linesTranslatedTo": "{count, plural, =1{1 line translated to {language}} other{{count} lines translated to {language}}}",
+  "@linesTranslatedTo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "showTranslation": "Show translation",
+  "showOriginal": "Show original",
+  "retake": "Retake",
+  "close": "Close",
+  "words": "Words",
+  "noWordsFound": "No words to add were found in this photo.",
+  "addToDeck": "Add to deck",
+  "readingText": "Reading text…",
+  "translatingLines": "{count, plural, =1{Translating 1 line…} other{Translating {count} lines…}}",
+  "@translatingLines": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noTextFound": "No text found. Try a closer, sharper photo, or check the source language.",
+  "couldNotOpenPhoto": "Could not open the photo. Please retake it.",
+  "unsupportedPhotoLanguage": "Text in {language} can't be read from photos yet. Choose another source language.",
+  "@unsupportedPhotoLanguage": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "unsupportedPhotoLanguageUnknown": "Text in this language can't be read from photos yet. Choose another source language.",
+  "couldNotReadText": "Could not read the text. Please try again.",
+  "tooManyPhotos": "Too many photo translations. Wait a few seconds and retry.",
+  "photoNeedsStandard": "Photo translation is available on the Standard plan.",
+  "restartOrSignIn": "Restart the app or sign in to continue.",
+  "offTopicNote": "Only answers to the exercise get a reply.",
+  "rejectedNote": "Write the word exactly as it is on your card.",
+  "limitNote": "This session reached its message limit.",
+  "welcomeBackWords": "{count, plural, =1{Welcome back, 1 word to go.} other{Welcome back, {count} words to go.}}",
+  "@welcomeBackWords": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "authEmailInUse": "Email is already registered.",
+  "authInvalidEmail": "Please enter a valid email address.",
+  "authWeakPassword": "Password too weak (min 6 chars).",
+  "authInvalidCredentials": "Invalid email or password.",
+  "authNetwork": "Network error. Check your connection.",
+  "authInvalidInput": "Invalid input. Please check your details.",
+  "authPasswordsMismatch": "Passwords do not match.",
+  "deleteAccountFailed": "Could not delete the account. Please try again.",
+  "failedLoadDecks": "Failed to load decks",
+  "failedAddDeck": "Failed to add deck",
+  "failedDeleteDeck": "Failed to delete deck",
+  "failedAddCard": "Failed to add card",
+  "failedDeleteCards": "Failed to delete cards",
+  "failedUpdateDeckSettings": "Failed to update deck settings",
+  "failedUpdateDeckLimits": "Failed to update deck limits",
+  "failedLoadLimits": "Failed to load account limits",
+  "failedLoadFavorites": "Failed to load favorites",
+  "failedSaveFavorite": "Failed to save favorite",
+  "failedDeleteFavorite": "Failed to delete favorite",
+  "geminiNoInternet": "No internet connection. Please check your network and try again.",
+  "dailyAiLimit": "Daily AI limit reached. Try offline mode or upgrade for unlimited translations.",
+  "tooManyRequests": "Too many requests! Please wait a few seconds and try again.",
+  "aiOverloaded": "AI servers are currently overloaded. Please wait a few seconds and try again.",
+  "errorOccurred": "An error occurred: {details}",
+  "@errorOccurred": {
+    "placeholders": {
+      "details": {
+        "type": "String"
+      }
+    }
+  },
+  "failedLoadHistory": "Failed to load history",
+  "failedSaveHistory": "Failed to save history item",
+  "failedDeleteHistory": "Failed to delete history item",
+  "failedClearHistory": "Failed to clear history",
+  "failedDownloadModel": "Failed to download model for {language}",
+  "@failedDownloadModel": {
+    "placeholders": {
+      "language": {
+        "type": "String"
+      }
+    }
+  },
+  "failedInitTranslator": "Failed to initialize translator",
+  "translationFailed": "Translation failed",
+  "failedInitStudy": "Failed to initialize study session",
+  "failedSaveRating": "Failed to save rating"
+}

@@ -10,6 +10,7 @@ import 'package:translate_app/domain/entities/deck_entity.dart';
 import 'package:translate_app/domain/entities/study_session.dart';
 import 'package:translate_app/domain/usecases/deck_usecase.dart';
 import 'package:translate_app/domain/usecases/translate_usecase.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 enum StudyMessageKind { tutor, task, learner, note }
 
@@ -54,9 +55,9 @@ class AiStudyViewModel extends ChangeNotifier {
     DateTime Function()? now,
   }) : _now = now ?? DateTime.now;
 
-  static const offTopicNote = 'Only answers to the exercise get a reply.';
-  static const rejectedNote = 'Write the word exactly as it is on your card.';
-  static const limitNote = 'This session reached its message limit.';
+  static String get offTopicNote => l10n.offTopicNote;
+  static String get rejectedNote => l10n.rejectedNote;
+  static String get limitNote => l10n.limitNote;
 
   StudyState? _state;
   final List<StudyMessage> _messages = [];
@@ -205,10 +206,7 @@ class AiStudyViewModel extends ChangeNotifier {
     if (lastTask != current.task) {
       final left = current.total - current.doneCount;
       _messages.add(
-        StudyMessage(
-          StudyMessageKind.note,
-          'Welcome back, $left ${left == 1 ? 'word' : 'words'} to go.',
-        ),
+        StudyMessage(StudyMessageKind.note, l10n.welcomeBackWords(left)),
       );
       _addTask();
       _saveChat();
@@ -247,9 +245,9 @@ class AiStudyViewModel extends ChangeNotifier {
     final feedback = reply.feedback;
     switch (reply.verdict) {
       case StudyVerdict.offTopic:
-        _messages.add(const StudyMessage(StudyMessageKind.note, offTopicNote));
+        _messages.add(StudyMessage(StudyMessageKind.note, offTopicNote));
       case StudyVerdict.rejected:
-        _messages.add(const StudyMessage(StudyMessageKind.note, rejectedNote));
+        _messages.add(StudyMessage(StudyMessageKind.note, rejectedNote));
       case StudyVerdict.correct:
         _messages.add(
           StudyMessage(StudyMessageKind.tutor, feedback ?? '', correct: true),
@@ -262,7 +260,7 @@ class AiStudyViewModel extends ChangeNotifier {
     _setState(reply.state);
     final finished = session?.completed ?? true;
     if (reply.limitReached) {
-      _messages.add(const StudyMessage(StudyMessageKind.note, limitNote));
+      _messages.add(StudyMessage(StudyMessageKind.note, limitNote));
     }
     final newTask = reply.verdict == StudyVerdict.correct || reply.revealed;
     if (!finished && newTask) _addTask();

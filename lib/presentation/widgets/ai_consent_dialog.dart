@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/core/app_links.dart';
 import 'package:translate_app/data/services/settings_service.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 /// App Store 5.1.2(i): say where the data goes and ask once before sending.
 Future<bool> ensureAiConsent(BuildContext context) async {
@@ -37,33 +38,23 @@ class _AiConsentDialog extends StatelessWidget {
           borderRadius: BorderRadius.circular(28),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
         ),
-        title: const Text(
-          'Before you use AI',
+        title: Text(
+          l10n.consentTitle,
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'AI translation, photo translation, Live and Study with AI '
-              'send the text you enter, the text read from your photo, your '
-              'voice in Live and your answers to Google Gemini to be '
-              'processed.',
-              style: body,
-            ),
+            Text(l10n.consentBody1, style: body),
             const SizedBox(height: 10),
-            Text(
-              'Your photos never leave your phone. Basic translation works '
-              'on your phone without this.',
-              style: body,
-            ),
+            Text(l10n.consentBody2, style: body),
             const SizedBox(height: 4),
             TextButton(
               onPressed: () => AppLinks.open(AppLinks.privacyPolicy),
               style: TextButton.styleFrom(padding: EdgeInsets.zero),
-              child: const Text(
-                'Privacy Policy',
+              child: Text(
+                l10n.privacyPolicy,
                 style: TextStyle(color: Colors.lightBlueAccent),
               ),
             ),
@@ -72,15 +63,12 @@ class _AiConsentDialog extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
-              'Not now',
-              style: TextStyle(color: Colors.white60),
-            ),
+            child: Text(l10n.notNow, style: TextStyle(color: Colors.white60)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Allow',
+            child: Text(
+              l10n.allow,
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,

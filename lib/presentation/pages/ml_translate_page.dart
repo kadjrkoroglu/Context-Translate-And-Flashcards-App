@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:translate_app/presentation/widgets/dropdown.dart';
 import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
 import 'package:translate_app/presentation/utils/font_size_helper.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 /// Fixed-height language header for the ML page.
 /// Used inside a PageView with a fixed SizedBox height.
@@ -80,7 +81,7 @@ class MLLanguageHeader extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -91,7 +92,7 @@ class MLLanguageHeader extends StatelessWidget {
                         ),
                         SizedBox(width: 8),
                         Text(
-                          'Listening...',
+                          l10n.listening,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 13,
@@ -143,7 +144,7 @@ class MLInputBody extends StatelessWidget {
               ),
               cursorColor: Colors.white,
               decoration: InputDecoration(
-                hintText: 'Enter text',
+                hintText: l10n.enterText,
                 hintStyle: TextStyle(
                   color: Colors.white.withValues(alpha: 0.3),
                 ),
@@ -198,7 +199,7 @@ class MLInputBody extends StatelessWidget {
                       Flexible(
                         child: Text.rich(
                           TextSpan(
-                            text: 'Did you mean: ',
+                            text: l10n.didYouMean,
                             style: TextStyle(
                               color: Colors.white.withValues(
                                 alpha: 0.6,
@@ -251,7 +252,7 @@ class MLInputBody extends StatelessWidget {
                       Flexible(
                         child: Text.rich(
                           TextSpan(
-                            text: 'Translate from: ',
+                            text: l10n.translateFrom,
                             style: TextStyle(
                               color: Colors.white.withValues(
                                 alpha: 0.6,
@@ -260,7 +261,7 @@ class MLInputBody extends StatelessWidget {
                             ),
                             children: [
                               TextSpan(
-                                text: viewModel.detectedLanguage,
+                                text: languageLabel(viewModel.detectedLanguage!),
                                 style: const TextStyle(
                                   color: Colors.blueAccent,
                                   fontWeight: FontWeight.bold,

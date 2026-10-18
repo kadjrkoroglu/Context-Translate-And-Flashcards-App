@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:translate_app/domain/entities/history_item_entity.dart';
 import 'package:translate_app/domain/usecases/history_usecase.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class HistoryViewModel extends ChangeNotifier {
   final HistoryUsecase _usecase;
@@ -36,7 +37,7 @@ class HistoryViewModel extends ChangeNotifier {
     try {
       _historyItems = await _usecase.executeGetAllHistory();
     } catch (e) {
-      _setError('Failed to load history');
+      _setError(l10n.failedLoadHistory);
     } finally {
       _setLoading(false);
     }
@@ -79,7 +80,7 @@ class HistoryViewModel extends ChangeNotifier {
       await _usecase.executeAddHistory(item);
       await loadHistory();
     } catch (e) {
-      _setError('Failed to save history item');
+      _setError(l10n.failedSaveHistory);
     }
   }
 
@@ -89,7 +90,7 @@ class HistoryViewModel extends ChangeNotifier {
       await _usecase.executeDeleteHistoryItem(id);
       await loadHistory();
     } catch (e) {
-      _setError('Failed to delete history item');
+      _setError(l10n.failedDeleteHistory);
     }
   }
 
@@ -100,7 +101,7 @@ class HistoryViewModel extends ChangeNotifier {
       _historyItems = [];
       notifyListeners();
     } catch (e) {
-      _setError('Failed to clear history');
+      _setError(l10n.failedClearHistory);
     }
   }
 }

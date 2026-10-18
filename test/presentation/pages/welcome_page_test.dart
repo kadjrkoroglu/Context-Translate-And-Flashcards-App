@@ -25,14 +25,14 @@ void main() {
 
   testWidgets('displays title text', (tester) async {
     await tester.pumpWidget(buildSubject());
-    expect(find.text("Don't waste time, add and study!"), findsOneWidget);
+    expect(find.text('Translate it. Save it. Learn it.'), findsOneWidget);
   });
 
   testWidgets('displays subtitle text', (tester) async {
     await tester.pumpWidget(buildSubject());
     expect(
       find.text(
-        'Translate and create flashcards quickly. Master new languages with smart spaced-repetition.',
+        'Translate with AI, save the words you meet and learn them with spaced repetition.',
       ),
       findsOneWidget,
     );

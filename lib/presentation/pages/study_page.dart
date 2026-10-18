@@ -6,6 +6,7 @@ import 'dart:ui';
 import '../viewmodels/study_viewmodel.dart';
 import '../../data/services/srs_service.dart';
 import '../widgets/app_background.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class StudyPage extends StatefulWidget {
   const StudyPage({super.key});
@@ -269,8 +270,8 @@ class _ErrorView extends StatelessWidget {
                   side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                 ),
               ),
-              child: const Text(
-                'Back to Decks',
+              child: Text(
+                l10n.backToDecks,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -296,8 +297,8 @@ class _FinishedView extends StatelessWidget {
               color: Colors.blueAccent,
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Session Finished!',
+            Text(
+              l10n.sessionFinished,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -319,8 +320,8 @@ class _FinishedView extends StatelessWidget {
                   side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                 ),
               ),
-              child: const Text(
-                'Back to Decks',
+              child: Text(
+                l10n.backToDecks,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -334,11 +335,11 @@ class _FinishedView extends StatelessWidget {
 class _NoCardsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AppBackground(
-    child: const Scaffold(
+    child: Scaffold(
       backgroundColor: Colors.transparent,
       body: Center(
         child: Text(
-          'No cards available',
+          l10n.noCardsAvailable,
           style: TextStyle(color: Colors.white70),
         ),
       ),
@@ -366,7 +367,7 @@ class _StudyProgressBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Card ${index + 1} / $total',
+              l10n.cardProgress(index + 1, total),
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 13,
@@ -497,13 +498,13 @@ class _RatingFeedback extends StatelessWidget {
   String _getText() {
     switch (rating) {
       case StudyRating.again:
-        return '🔴 ← AGAIN';
+        return l10n.rateAgain;
       case StudyRating.good:
-        return '🟢 GOOD →';
+        return l10n.rateGood;
       case StudyRating.easy:
-        return '🔵 ↑ EASY';
+        return l10n.rateEasy;
       case StudyRating.hard:
-        return '🟠 ↓ HARD';
+        return l10n.rateHard;
     }
   }
 
@@ -584,8 +585,8 @@ class _StudyActionArea extends StatelessWidget {
               vm.showAnswer();
             },
             icon: const Icon(Icons.flip_rounded),
-            label: const Text(
-              'SHOW ANSWER',
+            label: Text(
+              l10n.showAnswer,
               style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
             ),
             style: ElevatedButton.styleFrom(
@@ -599,11 +600,11 @@ class _StudyActionArea extends StatelessWidget {
               elevation: 0,
             ),
           )
-        : const Column(
+        : Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Swipe to Rate',
+                l10n.swipeToRate,
                 style: TextStyle(
                   color: Colors.white54,
                   fontWeight: FontWeight.w600,
@@ -612,7 +613,7 @@ class _StudyActionArea extends StatelessWidget {
               ),
               SizedBox(height: 12),
               Text(
-                '🔴 Again  •  🟠 Hard  •  🟢 Good  •  🔵 Easy',
+                l10n.rateLegend,
                 style: TextStyle(color: Colors.white38, fontSize: 13),
               ),
             ],

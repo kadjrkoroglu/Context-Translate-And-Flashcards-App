@@ -3,6 +3,7 @@ import 'package:translate_app/domain/entities/card_entity.dart';
 import 'package:translate_app/domain/entities/deck_entity.dart';
 import 'package:translate_app/domain/usecases/deck_usecase.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class DecksViewModel extends ChangeNotifier {
   final DeckUsecase _usecase;
@@ -58,7 +59,7 @@ class DecksViewModel extends ChangeNotifier {
     try {
       _decks = await _usecase.executeGetAllDecks();
     } catch (e) {
-      _setError('Failed to load decks');
+      _setError(l10n.failedLoadDecks);
     } finally {
       _setLoading(false);
     }
@@ -83,7 +84,7 @@ class DecksViewModel extends ChangeNotifier {
       await _usecase.executeSaveDeck(newDeck);
       await loadDecks();
     } catch (e) {
-      _setError('Failed to add deck');
+      _setError(l10n.failedAddDeck);
     }
     return true;
   }
@@ -94,7 +95,7 @@ class DecksViewModel extends ChangeNotifier {
       await _usecase.executeDeleteDeck(id);
       await loadDecks();
     } catch (e) {
-      _setError('Failed to delete deck');
+      _setError(l10n.failedDeleteDeck);
     }
   }
 
@@ -118,7 +119,7 @@ class DecksViewModel extends ChangeNotifier {
       await _usecase.executeAddCardToDeck(deckId, newCard);
       await loadDecks();
     } catch (e) {
-      _setError('Failed to add card');
+      _setError(l10n.failedAddCard);
     }
     return true;
   }
@@ -129,7 +130,7 @@ class DecksViewModel extends ChangeNotifier {
       await _usecase.executeDeleteCards(cardIds);
       await loadDecks();
     } catch (e) {
-      _setError('Failed to delete cards');
+      _setError(l10n.failedDeleteCards);
     }
   }
 
@@ -226,7 +227,7 @@ class DecksViewModel extends ChangeNotifier {
       );
       await loadDecks();
     } catch (e) {
-      _setError('Failed to update deck settings');
+      _setError(l10n.failedUpdateDeckSettings);
     }
   }
 
@@ -244,7 +245,7 @@ class DecksViewModel extends ChangeNotifier {
       );
       await loadDecks();
     } catch (e) {
-      _setError('Failed to update deck limits');
+      _setError(l10n.failedUpdateDeckLimits);
     }
   }
 }

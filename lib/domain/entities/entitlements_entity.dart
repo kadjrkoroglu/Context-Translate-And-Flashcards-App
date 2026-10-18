@@ -1,12 +1,14 @@
+import 'package:translate_app/l10n/l10n.dart';
+
 enum AppTier { free, standard, premium, trialStandard, trialPremium }
 
 extension AppTierLabel on AppTier {
   String get label => switch (this) {
-    AppTier.free => 'Free',
+    AppTier.free => l10n.tierFree,
     AppTier.standard => 'Standard',
     AppTier.premium => 'Premium',
-    AppTier.trialStandard => 'Standard (free trial)',
-    AppTier.trialPremium => 'Premium (free trial)',
+    AppTier.trialStandard => l10n.tierStandardTrial,
+    AppTier.trialPremium => l10n.tierPremiumTrial,
   };
 }
 

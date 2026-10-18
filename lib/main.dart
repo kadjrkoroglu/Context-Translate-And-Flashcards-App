@@ -39,6 +39,7 @@ import 'package:translate_app/data/services/firestore_service.dart';
 import 'package:translate_app/data/services/sync_service.dart';
 import 'package:translate_app/data/services/tts_service.dart';
 import 'firebase_options.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -155,6 +156,10 @@ class MyApp extends StatelessWidget {
     // Dark only: the glass design is white on dark.
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      // Turkish on a Turkish phone, English everywhere else.
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localeResolutionCallback: (locale, _) => appLocale(locale),
       home: const AuthWrapper(),
       theme: darkTheme,
     );

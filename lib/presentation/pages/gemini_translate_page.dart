@@ -10,6 +10,7 @@ import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/presentation/utils/ai_error_text.dart';
 import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
 import 'package:translate_app/presentation/widgets/restart_required_dialog.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class GeminiLanguageHeader extends StatelessWidget {
   final TextEditingController outputController;
@@ -88,7 +89,7 @@ class GeminiLanguageHeader extends StatelessWidget {
                     color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -99,7 +100,7 @@ class GeminiLanguageHeader extends StatelessWidget {
                         ),
                         SizedBox(width: 8),
                         Text(
-                          'Listening...',
+                          l10n.listening,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 13,
@@ -150,7 +151,7 @@ class GeminiInputBody extends StatelessWidget {
               ),
               cursorColor: Colors.white,
               decoration: InputDecoration(
-                hintText: 'Enter text',
+                hintText: l10n.enterText,
                 hintStyle: TextStyle(
                   color: Colors.white.withValues(alpha: 0.3),
                 ),
@@ -206,11 +207,8 @@ class GeminiInputBody extends StatelessWidget {
     _errorDialogOpen = true;
     showUpgradeRequiredDialog(
       context,
-      title: 'Daily Limit Reached',
-      message:
-          "You've used your 10 free AI translations for today. "
-          'You can keep using offline translation, or upgrade for '
-          'unlimited AI translations.',
+      title: l10n.dailyLimitTitle,
+      message: l10n.dailyLimitBody,
     ).whenComplete(() => _errorDialogOpen = false);
   }
 
@@ -226,19 +224,18 @@ class GeminiInputBody extends StatelessWidget {
             borderRadius: BorderRadius.circular(28),
             side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
           ),
-          title: const Text(
-            'Slow Down',
+          title: Text(
+            l10n.slowDownTitle,
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
-          content: const Text(
-            "You're sending requests too fast. Please wait a few seconds "
-            'and try again.',
+          content: Text(
+            l10n.slowDownBody,
             style: TextStyle(color: Colors.white70),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('OK', style: TextStyle(color: Colors.white)),
+              child: Text(l10n.ok, style: const TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -280,8 +277,8 @@ class GeminiInputBody extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text(
-                'Cancel',
+              child: Text(
+                l10n.cancel,
                 style: TextStyle(color: Colors.redAccent),
               ),
             ),

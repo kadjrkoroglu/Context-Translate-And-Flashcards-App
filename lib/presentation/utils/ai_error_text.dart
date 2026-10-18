@@ -1,35 +1,29 @@
 import 'package:translate_app/core/errors/app_exception.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 /// Title and message for a failed AI request, shared by all translation screens.
 ({String title, String message}) aiErrorText(AppException? e) {
   if (e is NetworkException) {
-    return (
-      title: 'Connection Error',
-      message: 'No internet connection. Check your connection and try again.',
-    );
+    return (title: l10n.errConnectionTitle, message: l10n.errConnectionMsg);
   }
   final kind = e is AiServiceException ? e.kind : AiFailure.failed;
   return switch (kind) {
     AiFailure.unavailable => (
-      title: 'Service Unavailable',
-      message:
-          'Translation is temporarily unavailable. Please try again later.',
+      title: l10n.errUnavailableTitle,
+      message: l10n.errUnavailableMsg,
     ),
-    AiFailure.busy => (
-      title: 'AI Is Busy',
-      message: 'Too many requests right now. Try again in a few seconds.',
-    ),
+    AiFailure.busy => (title: l10n.errBusyTitle, message: l10n.errBusyMsg),
     AiFailure.timeout => (
-      title: 'Took Too Long',
-      message: 'The translation took too long. Please try again.',
+      title: l10n.errTimeoutTitle,
+      message: l10n.errTimeoutMsg,
     ),
     AiFailure.blocked => (
-      title: "Can't Translate This",
-      message: "This text couldn't be translated.",
+      title: l10n.errBlockedTitle,
+      message: l10n.errBlockedMsg,
     ),
     AiFailure.failed => (
-      title: 'Something Went Wrong',
-      message: 'Translation could not be completed. Please try again.',
+      title: l10n.errFailedTitle,
+      message: l10n.errFailedMsg,
     ),
   };
 }

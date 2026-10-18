@@ -14,6 +14,7 @@ import 'package:translate_app/presentation/viewmodels/ai_study_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/study_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 const _correctColor = Color(0xFF7BD88F);
 const _helpColor = Colors.amberAccent;
@@ -141,11 +142,11 @@ class _StudyChatPageState extends State<StudyChatPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            session?.deckName ?? widget.deck?.name ?? 'Study with AI',
+            session?.deckName ?? widget.deck?.name ?? l10n.studyWithAi,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           Text(
-            'Study with AI',
+            l10n.studyWithAi,
             style: TextStyle(
               fontSize: 12,
               color: Colors.white.withValues(alpha: 0.5),
@@ -412,8 +413,8 @@ class _Summary extends StatelessWidget {
             size: 34,
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Session complete',
+          Text(
+            l10n.sessionComplete,
             style: TextStyle(
               color: Colors.white,
               fontSize: 17,
@@ -425,13 +426,13 @@ class _Summary extends StatelessWidget {
             TextSpan(
               children: [
                 TextSpan(
-                  text: '$firstTry first try',
+                  text: l10n.firstTryCount(firstTry),
                   style: const TextStyle(color: _correctColor),
                 ),
                 if (withHelp > 0) ...[
                   const TextSpan(text: '  ·  '),
                   TextSpan(
-                    text: '$withHelp with help',
+                    text: l10n.withHelpCount(withHelp),
                     style: const TextStyle(color: _helpColor),
                   ),
                 ],
@@ -473,7 +474,7 @@ class _Summary extends StatelessWidget {
             const SizedBox(height: 16),
             Text.rich(
               TextSpan(
-                text: 'Next session in ',
+                text: l10n.nextSessionIn,
                 children: [
                   TextSpan(
                     text: formatCountdown(left),
@@ -496,7 +497,7 @@ class _Summary extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: () => openFlashcards(context, deck),
                     style: _outlined,
-                    child: const Text('Review with flashcards'),
+                    child: Text(l10n.reviewWithFlashcardsShort),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -505,7 +506,7 @@ class _Summary extends StatelessWidget {
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(context),
                   style: _outlined,
-                  child: const Text('Done'),
+                  child: Text(l10n.done),
                 ),
               ),
             ],
@@ -540,7 +541,7 @@ class _StartState extends StatelessWidget {
             const _TypingBubble(),
             const SizedBox(height: 10),
             Text(
-              'Getting your words ready',
+              l10n.gettingWordsReady,
               style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
             ),
           ],
@@ -551,9 +552,9 @@ class _StartState extends StatelessWidget {
     final left = vm.cooldownLeft;
     final String message;
     if (error is FeatureNotAvailableException) {
-      message = 'Study with AI is part of Premium.';
+      message = l10n.studyIsPremium;
     } else if (left != null) {
-      message = 'Your next session starts in ${formatCountdown(left)}.';
+      message = l10n.nextSessionStartsIn(formatCountdown(left));
     } else {
       message = studyErrorText(error);
     }
@@ -586,13 +587,13 @@ class _StartState extends StatelessWidget {
                   context,
                   MaterialPageRoute(builder: (_) => const UpgradePage()),
                 ),
-                child: const Text('  See plans  '),
+                child: Text('  ${l10n.seePlans}  '),
               )
             else if (canRetry)
               OutlinedButton(
                 style: _outlined,
                 onPressed: vm.retry,
-                child: const Text('  Try again  '),
+                child: Text('  ${l10n.tryAgain}  '),
               ),
           ],
         ),
@@ -602,23 +603,23 @@ class _StartState extends StatelessWidget {
 }
 
 String studyErrorText(AppException error) {
-  if (error is NetworkException) return 'No internet connection.';
+  if (error is NetworkException) return l10n.noInternet;
   if (error is QuotaExceededException) {
-    return 'Too many messages at once. Wait a moment and try again.';
+    return l10n.tooManyMessages;
   }
   if (error is AiServiceException) {
     switch (error.kind) {
       case AiFailure.busy:
-        return 'The AI is busy right now. Try again in a few seconds.';
+        return l10n.aiBusy;
       case AiFailure.unavailable:
-        return 'Study with AI is unavailable right now. Try again later.';
+        return l10n.studyUnavailable;
       case AiFailure.timeout:
-        return 'The reply took too long. Try again.';
+        return l10n.replyTooLong;
       default:
         break;
     }
   }
-  return "Couldn't get a reply. Try again.";
+  return l10n.couldNotGetReply;
 }
 
 class _ErrorBar extends StatelessWidget {
@@ -646,8 +647,8 @@ class _ErrorBar extends StatelessWidget {
           ),
           TextButton(
             onPressed: onRetry,
-            child: const Text(
-              'Retry',
+            child: Text(
+              l10n.retry,
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -690,7 +691,7 @@ class _InputBar extends StatelessWidget {
                 style: const TextStyle(color: Colors.white),
                 cursorColor: Colors.white,
                 decoration: InputDecoration(
-                  hintText: 'Type your answer',
+                  hintText: l10n.typeAnswer,
                   hintStyle: TextStyle(
                     color: Colors.white.withValues(alpha: 0.4),
                   ),

@@ -1,0 +1,5 @@
+/* Permission prompts on a Turkish iPhone. */
+"NSCameraUsageDescription" = "Decklingo, fotoğraflardaki metni okuyup çevirmek için kamerayı kullanır.";
+"NSMicrophoneUsageDescription" = "Decklingo, sesli giriş ve Canlı çeviri için mikrofonu kullanır.";
+"NSPhotoLibraryUsageDescription" = "Decklingo, seçtiğin fotoğraftaki metni okuyup çevirmek için fotoğrafı açar.";
+"NSSpeechRecognitionUsageDescription" = "Decklingo, konuşmanı çevirebilmek için metne dönüştürür.";

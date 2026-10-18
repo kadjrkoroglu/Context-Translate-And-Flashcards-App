@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:translate_app/presentation/pages/upgrade_page.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 /// Shown when a free-tier limit is hit.
 Future<void> showUpgradeRequiredDialog(
@@ -31,10 +32,7 @@ Future<void> showUpgradeRequiredDialog(
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white60),
-            ),
+            child: Text(l10n.cancel, style: TextStyle(color: Colors.white60)),
           ),
           TextButton(
             onPressed: () {
@@ -44,8 +42,8 @@ Future<void> showUpgradeRequiredDialog(
                 MaterialPageRoute(builder: (_) => const UpgradePage()),
               );
             },
-            child: const Text(
-              'Upgrade',
+            child: Text(
+              l10n.upgrade,
               style: TextStyle(
                 color: Colors.amberAccent,
                 fontWeight: FontWeight.bold,
@@ -59,21 +57,17 @@ Future<void> showUpgradeRequiredDialog(
 }
 
 Future<void> showDeckLimitDialog(BuildContext context, int? maxDecks) {
-  final count = maxDecks == 1 ? '1 deck' : '$maxDecks decks';
   return showUpgradeRequiredDialog(
     context,
-    title: 'Deck Limit Reached',
-    message:
-        'The free plan includes $count. Upgrade for unlimited decks and cards.',
+    title: l10n.deckLimitTitle,
+    message: l10n.deckLimitBody(maxDecks ?? 0),
   );
 }
 
 Future<void> showCardLimitDialog(BuildContext context, int? maxCardsPerDeck) {
   return showUpgradeRequiredDialog(
     context,
-    title: 'Card Limit Reached',
-    message:
-        'The free plan allows up to $maxCardsPerDeck cards per deck. '
-        'Upgrade for unlimited cards.',
+    title: l10n.cardLimitTitle,
+    message: l10n.cardLimitBody(maxCardsPerDeck ?? 0),
   );
 }

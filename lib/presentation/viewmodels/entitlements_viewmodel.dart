@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:translate_app/domain/entities/entitlements_entity.dart';
 import 'package:translate_app/domain/usecases/entitlements_usecase.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class EntitlementsViewModel extends ChangeNotifier {
   final EntitlementsUsecase _usecase;
@@ -40,7 +41,7 @@ class EntitlementsViewModel extends ChangeNotifier {
       );
     } catch (e) {
       debugPrint('[ENTITLEMENTS] FAILED: $e');
-      _setError('Failed to load account limits');
+      _setError(l10n.failedLoadLimits);
     } finally {
       _setLoading(false);
     }

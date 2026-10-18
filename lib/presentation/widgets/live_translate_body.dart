@@ -10,6 +10,7 @@ import 'package:translate_app/presentation/utils/ai_error_text.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/live_translate_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/dropdown.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 /// Header row: [Auto-detect] → [target language].
 class LiveLanguageHeader extends StatelessWidget {
@@ -78,13 +79,13 @@ class _AutoDetectChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
-      child: const Row(
+      child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.hearing_rounded, color: Colors.white70, size: 18),
           SizedBox(width: 8),
           Text(
-            'Auto-detect',
+            l10n.autoDetect,
             style: TextStyle(
               color: Colors.white70,
               fontSize: 14,
@@ -221,10 +222,10 @@ class _StatusRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = switch (vm.status) {
-      LiveStatus.connecting => 'Connecting…',
-      LiveStatus.listening => 'Listening',
-      LiveStatus.error => 'Stopped',
-      LiveStatus.idle => 'Ready',
+      LiveStatus.connecting => l10n.liveConnecting,
+      LiveStatus.listening => l10n.liveListening,
+      LiveStatus.error => l10n.liveStopped,
+      LiveStatus.idle => l10n.liveReady,
     };
 
     return Padding(
@@ -274,7 +275,7 @@ class _StatusRow extends StatelessWidget {
             const SizedBox(width: 4),
           ],
           IconButton(
-            tooltip: vm.speakerOn ? 'Mute translated voice' : 'Unmute',
+            tooltip: vm.speakerOn ? l10n.muteVoice : l10n.unmute,
             visualDensity: VisualDensity.compact,
             onPressed: vm.toggleSpeaker,
             icon: Icon(
@@ -285,7 +286,7 @@ class _StatusRow extends StatelessWidget {
           ),
           if (vm.entries.isNotEmpty && !vm.isActive)
             IconButton(
-              tooltip: 'Clear',
+              tooltip: l10n.clear,
               visualDensity: VisualDensity.compact,
               onPressed: vm.clear,
               icon: Icon(
@@ -314,11 +315,13 @@ class _RemainingChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final time = counting
-        ? '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')} left'
+        ? l10n.timeLeft(
+            '${seconds ~/ 60}:${(seconds % 60).toString().padLeft(2, '0')}',
+          )
         : seconds >= 60
-        ? '${seconds ~/ 60} min left'
-        : '$seconds s left';
-    final text = trial ? 'Trial · $time' : time;
+        ? l10n.minutesLeft(seconds ~/ 60)
+        : l10n.secondsLeft(seconds);
+    final text = trial ? l10n.trialTime(time) : time;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
@@ -374,7 +377,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              active ? 'Start speaking' : 'AI Live Translation',
+              active ? l10n.startSpeaking : l10n.liveTitle,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 20,
@@ -383,11 +386,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              active
-                  ? 'The translation appears here as the speaker talks.'
-                  : 'Tap the mic and let someone speak. AI translates as '
-                        'they talk, keeping their tone and emphasis, and '
-                        'writes it here too.',
+              active ? l10n.liveActiveHint : l10n.liveIdleHint,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.6),
@@ -398,8 +397,7 @@ class _EmptyState extends StatelessWidget {
             if (trialMinutes != null && !active) ...[
               const SizedBox(height: 16),
               Text(
-                'Your trial includes $trialMinutes minutes of Live. '
-                'Premium includes 60 minutes every month.',
+                l10n.liveTrialIncludes(trialMinutes!),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.8),
@@ -461,24 +459,21 @@ class _ErrorBanner extends StatelessWidget {
   String get _message {
     final e = exception;
     if (e is MicrophoneDeniedException) {
-      return 'Microphone access is off. Allow it in Settings > Privacy > '
-          'Microphone.';
+      return l10n.micOff;
     }
     if (e is QuotaExceededException && e.isTrial) {
-      return "You've used your trial minutes. Premium includes 60 minutes of "
-          'Live translation every month.';
+      return l10n.trialMinutesUsedShort;
     }
     if (e is QuotaExceededException) {
       final resets = e.resetsAt?.toLocal();
       return resets == null
-          ? 'You have used this month\'s live translation time.'
-          : 'You have used this month\'s live translation time. It resets on '
-                '${resets.day}/${resets.month}.';
+          ? l10n.liveMonthUsed
+          : l10n.liveMonthUsedResets(resets.day, resets.month);
     }
     if (e is AiServiceException || e is NetworkException) {
       return aiErrorText(e).message;
     }
-    return 'Live translation stopped. Tap the mic to try again.';
+    return l10n.liveStoppedRetry;
   }
 
   @override
@@ -572,19 +567,18 @@ Future<void> _showTrialUsedDialog(BuildContext context) {
           borderRadius: BorderRadius.circular(28),
           side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
         ),
-        title: const Text(
-          'Trial minutes used',
+        title: Text(
+          l10n.trialMinutesUsedTitle,
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        content: const Text(
-          "You've used your free trial minutes of Live translation. Premium "
-          'includes 60 minutes every month once your subscription starts.',
+        content: Text(
+          l10n.trialMinutesUsedBody,
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('OK', style: TextStyle(color: Colors.white)),
+            child: Text(l10n.ok, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),

@@ -8,6 +8,7 @@ import 'package:translate_app/domain/usecases/translate_usecase.dart';
 import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/data/services/settings_service.dart';
 import 'package:translate_app/data/constants/ml_languages.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class GeminiTranslateViewModel extends ChangeNotifier {
   final TranslateUsecase _translateUsecase;
@@ -266,12 +267,10 @@ class GeminiTranslateViewModel extends ChangeNotifier {
 
   String _handleError(dynamic e) {
     if (e is NetworkException) {
-      return 'No internet connection. Please check your network and try again.';
+      return l10n.geminiNoInternet;
     }
     if (e is QuotaExceededException) {
-      return e.isDailyLimit
-          ? 'Daily AI limit reached. Try offline mode or upgrade for unlimited translations.'
-          : 'Too many requests! Please wait a few seconds and try again.';
+      return e.isDailyLimit ? l10n.dailyAiLimit : l10n.tooManyRequests;
     }
 
     final String raw = e is AppException
@@ -280,10 +279,10 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     String message = raw.toLowerCase();
 
     if (message.contains('503') || message.contains('service unavailable')) {
-      return 'AI servers are currently overloaded. Please wait a few seconds and try again.';
+      return l10n.aiOverloaded;
     }
 
-    return 'An error occurred: ${e is AppException ? e.message : e}';
+    return l10n.errorOccurred('${e is AppException ? e.message : e}');
   }
 
   /// Restores a saved translation (history/favorites) with its tone variants.

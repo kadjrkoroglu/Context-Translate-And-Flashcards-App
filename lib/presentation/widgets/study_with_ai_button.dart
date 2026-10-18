@@ -17,6 +17,7 @@ import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dar
 import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/ai_consent_dialog.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 /// Decks screen, bottom left: Study with AI, Continue 4/10, or the countdown.
 class StudyWithAiButton extends StatefulWidget {
@@ -64,9 +65,7 @@ class _StudyWithAiButtonState extends State<StudyWithAiButton> {
     if (choice == _MissingDeckChoice.end) {
       if (!await context.read<AiStudyViewModel>().endSession()) {
         messenger.showSnackBar(
-          const SnackBar(
-            content: Text('Could not end the session. Check your connection.'),
-          ),
+          SnackBar(content: Text(l10n.couldNotEndSession)),
         );
       }
       return;
@@ -91,11 +90,7 @@ class _StudyWithAiButtonState extends State<StudyWithAiButton> {
     if (!mounted) return;
     if (hasDeck()) return _openChat(null);
     messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          error ?? "The deck wasn't found. You can end the session instead.",
-        ),
-      ),
+      SnackBar(content: Text(error ?? l10n.deckNotFoundEnd)),
     );
   }
 
@@ -152,7 +147,7 @@ class _StudyWithAiButtonState extends State<StudyWithAiButton> {
     if (hasChat && study.hasUnfinishedSession) {
       return _Pill(
         icon: Icons.auto_awesome,
-        label: 'Continue · ${session!.doneCount}/${session.total}',
+        label: l10n.continueProgress(session!.doneCount, session.total),
         progress: session.doneCount / session.total,
         onTap: () => _continue(session),
       );
@@ -170,17 +165,15 @@ class _StudyWithAiButtonState extends State<StudyWithAiButton> {
       final missing = studySessionCards - mostCards;
       return _Pill(
         faded: true,
-        label: 'Add $missing more ${missing == 1 ? 'word' : 'words'}',
-        onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Study with AI needs a deck with at least 10 words.'),
-          ),
-        ),
+        label: l10n.addMoreWords(missing),
+        onTap: () => ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.needsTenWords))),
       );
     }
     return _Pill(
       icon: Icons.auto_awesome,
-      label: 'Study with AI',
+      label: l10n.studyWithAi,
       onTap: () => _start(decks),
     );
   }
@@ -362,7 +355,7 @@ class _DeckPickerSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _GlassSheet(
-      title: 'Study with AI',
+      title: l10n.studyWithAi,
       child: Flexible(
         child: ListView(
           shrinkWrap: true,
@@ -371,7 +364,7 @@ class _DeckPickerSheet extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 0, 8, 12),
               child: Text(
-                'Pick a deck. Each session practises 10 of its words.',
+                l10n.pickDeck,
                 style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
               ),
             ),
@@ -406,9 +399,7 @@ class _DeckPickerSheet extends StatelessWidget {
             ),
           ),
           subtitle: Text(
-            ready
-                ? '$count words'
-                : 'Add $missing more ${missing == 1 ? 'word' : 'words'}',
+            ready ? l10n.wordCount(count) : l10n.addMoreWords(missing),
             style: TextStyle(color: Colors.white.withValues(alpha: 0.45)),
           ),
           trailing: ready
@@ -448,15 +439,15 @@ class _MissingDeckSheet extends StatelessWidget {
     );
     const padding = EdgeInsets.symmetric(vertical: 13);
     return _GlassSheet(
-      title: 'Deck not on this phone',
+      title: l10n.deckNotOnPhone,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
         child: Column(
           children: [
             Text(
-              'This session is from "$deckName", which isn\'t on this phone. '
-              '${canSync ? 'Sync to bring it back, or end the session. ' : ''}'
-              'Ending it starts the usual break before the next session.',
+              l10n.missingDeckIntro(deckName) +
+                  (canSync ? l10n.missingDeckSync : '') +
+                  l10n.missingDeckEndNote,
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
             ),
@@ -473,7 +464,7 @@ class _MissingDeckSheet extends StatelessWidget {
                     shape: shape,
                     padding: padding,
                   ),
-                  child: const Text('Sync now'),
+                  child: Text(l10n.syncNowLower),
                 ),
               ),
               const SizedBox(height: 10),
@@ -488,7 +479,7 @@ class _MissingDeckSheet extends StatelessWidget {
                   shape: shape,
                   padding: padding,
                 ),
-                child: const Text('End session'),
+                child: Text(l10n.endSession),
               ),
             ),
           ],
@@ -523,13 +514,13 @@ class _CooldownSheet extends StatelessWidget {
         .firstOrNull;
 
     return _GlassSheet(
-      title: 'Next session',
+      title: l10n.nextSession,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
         child: Column(
           children: [
             Text(
-              left == null ? 'Ready now' : formatCountdown(left),
+              left == null ? l10n.readyNow : formatCountdown(left),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 40,
@@ -539,8 +530,7 @@ class _CooldownSheet extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Words stick better with a break between sessions. '
-              'Meanwhile you can review them with flashcards.',
+              l10n.breakNote,
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
             ),
@@ -560,7 +550,7 @@ class _CooldownSheet extends StatelessWidget {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 13),
                   ),
-                  child: Text('Review ${deck.name} with flashcards'),
+                  child: Text(l10n.reviewWithFlashcards(deck.name)),
                 ),
               ),
             ],

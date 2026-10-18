@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class AddCardDialog {
   static void show(BuildContext context, dynamic deck) {
@@ -26,8 +27,8 @@ class AddCardDialog {
             borderRadius: BorderRadius.circular(24),
             side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
-          title: const Text(
-            'Add Card',
+          title: Text(
+            l10n.addCard,
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           content: Column(
@@ -36,20 +37,17 @@ class AddCardDialog {
               _DialogField(
                 controller: frontCtrl,
                 focusNode: frontFocus,
-                label: 'Front',
+                label: l10n.cardFront,
                 autofocus: true,
               ),
               const SizedBox(height: 12),
-              _DialogField(controller: backCtrl, label: 'Back'),
+              _DialogField(controller: backCtrl, label: l10n.cardBack),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white54),
-              ),
+              child: Text(l10n.cancel, style: TextStyle(color: Colors.white54)),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -81,7 +79,7 @@ class AddCardDialog {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Add'),
+              child: Text(l10n.add),
             ),
           ],
         ),

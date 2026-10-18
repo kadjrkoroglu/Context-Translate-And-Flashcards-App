@@ -7,6 +7,7 @@ import 'package:translate_app/presentation/widgets/app_background.dart';
 import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class FavoritesPage extends StatefulWidget {
   const FavoritesPage({super.key});
@@ -41,8 +42,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                   centerTitle: true,
-                  title: const Text(
-                    'Favorites',
+                  title: Text(
+                    l10n.favoritesTitle,
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   foregroundColor: ip,
@@ -91,7 +92,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'No favorites yet',
+                            l10n.noFavoritesYet,
                             style: TextStyle(
                               color: ip.withValues(alpha: 0.5),
                               fontSize: 16,

@@ -13,6 +13,7 @@ import 'package:translate_app/presentation/widgets/app_background.dart';
 import 'package:translate_app/presentation/widgets/study_with_ai_button.dart';
 import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
 import 'package:translate_app/presentation/utils/haptics.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class DecksPage extends StatefulWidget {
   const DecksPage({super.key});
@@ -49,8 +50,8 @@ class _DecksPageState extends State<DecksPage> {
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                   centerTitle: true,
-                  title: const Text(
-                    'Decks',
+                  title: Text(
+                    l10n.decksTitle,
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   foregroundColor: ip,
@@ -126,8 +127,8 @@ class _DecksPageState extends State<DecksPage> {
                   borderRadius: BorderRadius.circular(24),
                   side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
                 ),
-                label: const Text(
-                  'New Deck',
+                label: Text(
+                  l10n.newDeck,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 icon: const Icon(Icons.add_rounded),
@@ -147,7 +148,7 @@ class _DecksPageState extends State<DecksPage> {
           Icon(Icons.style_rounded, size: 64, color: ip.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           Text(
-            'Create your first deck to start learning!',
+            l10n.createFirstDeck,
             style: TextStyle(color: ip.withValues(alpha: 0.5), fontSize: 16),
           ),
         ],
@@ -172,8 +173,8 @@ class _DecksPageState extends State<DecksPage> {
             borderRadius: BorderRadius.circular(24),
             side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
-          title: const Text(
-            'New Deck',
+          title: Text(
+            l10n.newDeck,
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           content: TextField(
@@ -183,7 +184,7 @@ class _DecksPageState extends State<DecksPage> {
             style: const TextStyle(color: Colors.white),
             cursorColor: Colors.white,
             decoration: InputDecoration(
-              labelText: 'Deck Name',
+              labelText: l10n.deckName,
               labelStyle: const TextStyle(color: Colors.white54),
               filled: true,
               fillColor: Colors.white.withValues(alpha: 0.05),
@@ -196,10 +197,7 @@ class _DecksPageState extends State<DecksPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white54),
-              ),
+              child: Text(l10n.cancel, style: TextStyle(color: Colors.white54)),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -218,7 +216,7 @@ class _DecksPageState extends State<DecksPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Create'),
+              child: Text(l10n.create),
             ),
           ],
         ),
@@ -272,7 +270,7 @@ class _DeckCard extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
-                        '${vm.getTotalCardCount(deck)} cards',
+                        l10n.cardCount(vm.getTotalCardCount(deck)),
                         style: TextStyle(
                           color: ip.withValues(alpha: 0.5),
                           fontSize: 12,
@@ -335,20 +333,20 @@ class _DeckCard extends StatelessWidget {
               _optionItem(
                 ctx,
                 Icons.add_circle_outline_rounded,
-                'Add Card',
+                l10n.addCard,
                 () {
                   Navigator.pop(ctx);
                   AddCardDialog.show(context, deck);
                 },
               ),
-              _optionItem(ctx, Icons.style_outlined, 'Browse Cards', () {
+              _optionItem(ctx, Icons.style_outlined, l10n.browseCards, () {
                 Navigator.pop(ctx);
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => DeckDetailPage(deck: deck)),
                 );
               }),
-              _optionItem(ctx, Icons.settings_outlined, 'Deck Settings', () {
+              _optionItem(ctx, Icons.settings_outlined, l10n.deckSettings, () {
                 Navigator.pop(ctx);
                 _showDeckSettingsDialog(context);
               }),
@@ -356,7 +354,7 @@ class _DeckCard extends StatelessWidget {
               _optionItem(
                 ctx,
                 Icons.delete_outline_rounded,
-                'Delete Deck',
+                l10n.deleteDeck,
                 () {
                   Navigator.pop(ctx);
                   _showDeleteConfirm(context);
@@ -404,22 +402,19 @@ class _DeckCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(28),
             side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
           ),
-          title: const Text(
-            'Delete Deck?',
+          title: Text(
+            l10n.deleteDeckTitle,
             style: TextStyle(color: Colors.white),
           ),
           content: Text(
-            'Delete "${deck.name}" and all its cards?'
-            '${endsSession ? ' Its Study with AI session ends too.' : ''}',
+            l10n.deleteDeckBody(deck.name) +
+                (endsSession ? l10n.deleteDeckEndsSession : ''),
             style: const TextStyle(color: Colors.white70),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white60),
-              ),
+              child: Text(l10n.cancel, style: TextStyle(color: Colors.white60)),
             ),
             TextButton(
               onPressed: () {
@@ -427,8 +422,8 @@ class _DeckCard extends StatelessWidget {
                 if (endsSession) study.endSession();
                 Navigator.pop(ctx);
               },
-              child: const Text(
-                'Delete',
+              child: Text(
+                l10n.delete,
                 style: TextStyle(
                   color: Colors.redAccent,
                   fontWeight: FontWeight.bold,
@@ -455,8 +450,8 @@ class _DeckCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
-          title: const Text(
-            'Deck Settings',
+          title: Text(
+            l10n.deckSettings,
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           content: Column(
@@ -464,18 +459,15 @@ class _DeckCard extends StatelessWidget {
             children: [
               _NameField(controller: nameCtrl),
               const SizedBox(height: 16),
-              _LimitField(controller: newCtrl, label: 'Daily New Cards Limit'),
+              _LimitField(controller: newCtrl, label: l10n.dailyNewLimit),
               const SizedBox(height: 16),
-              _LimitField(controller: revCtrl, label: 'Daily Reviews Limit'),
+              _LimitField(controller: revCtrl, label: l10n.dailyReviewLimit),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white54),
-              ),
+              child: Text(l10n.cancel, style: TextStyle(color: Colors.white54)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -494,7 +486,7 @@ class _DeckCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Save'),
+              child: Text(l10n.save),
             ),
           ],
         ),
@@ -516,7 +508,7 @@ class _NameField extends StatelessWidget {
       style: const TextStyle(color: Colors.white),
       cursorColor: Colors.white,
       decoration: InputDecoration(
-        labelText: 'Deck Name',
+        labelText: l10n.deckName,
         labelStyle: const TextStyle(color: Colors.white54),
         filled: true,
         fillColor: Colors.white.withValues(alpha: 0.05),

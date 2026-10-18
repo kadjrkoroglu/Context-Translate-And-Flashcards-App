@@ -8,6 +8,7 @@ import 'package:translate_app/data/constants/ml_languages.dart';
 import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/data/services/settings_service.dart';
 import 'package:google_mlkit_language_id/google_mlkit_language_id.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class MLTranslateViewModel extends ChangeNotifier {
   final DictionaryService _dictionaryService = DictionaryService();
@@ -222,7 +223,7 @@ class MLTranslateViewModel extends ChangeNotifier {
         // Mobile data too: the plugin waits for Wi-Fi by default.
         await modelManager.downloadModel(bcpCode, isWifiRequired: false);
       } catch (e) {
-        _setError('Failed to download model for $languageName');
+        _setError(l10n.failedDownloadModel(languageLabel(languageName)));
       } finally {
         _isDownloading = false;
         _downloadingLanguage = null;
@@ -278,7 +279,7 @@ class MLTranslateViewModel extends ChangeNotifier {
         );
         outputController.text = response ?? '';
       } catch (e) {
-        _setError('Failed to initialize translator');
+        _setError(l10n.failedInitTranslator);
         outputController.text = '';
         return;
       }
@@ -300,7 +301,7 @@ class MLTranslateViewModel extends ChangeNotifier {
         }
       }
     } catch (e) {
-      _setError('Translation failed');
+      _setError(l10n.translationFailed);
     } finally {
       _setLoading(false);
     }

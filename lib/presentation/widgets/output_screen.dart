@@ -12,15 +12,16 @@ import 'package:translate_app/presentation/widgets/deck_selector_sheet.dart';
 import 'package:translate_app/presentation/widgets/speech_toggle_button.dart';
 import 'package:translate_app/presentation/utils/font_size_helper.dart';
 import 'package:translate_app/presentation/utils/haptics.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class OutputTranslationField extends StatelessWidget {
   final TextEditingController controller;
-  final String hintText;
+  final String? hintText;
 
   const OutputTranslationField({
     super.key,
     required this.controller,
-    this.hintText = 'Translation',
+    this.hintText,
   });
 
   @override
@@ -46,7 +47,7 @@ class OutputTranslationField extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
           decoration: InputDecoration(
-            hintText: hintText,
+            hintText: hintText ?? l10n.translationHint,
             hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
             contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
             border: InputBorder.none,
@@ -138,7 +139,7 @@ class _TranslateAgainButton extends StatelessWidget {
                 children: [
                   Opacity(
                     opacity: loading ? 0 : 1,
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
@@ -148,7 +149,7 @@ class _TranslateAgainButton extends StatelessWidget {
                         ),
                         SizedBox(width: 6),
                         Text(
-                          'Translate',
+                          l10n.translate,
                           style: TextStyle(color: Colors.white, fontSize: 13),
                         ),
                       ],
@@ -184,7 +185,11 @@ class _ToneDropdown extends StatefulWidget {
 class _ToneDropdownState extends State<_ToneDropdown> {
   OverlayEntry? _menuEntry;
 
-  static const List<String> _tones = ['Standard', 'Formal', 'Slang'];
+  static List<String> get _tones => [
+    l10n.toneStandard,
+    l10n.toneFormal,
+    l10n.toneSlang,
+  ];
 
   @override
   void dispose() {
@@ -350,7 +355,7 @@ class _ToneDropdownState extends State<_ToneDropdown> {
         final int index = viewModel.selectedToneIndex;
         final String label = (index >= 0 && index < _tones.length)
             ? _tones[index]
-            : 'Tone';
+            : l10n.toneLabel;
 
         return InkWell(
           onTap: () => _openMenu(index, viewModel),

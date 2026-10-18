@@ -4,43 +4,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:translate_app/core/app_links.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
-const _faq = [
-  (
-    'How many translations can I make?',
-    'Free: 10 AI translations a day. Standard and Premium: unlimited. Basic '
-        'translation runs on your phone and is always free.',
-  ),
-  (
-    'Do my photos leave my phone?',
-    'No. The text is read on your phone and only that text is sent to be '
-        'translated.',
-  ),
-  (
-    'What is Live translation?',
-    'Premium translates speech as it is spoken, with captions: 60 minutes a '
-        'month (5 minutes in the free trial). The minutes renew every month.',
-  ),
-  (
-    'How does Study with AI work?',
-    'Premium: an AI tutor quizzes you on 10 words from a deck. A word counts '
-        'once you answer it correctly. After a session there is a 3-hour '
-        'break.',
-  ),
-  (
-    'How do I sync my decks between devices?',
-    'Sign in on the Profile page, then tap Sync Now.',
-  ),
-  (
-    'Can I translate without internet?',
-    'Yes, on the Basic page. Each language downloads once (about 30 MB) and '
-        'then works offline.',
-  ),
-  (
-    'How do I cancel my subscription?',
-    'On your iPhone: Settings > your name > Subscriptions. Deleting the app '
-        'or your account does not cancel it.',
-  ),
+List<(String, String)> get _faq => [
+  (l10n.faqQ1, l10n.faqA1),
+  (l10n.faqQ2, l10n.faqA2),
+  (l10n.faqQ3, l10n.faqA3),
+  (l10n.faqQ4, l10n.faqA4),
+  (l10n.faqQ5, l10n.faqA5),
+  (l10n.faqQ6, l10n.faqA6),
+  (l10n.faqQ7, l10n.faqA7),
 ];
 
 class HelpPage extends StatelessWidget {
@@ -56,8 +29,8 @@ class HelpPage extends StatelessWidget {
           elevation: 0,
           centerTitle: true,
           foregroundColor: Colors.white,
-          title: const Text(
-            'Help & FAQ',
+          title: Text(
+            l10n.helpFaq,
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           flexibleSpace: ClipRect(
@@ -83,7 +56,7 @@ class HelpPage extends StatelessWidget {
               _FaqItem(question: question, answer: answer),
             const SizedBox(height: 24),
             Text(
-              'Still need help?',
+              l10n.stillNeedHelp,
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
             ),
@@ -96,7 +69,7 @@ class HelpPage extends StatelessWidget {
                       '${FirebaseAuth.instance.currentUser?.uid ?? '-'}',
                 ),
                 icon: const Icon(Icons.mail_outline_rounded),
-                label: const Text('Contact us'),
+                label: Text(l10n.contactUs),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
                   side: BorderSide(color: Colors.white.withValues(alpha: 0.25)),

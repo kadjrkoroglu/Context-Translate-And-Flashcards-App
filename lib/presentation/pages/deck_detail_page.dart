@@ -7,6 +7,7 @@ import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/add_card_dialog.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
 import 'dart:ui';
+import 'package:translate_app/l10n/l10n.dart';
 
 class DeckDetailPage extends StatefulWidget {
   final DeckEntity deck;
@@ -50,28 +51,25 @@ class _DeckDetailPageState extends State<DeckDetailPage> {
             side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
           ),
           title: Text(
-            'Delete $count Cards?',
+            l10n.deleteCardsTitle(count),
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),
           ),
-          content: const Text(
-            'This action cannot be undone.',
+          content: Text(
+            l10n.cannotUndo,
             style: TextStyle(color: Colors.white70),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white60),
-              ),
+              child: Text(l10n.cancel, style: TextStyle(color: Colors.white60)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: const Text(
-                'Delete',
+              child: Text(
+                l10n.delete,
                 style: TextStyle(
                   color: Colors.redAccent,
                   fontWeight: FontWeight.bold,
@@ -131,7 +129,7 @@ class _DeckDetailPageState extends State<DeckDetailPage> {
                         : const BackButton(),
                     title: Text(
                       _isSelectionMode
-                          ? '${_selectedCardIds.length} Selected'
+                          ? l10n.selectedCount(_selectedCardIds.length)
                           : currentDeck.name,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
@@ -166,7 +164,11 @@ class _DeckDetailPageState extends State<DeckDetailPage> {
                           padding: const EdgeInsets.only(right: 20.0),
                           child: Center(
                             child: Text(
-                              '${currentDeck.cards.where((c) => !c.isDeleted).length} cards',
+                              l10n.cardCount(
+                                currentDeck.cards
+                                    .where((c) => !c.isDeleted)
+                                    .length,
+                              ),
                               style: TextStyle(
                                 color: ip.withValues(alpha: 0.5),
                                 fontSize: 13,
@@ -344,7 +346,7 @@ class _DeckDetailPageState extends State<DeckDetailPage> {
           Icon(Icons.style_rounded, size: 64, color: ip.withValues(alpha: 0.1)),
           const SizedBox(height: 16),
           Text(
-            'No cards yet',
+            l10n.noCardsYet,
             style: TextStyle(color: ip.withValues(alpha: 0.4)),
           ),
         ],

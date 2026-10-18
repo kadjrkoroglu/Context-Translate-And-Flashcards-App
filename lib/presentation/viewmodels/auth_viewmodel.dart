@@ -5,6 +5,7 @@ import 'package:translate_app/domain/usecases/auth_usecase.dart';
 
 import '../../data/services/sync_service.dart';
 import 'entitlements_viewmodel.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class AuthViewModel extends ChangeNotifier {
   final AuthUsecase _authUsecase;
@@ -84,16 +85,16 @@ class AuthViewModel extends ChangeNotifier {
     if (e is AuthException) {
       switch (e.code) {
         case 'email-already-in-use':
-          return 'Email is already registered.';
+          return l10n.authEmailInUse;
         case 'invalid-email':
-          return 'Please enter a valid email address.';
+          return l10n.authInvalidEmail;
         case 'weak-password':
-          return 'Password too weak (min 6 chars).';
+          return l10n.authWeakPassword;
         case 'user-not-found':
         case 'wrong-password':
-          return 'Invalid email or password.';
+          return l10n.authInvalidCredentials;
         case 'network-request-failed':
-          return 'Network error. Check your connection.';
+          return l10n.authNetwork;
         default:
           return e.message;
       }
@@ -102,7 +103,7 @@ class AuthViewModel extends ChangeNotifier {
     if (raw.contains('pigeon') ||
         raw.contains('Fire') ||
         raw.contains('fail')) {
-      return 'Invalid input. Please check your details.';
+      return l10n.authInvalidInput;
     }
     if (raw.contains('FirebaseException') || raw.contains(']')) {
       return raw.split(']').last.trim();
@@ -143,11 +144,11 @@ class AuthViewModel extends ChangeNotifier {
     String confirmPassword,
   ) async {
     if (email.isEmpty || !email.contains('@') || !email.contains('.')) {
-      _setError('Please enter a valid email address.');
+      _setError(l10n.authInvalidEmail);
       return false;
     }
     if (password != confirmPassword) {
-      _setError('Passwords do not match.');
+      _setError(l10n.authPasswordsMismatch);
       return false;
     }
 
@@ -222,9 +223,7 @@ class AuthViewModel extends ChangeNotifier {
       // Closing the Apple confirmation just stops the deletion.
       if (e is AuthException && (e.code ?? '').contains('cancel')) return false;
       _setError(
-        e is NetworkException
-            ? 'No internet connection.'
-            : 'Could not delete the account. Please try again.',
+        e is NetworkException ? l10n.noInternet : l10n.deleteAccountFailed,
       );
       return false;
     }

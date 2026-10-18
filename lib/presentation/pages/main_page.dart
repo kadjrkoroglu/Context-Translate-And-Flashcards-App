@@ -27,6 +27,7 @@ import 'package:translate_app/presentation/utils/haptics.dart';
 import 'package:translate_app/theme/theme.dart';
 import 'dart:ui';
 import 'dart:math' as math;
+import 'package:translate_app/l10n/l10n.dart';
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
@@ -66,7 +67,7 @@ class MainPage extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Center(
                     child: Text(
-                      'Context Translate & Flashcards',
+                      'Decklingo',
                       style: TextStyle(
                         color: inversePrimary,
                         fontSize: 18,
@@ -80,7 +81,7 @@ class MainPage extends StatelessWidget {
                 GlassPageSelector(
                   controller: viewModel.pageController,
                   page: () => viewModel.page,
-                  labels: const ['Live', 'AI', 'Basic'],
+                  labels: [l10n.tabLive, l10n.tabAi, l10n.tabBasic],
                   onSelected: viewModel.animateToPage,
                 ),
                 const SizedBox(height: 12),
@@ -625,17 +626,15 @@ class MainPage extends StatelessWidget {
     if (entitlements != null && !entitlements.entitlements.photo) {
       showUpgradeRequiredDialog(
         context,
-        title: 'Photo Translation',
-        message:
-            'Translating text in photos is available on the Standard and '
-            'Premium plans.',
+        title: l10n.photoTranslationTitle,
+        message: l10n.photoTranslationUpsell,
       );
       return;
     }
     if (gVM.targetLanguage == '-') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Choose a target language first.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.chooseTargetFirst)));
       return;
     }
     if (!await ensureAiConsent(context) || !context.mounted) return;
@@ -677,13 +676,13 @@ class MainPage extends StatelessWidget {
                       strokeWidth: 2,
                     ),
                   )
-                : const Row(
+                : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.auto_awesome_rounded, size: 20),
                       SizedBox(width: 8),
                       Text(
-                        'Translate',
+                        l10n.translate,
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,

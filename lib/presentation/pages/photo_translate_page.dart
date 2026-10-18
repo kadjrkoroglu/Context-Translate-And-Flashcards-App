@@ -21,6 +21,7 @@ import 'package:translate_app/presentation/widgets/dropdown.dart';
 import 'package:translate_app/presentation/widgets/restart_required_dialog.dart';
 import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
 import 'package:translate_app/theme/theme.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 /// Camera/gallery photo → text read on the device → only the text is translated
 /// → translations drawn over their lines, plus a word list for decks.
@@ -197,9 +198,9 @@ class _PhotoTranslatePageState extends State<PhotoTranslatePage>
       _vm.processCapture(photo.path, _sourceLanguage, _targetLanguage);
     } on CameraException {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not take the photo. Try again.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.couldNotTakePhoto)));
       }
     } finally {
       if (mounted) setState(() => _capturing = false);
@@ -222,9 +223,9 @@ class _PhotoTranslatePageState extends State<PhotoTranslatePage>
       _vm.processCapture(photo.path, _sourceLanguage, _targetLanguage);
     } on PlatformException {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open your photos.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.couldNotOpenPhotos)));
       }
     } finally {
       if (mounted) setState(() => _picking = false);
@@ -313,10 +314,8 @@ class _PhotoTranslatePageState extends State<PhotoTranslatePage>
       if (exception is FeatureNotAvailableException) {
         showUpgradeRequiredDialog(
           context,
-          title: 'Photo Translation',
-          message:
-              'Translating text in photos is available on the Standard and '
-              'Premium plans.',
+          title: l10n.photoTranslationTitle,
+          message: l10n.photoTranslationUpsell,
         );
       } else {
         showRestartRequiredDialog(context);
@@ -330,7 +329,7 @@ class _PhotoTranslatePageState extends State<PhotoTranslatePage>
         vm.status == PhotoTranslateStatus.done && vm.blocks.isNotEmpty;
     if (!hasResult) {
       return _GlassCircleButton(
-        tooltip: 'Tips',
+        tooltip: l10n.tips,
         icon: Icons.question_mark_rounded,
         onPressed: _showTips,
         size: 40,
@@ -339,7 +338,7 @@ class _PhotoTranslatePageState extends State<PhotoTranslatePage>
     }
     return Builder(
       builder: (buttonContext) => _GlassCircleButton(
-        tooltip: 'More',
+        tooltip: l10n.more,
         icon: Icons.more_horiz_rounded,
         onPressed: () => _showMoreMenu(buttonContext, vm),
         size: 40,
@@ -388,9 +387,9 @@ class _PhotoTranslatePageState extends State<PhotoTranslatePage>
         side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
       ),
       items: [
-        item('translation', Icons.copy_rounded, 'Copy translation'),
-        item('original', Icons.notes_rounded, 'Copy original text'),
-        item('tips', Icons.question_mark_rounded, 'Tips'),
+        item('translation', Icons.copy_rounded, l10n.copyTranslation),
+        item('original', Icons.notes_rounded, l10n.copyOriginal),
+        item('tips', Icons.question_mark_rounded, l10n.tips),
       ],
     );
     if (!mounted || choice == null) return;
@@ -404,8 +403,8 @@ class _PhotoTranslatePageState extends State<PhotoTranslatePage>
       SnackBar(
         content: Text(
           choice == 'translation'
-              ? 'Translation copied'
-              : 'Original text copied',
+              ? l10n.translationCopied
+              : l10n.originalCopied,
         ),
         duration: const Duration(seconds: 2),
       ),
@@ -413,19 +412,13 @@ class _PhotoTranslatePageState extends State<PhotoTranslatePage>
   }
 
   void _showTips() {
-    const tips = [
-      (Icons.crop_free_rounded, 'Hold the phone flat over the text.'),
-      (Icons.wb_sunny_outlined, 'Good light helps; use the flash in the dark.'),
-      (Icons.center_focus_strong_rounded, 'Tap the screen to focus.'),
-      (Icons.pinch_rounded, 'Pinch to zoom in on small text.'),
-      (
-        Icons.touch_app_rounded,
-        'Press and hold a translation to select and copy it.',
-      ),
-      (
-        Icons.library_add_rounded,
-        'Swipe up the word list to add words to a deck.',
-      ),
+    final tips = [
+      (Icons.crop_free_rounded, l10n.tip1),
+      (Icons.wb_sunny_outlined, l10n.tip2),
+      (Icons.center_focus_strong_rounded, l10n.tip3),
+      (Icons.pinch_rounded, l10n.tip4),
+      (Icons.touch_app_rounded, l10n.tip5),
+      (Icons.library_add_rounded, l10n.tip6),
     ];
     showModalBottomSheet(
       context: context,
@@ -455,8 +448,8 @@ class _PhotoTranslatePageState extends State<PhotoTranslatePage>
                       ),
                     ),
                   ),
-                  const Text(
-                    'Tips for better results',
+                  Text(
+                    l10n.tipsTitle,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -670,7 +663,7 @@ class _TopBar extends StatelessWidget {
                 left: 0,
                 top: 0,
                 child: _GlassCircleButton(
-                  tooltip: 'Back',
+                  tooltip: l10n.back,
                   icon: Icons.arrow_back_ios_new_rounded,
                   onPressed: onBack,
                   size: _height,
@@ -700,7 +693,7 @@ class _TopBar extends StatelessWidget {
                         SizedBox(
                           width: _swapWidth,
                           child: IconButton(
-                            tooltip: 'Swap languages',
+                            tooltip: l10n.swapLanguages,
                             onPressed: sourceLanguage == autoDetect
                                 ? null
                                 : onSwap,
@@ -818,21 +811,17 @@ class _Viewfinder extends StatelessWidget {
   Widget build(BuildContext context) {
     final camera = this.camera;
     if (state == _CameraState.denied) {
-      return const _CameraMessage(
+      return _CameraMessage(
         icon: Icons.no_photography_rounded,
-        title: 'Camera access is off',
-        message:
-            'Allow camera access for Translate App in Settings > Privacy > '
-            'Camera, or pick a photo from your gallery.',
+        title: l10n.cameraOffTitle,
+        message: l10n.cameraOffBody,
       );
     }
     if (state == _CameraState.unavailable) {
-      return const _CameraMessage(
+      return _CameraMessage(
         icon: Icons.no_photography_rounded,
-        title: 'Camera unavailable',
-        message:
-            'The camera could not be started on this device. You can still '
-            'pick a photo from your gallery.',
+        title: l10n.cameraUnavailableTitle,
+        message: l10n.cameraUnavailableBody,
       );
     }
     if (camera == null || state == _CameraState.starting) {
@@ -968,14 +957,14 @@ class _AlignmentHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _GlassPanel(
+    return _GlassPanel(
       child: Row(
         children: [
           Icon(Icons.crop_free_rounded, color: Colors.white70, size: 20),
           SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Hold the phone straight and parallel to the text for the best fit.',
+              l10n.holdStraight,
               style: TextStyle(color: Colors.white, fontSize: 13),
             ),
           ),
@@ -1012,7 +1001,7 @@ class _CameraControls extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _GlassCircleButton(
-          tooltip: flashMode == FlashMode.off ? 'Flash off' : 'Flash auto',
+          tooltip: flashMode == FlashMode.off ? l10n.flashOff : l10n.flashAuto,
           icon: flashMode == FlashMode.off
               ? Icons.flash_off_rounded
               : Icons.flash_auto_rounded,
@@ -1064,7 +1053,7 @@ class _CameraControls extends StatelessWidget {
         ),
         const SizedBox(width: 36),
         _GlassCircleButton(
-          tooltip: 'Choose from gallery',
+          tooltip: l10n.chooseFromGallery,
           icon: Icons.photo_library_rounded,
           onPressed: galleryEnabled ? onPickFromGallery : null,
         ),
@@ -1404,9 +1393,10 @@ class _WordsDrawer extends StatelessWidget {
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                '$lineCount '
-                                '${lineCount == 1 ? 'line' : 'lines'} '
-                                'translated to $targetLanguage',
+                                l10n.linesTranslatedTo(
+                                  lineCount,
+                                  languageLabel(targetLanguage),
+                                ),
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 13,
@@ -1415,20 +1405,20 @@ class _WordsDrawer extends StatelessWidget {
                             ),
                             _StatusIconButton(
                               tooltip: vm.showOriginal
-                                  ? 'Show translation'
-                                  : 'Show original',
+                                  ? l10n.showTranslation
+                                  : l10n.showOriginal,
                               icon: vm.showOriginal
                                   ? Icons.translate_rounded
                                   : Icons.visibility_rounded,
                               onPressed: vm.toggleOriginal,
                             ),
                             _StatusIconButton(
-                              tooltip: 'Retake',
+                              tooltip: l10n.retake,
                               icon: Icons.photo_camera_rounded,
                               onPressed: onRetake,
                             ),
                             _StatusIconButton(
-                              tooltip: 'Close',
+                              tooltip: l10n.close,
                               icon: Icons.close_rounded,
                               onPressed: () => Navigator.of(
                                 context,
@@ -1441,8 +1431,8 @@ class _WordsDrawer extends StatelessWidget {
                         padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
                         child: Row(
                           children: [
-                            const Text(
-                              'Words',
+                            Text(
+                              l10n.words,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -1469,11 +1459,11 @@ class _WordsDrawer extends StatelessWidget {
                   ),
                 ),
                 if (words.isEmpty)
-                  const SliverToBoxAdapter(
+                  SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(20, 4, 20, 24),
                       child: Text(
-                        'No words to add were found in this photo.',
+                        l10n.noWordsFound,
                         style: TextStyle(color: Colors.white70, fontSize: 13),
                       ),
                     ),
@@ -1541,7 +1531,7 @@ class _WordRow extends StatelessWidget {
             ),
           ),
           IconButton(
-            tooltip: 'Add to deck',
+            tooltip: l10n.addToDeck,
             onPressed: () =>
                 DeckSelectorSheet.show(context, word.word, word.translation),
             icon: Icon(
@@ -1578,33 +1568,29 @@ class _StatusBar extends StatelessWidget {
       Widget? action,
     ) = switch (vm.status) {
       PhotoTranslateStatus.camera => (null, '', null),
-      PhotoTranslateStatus.reading => (null, 'Reading text…', null),
+      PhotoTranslateStatus.reading => (null, l10n.readingText, null),
       PhotoTranslateStatus.translating => (
         null,
-        'Translating ${vm.blocks.length} '
-            '${vm.blocks.length == 1 ? 'line' : 'lines'}…',
+        l10n.translatingLines(vm.blocks.length),
         null,
       ),
       PhotoTranslateStatus.done => (
         Icons.check_circle_rounded,
-        '${vm.blocks.length} '
-            '${vm.blocks.length == 1 ? 'line' : 'lines'} translated to '
-            '$targetLanguage',
+        l10n.linesTranslatedTo(vm.blocks.length, languageLabel(targetLanguage)),
         null,
       ),
       PhotoTranslateStatus.noText => (
         Icons.search_off_rounded,
-        'No text found. Try a closer, sharper photo, or check the source '
-            'language.',
-        _ActionButton(label: 'Retake', onPressed: onRetake),
+        l10n.noTextFound,
+        _ActionButton(label: l10n.retake, onPressed: onRetake),
       ),
       PhotoTranslateStatus.error => (
         Icons.error_outline_rounded,
         _errorMessage(vm, exception),
         !vm.hasPhoto
-            ? _ActionButton(label: 'Retake', onPressed: onRetake)
+            ? _ActionButton(label: l10n.retake, onPressed: onRetake)
             : _canRetry(exception)
-            ? _ActionButton(label: 'Retry', onPressed: onRetry)
+            ? _ActionButton(label: l10n.retry, onPressed: onRetry)
             : null,
       ),
     };
@@ -1633,16 +1619,18 @@ class _StatusBar extends StatelessWidget {
           action ?? const SizedBox.shrink(),
           if (done)
             _StatusIconButton(
-              tooltip: vm.showOriginal ? 'Show translation' : 'Show original',
+              tooltip: vm.showOriginal
+                  ? l10n.showTranslation
+                  : l10n.showOriginal,
               icon: vm.showOriginal
                   ? Icons.translate_rounded
                   : Icons.visibility_rounded,
               onPressed: vm.toggleOriginal,
             ),
           if (!vm.isBusy &&
-              (action is! _ActionButton || action.label != 'Retake'))
+              (action is! _ActionButton || action.label != l10n.retake))
             _StatusIconButton(
-              tooltip: 'Retake',
+              tooltip: l10n.retake,
               icon: Icons.photo_camera_rounded,
               onPressed: onRetake,
             ),
@@ -1657,20 +1645,22 @@ class _StatusBar extends StatelessWidget {
       e is! UnsupportedLanguageException;
 
   static String _errorMessage(PhotoTranslateViewModel vm, AppException? e) {
-    if (!vm.hasPhoto) return 'Could not open the photo. Please retake it.';
+    if (!vm.hasPhoto) return l10n.couldNotOpenPhoto;
     if (e is UnsupportedLanguageException) {
-      return "Text in ${e.language ?? 'this language'} can't be read from "
-          'photos yet. Choose another source language.';
+      final language = e.language;
+      return language == null
+          ? l10n.unsupportedPhotoLanguageUnknown
+          : l10n.unsupportedPhotoLanguage(languageLabel(language));
     }
     // No lines: reading failed, not the translation.
-    if (vm.blocks.isEmpty) return 'Could not read the text. Please try again.';
+    if (vm.blocks.isEmpty) return l10n.couldNotReadText;
     if (e is QuotaExceededException) {
-      return 'Too many photo translations. Wait a few seconds and retry.';
+      return l10n.tooManyPhotos;
     }
     if (e is FeatureNotAvailableException) {
-      return 'Photo translation is available on the Standard plan.';
+      return l10n.photoNeedsStandard;
     }
-    if (e is AuthException) return 'Restart the app or sign in to continue.';
+    if (e is AuthException) return l10n.restartOrSignIn;
     return aiErrorText(e).message;
   }
 }

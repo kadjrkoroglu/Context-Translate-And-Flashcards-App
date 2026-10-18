@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:translate_app/domain/entities/favorite_word_entity.dart';
 import 'package:translate_app/domain/usecases/favorite_usecase.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class FavoriteViewModel extends ChangeNotifier {
   final FavoriteUsecase _usecase;
@@ -36,7 +37,7 @@ class FavoriteViewModel extends ChangeNotifier {
     try {
       _favorites = await _usecase.executeGetAllFavorites();
     } catch (e) {
-      _setError('Failed to load favorites');
+      _setError(l10n.failedLoadFavorites);
     } finally {
       _setLoading(false);
     }
@@ -71,7 +72,7 @@ class FavoriteViewModel extends ChangeNotifier {
       await _usecase.executeAddFavorite(newFavorite);
       await loadFavorites();
     } catch (e) {
-      _setError('Failed to save favorite');
+      _setError(l10n.failedSaveFavorite);
     }
   }
 
@@ -81,7 +82,7 @@ class FavoriteViewModel extends ChangeNotifier {
       await _usecase.executeDeleteFavorite(id);
       await loadFavorites();
     } catch (e) {
-      _setError('Failed to delete favorite');
+      _setError(l10n.failedDeleteFavorite);
     }
   }
 

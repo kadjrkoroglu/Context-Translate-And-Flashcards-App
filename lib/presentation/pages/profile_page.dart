@@ -18,6 +18,7 @@ import 'package:translate_app/presentation/pages/help_page.dart';
 import 'package:translate_app/presentation/pages/upgrade_page.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
 import 'package:translate_app/theme/theme.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -55,8 +56,8 @@ class _ProfilePageState extends State<ProfilePage> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           centerTitle: true,
-          title: const Text(
-            'Profile',
+          title: Text(
+            l10n.profileTitle,
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           foregroundColor: textColor,
@@ -65,7 +66,7 @@ class _ProfilePageState extends State<ProfilePage> {
               IconButton(
                 onPressed: () => _showLogoutDialog(context, authViewModel),
                 icon: const Icon(Icons.logout_rounded, color: Colors.redAccent),
-                tooltip: 'Sign Out',
+                tooltip: l10n.signOut,
               ),
           ],
           flexibleSpace: ClipRect(
@@ -96,9 +97,9 @@ class _ProfilePageState extends State<ProfilePage> {
               Text(
                 isAuthenticated
                     ? ((user?.displayName ?? '').trim().isEmpty
-                          ? 'User'
+                          ? l10n.userFallback
                           : user!.displayName!)
-                    : 'Guest',
+                    : l10n.guest,
                 style: const TextStyle(
                   color: textColor,
                   fontSize: 22,
@@ -113,7 +114,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 )
               else
                 Text(
-                  'Sign in to sync your progress',
+                  l10n.signInToSyncProgress,
                   style: TextStyle(
                     color: subTextColor.withValues(alpha: 0.5),
                     fontSize: 13,
@@ -138,7 +139,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 rows: [
                   _SettingsRow(
                     icon: Icons.help_outline_rounded,
-                    title: 'Help & FAQ',
+                    title: l10n.helpFaq,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const HelpPage()),
@@ -146,24 +147,24 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   _SettingsRow(
                     icon: Icons.mail_outline_rounded,
-                    title: 'Contact us',
+                    title: l10n.contactUs,
                     onTap: () => AppLinks.emailSupport(
                       body: '\n\n---\nUser: ${user?.uid ?? '-'}',
                     ),
                   ),
                   _SettingsRow(
                     icon: Icons.privacy_tip_outlined,
-                    title: 'Privacy Policy',
+                    title: l10n.privacyPolicy,
                     onTap: () => AppLinks.open(AppLinks.privacyPolicy),
                   ),
                   _SettingsRow(
                     icon: Icons.description_outlined,
-                    title: 'Terms of Use',
+                    title: l10n.termsOfUse,
                     onTap: () => AppLinks.open(AppLinks.termsOfUse),
                   ),
                   _SettingsRow(
                     icon: Icons.restore_rounded,
-                    title: 'Restore purchases',
+                    title: l10n.restorePurchases,
                     onTap: () => showSubscriptionsComingSoon(context),
                   ),
                 ],
@@ -174,7 +175,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   rows: [
                     _SettingsRow(
                       icon: Icons.delete_outline_rounded,
-                      title: 'Delete account',
+                      title: l10n.deleteAccount,
                       color: Colors.redAccent,
                       onTap: () =>
                           _confirmDeleteAccount(context, authViewModel),
@@ -203,29 +204,23 @@ class _ProfilePageState extends State<ProfilePage> {
             borderRadius: BorderRadius.circular(28),
             side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
           ),
-          title: const Text(
-            'Delete account?',
+          title: Text(
+            l10n.deleteAccountTitle,
             style: TextStyle(color: Colors.white),
           ),
-          content: const Text(
-            'Your account, decks, cards, favorites and history are deleted '
-            'on all devices. This cannot be undone.\n\n'
-            'An App Store subscription is not cancelled by this; manage it '
-            'in Settings > your name > Subscriptions.',
+          content: Text(
+            l10n.deleteAccountBody,
             style: TextStyle(color: Colors.white70, height: 1.4),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white60),
-              ),
+              child: Text(l10n.cancel, style: TextStyle(color: Colors.white60)),
             ),
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text(
-                'Delete',
+              child: Text(
+                l10n.delete,
                 style: TextStyle(
                   color: Colors.redAccent,
                   fontWeight: FontWeight.bold,
@@ -262,9 +257,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (!context.mounted) return;
     Navigator.of(context, rootNavigator: true).pop();
     if (deleted) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Your account has been deleted.')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(l10n.accountDeleted)));
     } else if (vm.error != null) {
       messenger.showSnackBar(SnackBar(content: Text(vm.error!)));
     }
@@ -281,18 +274,15 @@ class _ProfilePageState extends State<ProfilePage> {
             borderRadius: BorderRadius.circular(28),
             side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
           ),
-          title: const Text('Sign Out', style: TextStyle(color: Colors.white)),
-          content: const Text(
-            'Are you sure you want to sign out?',
+          title: Text(l10n.signOut, style: TextStyle(color: Colors.white)),
+          content: Text(
+            l10n.signOutConfirm,
             style: TextStyle(color: Colors.white70),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white60),
-              ),
+              child: Text(l10n.cancel, style: TextStyle(color: Colors.white60)),
             ),
             TextButton(
               onPressed: () async {
@@ -305,8 +295,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 await vm.signOut();
                 if (context.mounted) showRestartRequiredDialog(context);
               },
-              child: const Text(
-                'Sign Out',
+              child: Text(
+                l10n.signOut,
                 style: TextStyle(
                   color: Colors.redAccent,
                   fontWeight: FontWeight.bold,
@@ -387,19 +377,19 @@ class _ProfilePageState extends State<ProfilePage> {
         height: 18,
         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
       );
-      buttonText = 'Syncing...';
+      buttonText = l10n.syncing;
       buttonBgColor = Colors.white24;
       buttonFgColor = Colors.white70;
     } else if (isSyncedState) {
       buttonOnPressed = null; // Disabled when synced
       buttonIcon = const Icon(Icons.check_rounded, size: 20);
-      buttonText = 'Synced';
+      buttonText = l10n.synced;
       buttonBgColor = Colors.white.withValues(alpha: 0.15);
       buttonFgColor = Colors.white70;
     } else {
       buttonOnPressed = () => _handleSync(context, syncService);
       buttonIcon = const Icon(Icons.sync_rounded, size: 20);
-      buttonText = 'Sync Now';
+      buttonText = l10n.syncNow;
       buttonBgColor = Colors.white;
       buttonFgColor = Colors.black87;
     }
@@ -434,7 +424,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Cloud Sync',
+                          l10n.cloudSync,
                           style: TextStyle(
                             color: textColor,
                             fontWeight: FontWeight.bold,
@@ -443,7 +433,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Sync your data across devices',
+                          l10n.syncAcrossDevices,
                           style: TextStyle(fontSize: 11, color: subTextColor),
                         ),
                       ],
@@ -477,7 +467,7 @@ class _ProfilePageState extends State<ProfilePage> {
               if (syncService.syncError != null) ...[
                 const SizedBox(height: 10),
                 Text(
-                  'Sync failed. Please try again.',
+                  l10n.syncFailedRetry,
                   style: TextStyle(
                     color: Colors.redAccent.withValues(alpha: 0.8),
                     fontSize: 11,
@@ -537,13 +527,13 @@ class _ProfilePageState extends State<ProfilePage> {
     if (syncService.syncError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Row(
+          content: Row(
             children: [
               Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
               SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Sync failed. Please check your connection and try again.',
+                  l10n.syncFailedConnection,
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
@@ -581,7 +571,7 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             children: [
               Text(
-                'Synchronize',
+                l10n.synchronize,
                 style: TextStyle(
                   color: textColor,
                   fontWeight: FontWeight.bold,
@@ -590,7 +580,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Sign in to sync your decks, favorites and history across all your devices.',
+                l10n.syncSignInBody,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: subTextColor, fontSize: 13),
               ),
@@ -615,8 +605,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
-                    'Sign In',
+                  child: Text(
+                    l10n.signIn,
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),

@@ -7,6 +7,7 @@ import 'package:translate_app/presentation/widgets/app_background.dart';
 import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
+import 'package:translate_app/l10n/l10n.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -41,8 +42,8 @@ class _HistoryPageState extends State<HistoryPage> {
                   backgroundColor: Colors.transparent,
                   elevation: 0,
                   centerTitle: true,
-                  title: const Text(
-                    'History',
+                  title: Text(
+                    l10n.historyTitle,
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   foregroundColor: ip,
@@ -67,7 +68,7 @@ class _HistoryPageState extends State<HistoryPage> {
                       IconButton(
                         icon: const Icon(Icons.delete_sweep_rounded, size: 28),
                         onPressed: () => _showClearDialog(context, viewModel),
-                        tooltip: 'Clear All',
+                        tooltip: l10n.clearAll,
                       ),
                     const SizedBox(width: 8),
                   ],
@@ -99,8 +100,8 @@ class _HistoryPageState extends State<HistoryPage> {
                             color: ip.withValues(alpha: 0.2),
                           ),
                           const SizedBox(height: 16),
-                          const Text(
-                            'No history yet',
+                          Text(
+                            l10n.noHistoryYet,
                             style: TextStyle(
                               color: Colors.white54,
                               fontSize: 16,
@@ -215,29 +216,26 @@ class _HistoryPageState extends State<HistoryPage> {
             borderRadius: BorderRadius.circular(28),
             side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
           ),
-          title: const Text(
-            'Clear History',
+          title: Text(
+            l10n.clearHistoryTitle,
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
-          content: const Text(
-            'Are you sure you want to delete all history?',
+          content: Text(
+            l10n.clearHistoryConfirm,
             style: TextStyle(color: Colors.white70),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Cancel',
-                style: TextStyle(color: Colors.white60),
-              ),
+              child: Text(l10n.cancel, style: TextStyle(color: Colors.white60)),
             ),
             TextButton(
               onPressed: () {
                 viewModel.clearAll();
                 Navigator.pop(context);
               },
-              child: const Text(
-                'Clear All',
+              child: Text(
+                l10n.clearAll,
                 style: TextStyle(
                   color: Colors.redAccent,
                   fontWeight: FontWeight.bold,
