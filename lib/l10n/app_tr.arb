@@ -322,7 +322,6 @@
   "authInvalidCredentials": "E-posta veya şifre hatalı.",
   "authNetwork": "Ağ hatası. Bağlantını kontrol et.",
   "authInvalidInput": "Geçersiz bilgi. Lütfen bilgilerini kontrol et.",
-  "authPasswordsMismatch": "Şifreler eşleşmiyor.",
   "deleteAccountFailed": "Hesap silinemedi. Lütfen tekrar dene.",
   "failedLoadDecks": "Desteler yüklenemedi",
   "failedAddDeck": "Deste eklenemedi",

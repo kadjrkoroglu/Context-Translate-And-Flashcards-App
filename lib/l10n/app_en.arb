@@ -568,7 +568,6 @@
   "authInvalidCredentials": "Invalid email or password.",
   "authNetwork": "Network error. Check your connection.",
   "authInvalidInput": "Invalid input. Please check your details.",
-  "authPasswordsMismatch": "Passwords do not match.",
   "deleteAccountFailed": "Could not delete the account. Please try again.",
   "failedLoadDecks": "Failed to load decks",
   "failedAddDeck": "Failed to add deck",

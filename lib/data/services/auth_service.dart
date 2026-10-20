@@ -21,65 +21,6 @@ class AuthService {
   Stream<User?> get user => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
 
-  Future<UserCredential?> signInWithEmail(String email, String password) async {
-    try {
-      return await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-    } on FirebaseAuthException catch (e) {
-      throw AuthException('Authentication failed', details: e.message, code: e.code);
-    }
-  }
-
-  Future<UserCredential?> registerWithEmail(
-    String email,
-    String password,
-  ) async {
-    try {
-      final anonymousUser = _auth.currentUser;
-      final UserCredential credential;
-      if (anonymousUser != null && anonymousUser.isAnonymous) {
-        // Upgrade the guest session in place so its Firebase UID (and every
-        // row keyed by it, both here and in our backend) is kept as-is.
-        credential = await anonymousUser.linkWithCredential(
-          EmailAuthProvider.credential(email: email, password: password),
-        );
-      } else {
-        credential = await _auth.createUserWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
-      }
-      if (credential.user != null) {
-        await credential.user!.sendEmailVerification();
-      }
-      return credential;
-    } on FirebaseAuthException catch (e) {
-      throw AuthException('Registration failed', details: e.message, code: e.code);
-    }
-  }
-
-  Future<void> sendEmailVerification() async {
-    try {
-      await _auth.currentUser?.sendEmailVerification();
-    } on FirebaseAuthException catch (e) {
-      throw AuthException(
-        'Failed to send verification email',
-        details: e.message,
-        code: e.code,
-      );
-    }
-  }
-
-  Future<void> reloadUser() async {
-    try {
-      await _auth.currentUser?.reload();
-    } on FirebaseAuthException catch (e) {
-      throw AuthException('Failed to reload user', details: e.message, code: e.code);
-    }
-  }
-
   Future<UserCredential?> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
@@ -95,7 +36,7 @@ class AuthService {
       final anonymousUser = _auth.currentUser;
       if (anonymousUser != null && anonymousUser.isAnonymous) {
         try {
-          // Same reasoning as registerWithEmail: keep the guest's UID.
+          // Keep the guest's UID, so its rows here and on the server stay.
           return await anonymousUser.linkWithCredential(credential);
         } on FirebaseAuthException catch (e) {
           // This Google account already has a real account elsewhere; sign

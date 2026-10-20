@@ -1143,9 +1143,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authInvalidInput => 'Invalid input. Please check your details.';
 
   @override
-  String get authPasswordsMismatch => 'Passwords do not match.';
-
-  @override
   String get deleteAccountFailed =>
       'Could not delete the account. Please try again.';
 

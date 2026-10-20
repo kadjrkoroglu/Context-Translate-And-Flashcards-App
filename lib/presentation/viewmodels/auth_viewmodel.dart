@@ -31,13 +31,6 @@ class AuthViewModel extends ChangeNotifier {
     _authUsecase.user.listen((AuthEntity? user) async {
       _user = user;
 
-      // Reload a restored account that hasn't verified its email yet.
-      if (user != null && !user.isAnonymous && !user.emailVerified) {
-        _authUsecase.executeReloadUser().then((_) {
-          _user = _authUsecase.currentUser;
-          notifyListeners();
-        });
-      }
       // Refresh tier/quota on login and cold-start restore.
       if (user != null) _entitlementsViewModel.load();
       notifyListeners();
@@ -59,8 +52,6 @@ class AuthViewModel extends ChangeNotifier {
   String? get error => _error;
   // Guest (anonymous) sessions don't count as a real account.
   bool get isAuthenticated => _user != null && !_user!.isAnonymous;
-
-  bool get isEmailVerified => _user?.emailVerified ?? false;
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -111,21 +102,6 @@ class AuthViewModel extends ChangeNotifier {
     return raw;
   }
 
-  Future<bool> signIn(String email, String password) async {
-    _setLoading(true);
-    _clearError();
-    try {
-      await _authUsecase.executeSignIn(email, password);
-      _syncAfterAuth();
-      _setLoading(false);
-      return true;
-    } catch (e) {
-      _setLoading(false);
-      _setError(e is String ? e : _parseFirebaseError(e));
-      return false;
-    }
-  }
-
   // Sync only on an explicit login, never on a cold-start restore.
   void _syncAfterAuth() {
     _syncService
@@ -136,40 +112,6 @@ class AuthViewModel extends ChangeNotifier {
         .catchError((e) {
           debugPrint('Sync after auth failed: $e');
         });
-  }
-
-  Future<bool> register(
-    String email,
-    String password,
-    String confirmPassword,
-  ) async {
-    if (email.isEmpty || !email.contains('@') || !email.contains('.')) {
-      _setError(l10n.authInvalidEmail);
-      return false;
-    }
-    if (password != confirmPassword) {
-      _setError(l10n.authPasswordsMismatch);
-      return false;
-    }
-
-    _setLoading(true);
-    _clearError();
-    try {
-      await _authUsecase.executeRegister(email, password);
-
-      await Future.delayed(const Duration(milliseconds: 500));
-      await _authUsecase.executeReloadUser();
-      _user = _authUsecase.currentUser;
-
-      _syncAfterAuth();
-      _setLoading(false);
-      notifyListeners();
-      return true;
-    } catch (e) {
-      _setLoading(false);
-      _setError(e is String ? e : _parseFirebaseError(e));
-      return false;
-    }
   }
 
   Future<bool> signInWithGoogle() async {
@@ -236,27 +178,6 @@ class AuthViewModel extends ChangeNotifier {
       _setLoading(false);
     } catch (e) {
       _setLoading(false);
-      _setError(_parseFirebaseError(e));
-    }
-  }
-
-  Future<void> sendEmailVerification() async {
-    try {
-      await _authUsecase.executeSendEmailVerification();
-    } catch (e) {
-      _setError(_parseFirebaseError(e));
-    }
-  }
-
-  Future<void> reloadUser() async {
-    try {
-      await _authUsecase.executeReloadUser();
-      final freshUser = _authUsecase.currentUser;
-      if (freshUser != null) {
-        _user = freshUser;
-        notifyListeners();
-      }
-    } catch (e) {
       _setError(_parseFirebaseError(e));
     }
   }

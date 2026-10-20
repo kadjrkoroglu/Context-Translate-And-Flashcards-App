@@ -22,60 +22,6 @@ void main() {
     usecase = AuthUsecase(mockRepository);
   });
 
-  group('executeSignIn', () {
-    test('returns AuthEntity on successful sign in', () async {
-      when(
-        () => mockRepository.signInWithEmail('test@example.com', '123456'),
-      ).thenAnswer((_) async => testUser);
-
-      final result = await usecase.executeSignIn('test@example.com', '123456');
-
-      expect(result, isNotNull);
-      expect(result!.uid, 'uid-1');
-      expect(result.email, 'test@example.com');
-    });
-
-    test('calls repository with correct parameters', () async {
-      when(
-        () => mockRepository.signInWithEmail('test@example.com', '123456'),
-      ).thenAnswer((_) async => testUser);
-
-      await usecase.executeSignIn('test@example.com', '123456');
-
-      verify(
-        () => mockRepository.signInWithEmail('test@example.com', '123456'),
-      ).called(1);
-    });
-  });
-
-  group('executeRegister', () {
-    test('returns AuthEntity on successful registration', () async {
-      when(
-        () => mockRepository.registerWithEmail('new@example.com', 'abcdef'),
-      ).thenAnswer((_) async => testUser);
-
-      final result = await usecase.executeRegister(
-        'new@example.com',
-        'abcdef',
-      );
-
-      expect(result, isNotNull);
-      expect(result!.uid, 'uid-1');
-    });
-
-    test('calls repository register method exactly once', () async {
-      when(
-        () => mockRepository.registerWithEmail('new@example.com', 'abcdef'),
-      ).thenAnswer((_) async => testUser);
-
-      await usecase.executeRegister('new@example.com', 'abcdef');
-
-      verify(
-        () => mockRepository.registerWithEmail('new@example.com', 'abcdef'),
-      ).called(1);
-    });
-  });
-
   group('executeSignInWithGoogle', () {
     test('returns AuthEntity on Google sign in', () async {
       when(() => mockRepository.signInWithGoogle()).thenAnswer(
@@ -93,9 +39,9 @@ void main() {
     });
 
     test('calls repository signInWithGoogle exactly once', () async {
-      when(() => mockRepository.signInWithGoogle()).thenAnswer(
-        (_) async => testUser,
-      );
+      when(
+        () => mockRepository.signInWithGoogle(),
+      ).thenAnswer((_) async => testUser);
 
       await usecase.executeSignInWithGoogle();
 
@@ -113,7 +59,9 @@ void main() {
     });
 
     test('propagates exceptions from repository', () async {
-      when(() => mockRepository.signOut()).thenThrow(Exception('sign out fail'));
+      when(
+        () => mockRepository.signOut(),
+      ).thenThrow(Exception('sign out fail'));
 
       expect(() => usecase.executeSignOut(), throwsException);
     });

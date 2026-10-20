@@ -2030,12 +2030,6 @@ abstract class AppLocalizations {
   /// **'Invalid input. Please check your details.'**
   String get authInvalidInput;
 
-  /// No description provided for @authPasswordsMismatch.
-  ///
-  /// In en, this message translates to:
-  /// **'Passwords do not match.'**
-  String get authPasswordsMismatch;
-
   /// No description provided for @deleteAccountFailed.
   ///
   /// In en, this message translates to:

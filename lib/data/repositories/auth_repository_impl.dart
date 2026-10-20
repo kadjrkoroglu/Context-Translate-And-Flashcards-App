@@ -15,18 +15,6 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthEntity? get currentUser => _toEntity(_authService.currentUser);
 
   @override
-  Future<AuthEntity?> signInWithEmail(String email, String password) async {
-    final credential = await _authService.signInWithEmail(email, password);
-    return _toEntity(credential?.user);
-  }
-
-  @override
-  Future<AuthEntity?> registerWithEmail(String email, String password) async {
-    final credential = await _authService.registerWithEmail(email, password);
-    return _toEntity(credential?.user);
-  }
-
-  @override
   Future<AuthEntity?> signInWithGoogle() async {
     final credential = await _authService.signInWithGoogle();
     return _toEntity(credential?.user);
@@ -49,12 +37,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> signOut() => _authService.signOut();
-
-  @override
-  Future<void> sendEmailVerification() => _authService.sendEmailVerification();
-
-  @override
-  Future<void> reloadUser() => _authService.reloadUser();
 
   AuthEntity? _toEntity(User? user) {
     if (user == null) return null;

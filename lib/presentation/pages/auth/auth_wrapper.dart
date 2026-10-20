@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:translate_app/presentation/pages/main_page.dart';
 import 'package:translate_app/presentation/pages/welcome_page.dart';
-import 'package:translate_app/presentation/pages/auth/verify_email_page.dart';
 import 'package:translate_app/data/services/settings_service.dart';
 
 class AuthWrapper extends StatelessWidget {
@@ -16,11 +15,7 @@ class AuthWrapper extends StatelessWidget {
     return Consumer<AuthViewModel>(
       builder: (context, authViewModel, _) {
         if (authViewModel.isAuthenticated) {
-          if (authViewModel.isEmailVerified) {
-            return const MainPage();
-          } else {
-            return const VerifyEmailPage();
-          }
+          return const MainPage();
         } else {
           // If not authenticated, check if it's the first run
           if (settingsService.isFirstRun) {

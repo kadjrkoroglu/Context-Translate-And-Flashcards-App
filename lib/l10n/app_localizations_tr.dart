@@ -1098,9 +1098,6 @@ class AppLocalizationsTr extends AppLocalizations {
       'Geçersiz bilgi. Lütfen bilgilerini kontrol et.';
 
   @override
-  String get authPasswordsMismatch => 'Şifreler eşleşmiyor.';
-
-  @override
   String get deleteAccountFailed => 'Hesap silinemedi. Lütfen tekrar dene.';
 
   @override
