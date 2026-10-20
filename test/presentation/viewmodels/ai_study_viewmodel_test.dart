@@ -319,6 +319,27 @@ void main() {
       expect(vm.cooldownLeft, const Duration(hours: 3));
     });
 
+    test('finishing early saves only the answered words', () async {
+      when(() => repository.fetchStudyState()).thenAnswer(
+        (_) async => StudyState(
+          session: sessionOf(done: 2, answered: 3, misses: [1, 2]),
+        ),
+      );
+      when(() => repository.endStudy('s1')).thenAnswer((_) async => afterEnd);
+      await vm.refresh();
+
+      expect(await vm.finishSession(), isTrue);
+
+      final updated = verify(
+        () => decks.updateCard(captureAny()),
+      ).captured.cast<CardEntity>();
+      expect(
+        {for (final c in updated) c.syncId: c.aiNeedsReview},
+        {'c0': false, 'c1': true, 'c2': true},
+      );
+      expect(vm.hasUnfinishedSession, isFalse);
+    });
+
     test('loads the state first when it was never loaded', () async {
       when(
         () => repository.fetchStudyState(),

@@ -1046,6 +1046,18 @@ abstract class AppLocalizations {
   /// **'End session'**
   String get endSession;
 
+  /// No description provided for @finishSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'End this session?'**
+  String get finishSessionTitle;
+
+  /// No description provided for @finishSessionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The words you answered are saved. The next session opens {hours} hours after this one began.'**
+  String finishSessionBody(int hours);
+
   /// No description provided for @nextSession.
   ///
   /// In en, this message translates to:

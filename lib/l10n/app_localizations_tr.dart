@@ -561,6 +561,14 @@ class AppLocalizationsTr extends AppLocalizations {
   String get endSession => 'Oturumu kapat';
 
   @override
+  String get finishSessionTitle => 'Oturum bitirilsin mi?';
+
+  @override
+  String finishSessionBody(int hours) {
+    return 'Cevapladığın kelimeler kaydedilir. Yeni oturum, bu oturumun başlamasından $hours saat sonra açılır.';
+  }
+
+  @override
   String get nextSession => 'Sonraki oturum';
 
   @override

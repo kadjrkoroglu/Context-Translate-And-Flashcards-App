@@ -580,6 +580,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get endSession => 'End session';
 
   @override
+  String get finishSessionTitle => 'End this session?';
+
+  @override
+  String finishSessionBody(int hours) {
+    return 'The words you answered are saved. The next session opens $hours hours after this one began.';
+  }
+
+  @override
   String get nextSession => 'Next session';
 
   @override

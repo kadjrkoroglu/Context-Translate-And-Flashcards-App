@@ -314,6 +314,15 @@
   "missingDeckEndNote": "Ending it starts the usual break before the next session.",
   "syncNowLower": "Sync now",
   "endSession": "End session",
+  "finishSessionTitle": "End this session?",
+  "finishSessionBody": "The words you answered are saved. The next session opens {hours} hours after this one began.",
+  "@finishSessionBody": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
   "nextSession": "Next session",
   "readyNow": "Ready now",
   "breakNote": "Words stick better with a break between sessions. Meanwhile you can review them with flashcards.",

@@ -108,6 +108,20 @@ class AiStudyViewModel extends ChangeNotifier {
     return true;
   }
 
+  /// Ends the session early, keeping the results of the words answered so far.
+  Future<bool> finishSession() async {
+    final current = session;
+    if (!await endSession()) return false;
+    if (current != null) {
+      final answered = current.items.take(current.answeredCount);
+      await _updateCards({
+        for (final item in answered)
+          item.id: (card) => card.aiNeedsReview = item.misses > 0,
+      });
+    }
+    return true;
+  }
+
   /// Resumes the unfinished session, or starts one with [deck].
   Future<void> open(DeckEntity? deck) async {
     if (_busy) return;

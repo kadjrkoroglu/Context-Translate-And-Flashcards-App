@@ -158,6 +158,8 @@
   "missingDeckEndNote": "Oturumu kapatınca sonraki oturuma kadar her zamanki ara başlar.",
   "syncNowLower": "Şimdi senkronize et",
   "endSession": "Oturumu kapat",
+  "finishSessionTitle": "Oturum bitirilsin mi?",
+  "finishSessionBody": "Cevapladığın kelimeler kaydedilir. Yeni oturum, bu oturumun başlamasından {hours} saat sonra açılır.",
   "nextSession": "Sonraki oturum",
   "readyNow": "Şimdi hazır",
   "breakNote": "Oturumlar arasında ara verince kelimeler daha iyi akılda kalır. Bu arada onları kartlarla tekrar edebilirsin.",

@@ -105,7 +105,7 @@ class _StudyChatPageState extends State<StudyChatPage> {
     return AppBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        appBar: _buildAppBar(session),
+        appBar: _buildAppBar(vm, session, finished),
         body: Column(
           children: [
             if (session != null) _ProgressSegments(session: session),
@@ -133,7 +133,61 @@ class _StudyChatPageState extends State<StudyChatPage> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(StudySession? session) {
+  Future<void> _finish(AiStudyViewModel vm) async {
+    final hours = (vm.state?.cooldownSeconds ?? 10800) ~/ 3600;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF2D3238).withValues(alpha: 0.2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(28),
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+          ),
+          title: Text(
+            l10n.finishSessionTitle,
+            style: TextStyle(color: Colors.white),
+          ),
+          content: Text(
+            l10n.finishSessionBody(hours),
+            style: TextStyle(color: Colors.white70, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(l10n.cancel, style: TextStyle(color: Colors.white60)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text(
+                l10n.endSession,
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    if (await vm.finishSession()) {
+      HapticFeedback.mediumImpact();
+      navigator.pop();
+    } else {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.couldNotEndSession)));
+    }
+  }
+
+  PreferredSizeWidget _buildAppBar(
+    AiStudyViewModel vm,
+    StudySession? session,
+    bool finished,
+  ) {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -156,6 +210,12 @@ class _StudyChatPageState extends State<StudyChatPage> {
         ],
       ),
       actions: [
+        if (session != null && !finished)
+          IconButton(
+            tooltip: l10n.endSession,
+            onPressed: vm.isBusy ? null : () => _finish(vm),
+            icon: const Icon(Icons.flag_outlined),
+          ),
         if (session != null)
           Padding(
             padding: const EdgeInsets.only(right: 20),
