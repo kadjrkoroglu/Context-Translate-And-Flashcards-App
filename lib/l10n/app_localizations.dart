@@ -413,7 +413,7 @@ abstract class AppLocalizations {
   /// No description provided for @faqA4.
   ///
   /// In en, this message translates to:
-  /// **'Premium: AI writes a new sentence for each of 10 to 30 words from a deck, and you fill in the blank. Each word gets two tries. After a session there is a 3-hour break.'**
+  /// **'Premium: AI writes a new sentence for each of 10 to 30 words from a deck, and you fill in the blank. Each word gets two tries. A new session can start 3 hours after the last one began.'**
   String get faqA4;
 
   /// No description provided for @faqQ5.
