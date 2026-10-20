@@ -22,6 +22,9 @@ class CardEntity {
   DateTime? lastStudiedDate;
   int? lastRatingIndex;
 
+  /// The day the card stopped being new; counts toward the daily new limit.
+  DateTime? firstStudiedAt;
+
   DateTime? aiStudiedAt;
   bool aiNeedsReview = false;
 
@@ -45,6 +48,7 @@ class CardEntity {
     this.isNewCard = true,
     this.lastStudiedDate,
     this.lastRatingIndex,
+    this.firstStudiedAt,
     this.aiStudiedAt,
     this.aiNeedsReview = false,
     this.userId,

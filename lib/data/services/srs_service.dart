@@ -67,6 +67,7 @@ class SRSService {
       );
     }
 
+    if (card.isNewCard) card.firstStudiedAt = now;
     card.isNewCard = false;
     card.lastStudiedDate = now;
     card.lastRatingIndex = rating.index;

@@ -58,32 +58,8 @@ class StudyViewModel extends ChangeNotifier {
 
     try {
       final now = DateTime.now();
-      final allCards = deck.cards.where((c) => !c.isDeleted).toList();
-
-      int todayNewStudied = 0;
-      int todayReviewsStudied = 0;
-
-      for (var card in allCards) {
-        if (card.lastStudiedDate != null &&
-            card.lastStudiedDate!.year == now.year &&
-            card.lastStudiedDate!.month == now.month &&
-            card.lastStudiedDate!.day == now.day) {
-          if (card.repetitions == 0) {
-            todayNewStudied++;
-          } else {
-            todayReviewsStudied++;
-          }
-        }
-      }
-
-      _allowedNew = (deck.newCardsLimit - todayNewStudied).clamp(
-        0,
-        deck.newCardsLimit,
-      );
-      _allowedReviews = (deck.reviewsLimit - todayReviewsStudied).clamp(
-        0,
-        deck.reviewsLimit,
-      );
+      _allowedNew = deck.newCardsLeftToday(now);
+      _allowedReviews = deck.reviewsLeftToday(now);
 
       _rebuildQueue();
 

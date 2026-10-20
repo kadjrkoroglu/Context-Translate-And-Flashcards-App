@@ -26,6 +26,9 @@ class CardItem {
   int?
   lastRatingIndex; // For tracking last rating (0=again, 1=hard, 2=good, 3=easy)
 
+  // The day the card stopped being new; counts toward the daily new limit.
+  DateTime? firstStudiedAt;
+
   // Study with AI: when last picked, and whether it needed help then.
   DateTime? aiStudiedAt;
   bool aiNeedsReview = false;
@@ -52,6 +55,7 @@ class CardItem {
       'isNewCard': isNewCard,
       'lastStudiedDate': lastStudiedDate?.toIso8601String(),
       'lastRatingIndex': lastRatingIndex,
+      'firstStudiedAt': firstStudiedAt?.toIso8601String(),
       'aiStudiedAt': aiStudiedAt?.toIso8601String(),
       'aiNeedsReview': aiNeedsReview,
       'userId': userId,
@@ -80,6 +84,9 @@ class CardItem {
           ? DateTime.parse(map['lastStudiedDate'])
           : null
       ..lastRatingIndex = map['lastRatingIndex']
+      ..firstStudiedAt = map['firstStudiedAt'] != null
+          ? DateTime.parse(map['firstStudiedAt'])
+          : null
       ..aiStudiedAt = map['aiStudiedAt'] != null
           ? DateTime.parse(map['aiStudiedAt'])
           : null

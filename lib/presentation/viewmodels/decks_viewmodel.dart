@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:translate_app/domain/entities/card_entity.dart';
 import 'package:translate_app/domain/entities/deck_entity.dart';
@@ -183,7 +185,8 @@ class DecksViewModel extends ChangeNotifier {
     }
 
     return {
-      'new': newCount,
+      // Only what today's new card limit still lets in.
+      'new': min(newCount, deck.newCardsLeftToday(now)),
       'again': againCount,
       'hard': hardCount,
       'good': goodCount,
