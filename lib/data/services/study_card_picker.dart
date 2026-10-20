@@ -2,10 +2,10 @@ import 'dart:math';
 
 import 'package:translate_app/domain/entities/card_entity.dart';
 
-/// Cards in one Study with AI session (the backend expects exactly this many).
-const int studySessionCards = 10;
+/// Cards in one Study with AI session (the backend accepts this range).
+const int minStudyCards = 10;
+const int maxStudyCards = 30;
 const int _maxCardText = 200;
-const int _maxReviewCards = 3;
 
 bool isStudyCard(CardEntity card) =>
     !card.isDeleted &&
@@ -16,11 +16,13 @@ bool isStudyCard(CardEntity card) =>
 
 int studyCardCount(List<CardEntity> cards) => cards.where(isStudyCard).length;
 
-/// Needed-help cards (max 3), then never studied, then oldest; empty if too few.
+/// Missed cards (up to 30% of the session), then never studied, then oldest;
+/// empty if too few.
 List<CardEntity> pickStudyCards(List<CardEntity> cards, {Random? random}) {
   final rng = random ?? Random();
   final eligible = cards.where(isStudyCard).toList();
-  if (eligible.length < studySessionCards) return const [];
+  if (eligible.length < minStudyCards) return const [];
+  final size = min(eligible.length, maxStudyCards);
 
   // A session's cards share one timestamp, so ties are broken at random.
   final tieBreak = {for (final card in eligible) card: rng.nextDouble()};
@@ -33,9 +35,9 @@ List<CardEntity> pickStudyCards(List<CardEntity> cards, {Random? random}) {
 
   final review = eligible.where((c) => c.aiNeedsReview).toList()
     ..sort(oldestFirst);
-  final picked = review.take(_maxReviewCards).toList();
+  final picked = review.take(size * 3 ~/ 10).toList();
   final rest = eligible.where((c) => !picked.contains(c)).toList()
     ..sort(oldestFirst);
-  picked.addAll(rest.take(studySessionCards - picked.length));
+  picked.addAll(rest.take(size - picked.length));
   return picked..shuffle(rng);
 }

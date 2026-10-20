@@ -112,7 +112,6 @@ void main() {
           StudyItem(id: 'c$i', word: 'w$i', translation: 't$i', done: i < 4),
       ],
       current: 4,
-      task: 'Task',
     );
     when(() => study.session).thenReturn(session);
     when(() => study.hasUnfinishedSession).thenReturn(true);

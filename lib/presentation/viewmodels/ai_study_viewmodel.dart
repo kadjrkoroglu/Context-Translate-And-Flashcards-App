@@ -55,10 +55,6 @@ class AiStudyViewModel extends ChangeNotifier {
     DateTime Function()? now,
   }) : _now = now ?? DateTime.now;
 
-  static String get offTopicNote => l10n.offTopicNote;
-  static String get rejectedNote => l10n.rejectedNote;
-  static String get limitNote => l10n.limitNote;
-
   StudyState? _state;
   final List<StudyMessage> _messages = [];
   bool _busy = false;
@@ -163,12 +159,16 @@ class AiStudyViewModel extends ChangeNotifier {
       );
       _startingDeck = null;
       _setState(result.state);
-      final greeting = result.greeting;
-      if (greeting == null) {
+      if (result.resumed) {
         // Another session was still open (e.g. from another device).
         _resume();
       } else {
-        _messages.add(StudyMessage(StudyMessageKind.tutor, greeting));
+        _messages.add(
+          StudyMessage(
+            StudyMessageKind.tutor,
+            l10n.studyGreeting(deck.name, cards.length),
+          ),
+        );
         _addTask();
         _saveChat();
         final now = _now();
@@ -203,8 +203,8 @@ class AiStudyViewModel extends ChangeNotifier {
         )
         .text;
     // No chat saved here, or the session moved on without it.
-    if (lastTask != current.task) {
-      final left = current.total - current.doneCount;
+    if (lastTask != _taskText(current)) {
+      final left = current.total - current.answeredCount;
       _messages.add(
         StudyMessage(StudyMessageKind.note, l10n.welcomeBackWords(left)),
       );
@@ -216,13 +216,14 @@ class AiStudyViewModel extends ChangeNotifier {
 
   Future<void> _answer(String answer) async {
     final id = session?.id;
-    if (id == null) return;
+    final item = session?.currentItem;
+    if (id == null || item == null) return;
     _unsent = answer;
     _setBusy(true);
     try {
       final reply = await _translate.answerStudy(id, answer);
       _unsent = null;
-      await _applyReply(reply);
+      await _applyReply(reply, item);
     } on AiServiceException catch (e) {
       if (e.code == 'session_not_found' || e.code == 'conflict') {
         // Finished or answered elsewhere: show the server's view.
@@ -241,29 +242,24 @@ class AiStudyViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> _applyReply(StudyReply reply) async {
-    final feedback = reply.feedback;
-    switch (reply.verdict) {
-      case StudyVerdict.offTopic:
-        _messages.add(StudyMessage(StudyMessageKind.note, offTopicNote));
-      case StudyVerdict.rejected:
-        _messages.add(StudyMessage(StudyMessageKind.note, rejectedNote));
-      case StudyVerdict.correct:
-        _messages.add(
-          StudyMessage(StudyMessageKind.tutor, feedback ?? '', correct: true),
-        );
-      case StudyVerdict.wrong || StudyVerdict.question:
-        if (feedback != null && feedback.isNotEmpty) {
-          _messages.add(StudyMessage(StudyMessageKind.tutor, feedback));
-        }
-    }
+  Future<void> _applyReply(StudyReply reply, StudyItem item) async {
+    _messages.add(
+      reply.correct
+          ? StudyMessage(
+              StudyMessageKind.tutor,
+              l10n.studyCorrect,
+              correct: true,
+            )
+          : StudyMessage(
+              StudyMessageKind.tutor,
+              reply.revealed
+                  ? l10n.studyAnswerWas(item.word)
+                  : l10n.studyTryAgain,
+            ),
+    );
     _setState(reply.state);
     final finished = session?.completed ?? true;
-    if (reply.limitReached) {
-      _messages.add(StudyMessage(StudyMessageKind.note, limitNote));
-    }
-    final newTask = reply.verdict == StudyVerdict.correct || reply.revealed;
-    if (!finished && newTask) _addTask();
+    if (!finished && (reply.correct || reply.revealed)) _addTask();
 
     if (finished) {
       _settings.setAiStudyChat(null);
@@ -279,15 +275,22 @@ class AiStudyViewModel extends ChangeNotifier {
 
   void _addTask() {
     final current = session;
-    final task = current?.task;
+    final task = current == null ? null : _taskText(current);
     if (current == null || task == null) return;
     _messages.add(
       StudyMessage(
         StudyMessageKind.task,
         task,
-        label: '${current.doneCount + 1}/${current.total}',
+        label: '${current.answeredCount + 1}/${current.total}',
       ),
     );
+  }
+
+  /// "Take an ___, it's raining. (şemsiye)"; the word alone without a sentence.
+  static String? _taskText(StudySession session) {
+    final item = session.currentItem;
+    if (item == null) return null;
+    return '${item.sentence ?? '___'} (${item.translation})';
   }
 
   Future<void> _updateCards(

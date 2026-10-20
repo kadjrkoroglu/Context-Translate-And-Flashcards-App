@@ -174,7 +174,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get faqA4 =>
-      'Premium: an AI tutor quizzes you on 10 words from a deck. A word counts once you answer it correctly. After a session there is a 3-hour break.';
+      'Premium: AI writes a new sentence for each of 10 to 30 words from a deck, and you fill in the blank. Each word gets two tries. After a session there is a 3-hour break.';
 
   @override
   String get faqQ5 => 'How do I sync my decks between devices?';
@@ -319,7 +319,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get featStudyDetail =>
-      'An AI tutor quizzes you on your saved words and checks every answer.';
+      'AI writes new sentences with your saved words; you fill in the blanks.';
 
   @override
   String get comingSoon => 'Coming soon — subscriptions aren\'t live yet.';
@@ -603,8 +603,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String withHelpCount(int count) {
-    return '$count with help';
+  String secondTryCount(int count) {
+    return '$count on the second try';
+  }
+
+  @override
+  String missedCount(int count) {
+    return '$count missed';
   }
 
   @override
@@ -657,7 +662,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retry => 'Retry';
 
   @override
-  String get typeAnswer => 'Type your answer';
+  String get typeAnswer => 'Type the missing word';
 
   @override
   String get errConnectionTitle => 'Connection Error';
@@ -832,7 +837,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentBody1 =>
-      'AI translation, photo translation, Live and Study with AI send the text you enter, the text read from your photo, your voice in Live and your answers to Google Gemini to be processed.';
+      'AI translation, photo translation, Live and Study with AI send the text you enter, the text read from your photo, your voice in Live and your deck\'s words to Google Gemini to be processed.';
 
   @override
   String get consentBody2 =>
@@ -1105,15 +1110,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restartOrSignIn => 'Restart the app or sign in to continue.';
 
   @override
-  String get offTopicNote => 'Only answers to the exercise get a reply.';
-
-  @override
-  String get rejectedNote => 'Write the word exactly as it is on your card.';
-
-  @override
-  String get limitNote => 'This session reached its message limit.';
-
-  @override
   String welcomeBackWords(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -1122,6 +1118,22 @@ class AppLocalizationsEn extends AppLocalizations {
       one: 'Welcome back, 1 word to go.',
     );
     return '$_temp0';
+  }
+
+  @override
+  String studyGreeting(String deck, int count) {
+    return 'Let\'s study $count words from \"$deck\". Type the missing word in each sentence.';
+  }
+
+  @override
+  String get studyCorrect => 'Correct!';
+
+  @override
+  String get studyTryAgain => 'Not quite. Try again.';
+
+  @override
+  String studyAnswerWas(String word) {
+    return 'The answer was \"$word\".';
   }
 
   @override

@@ -17,7 +17,8 @@ import 'package:translate_app/presentation/widgets/app_background.dart';
 import 'package:translate_app/l10n/l10n.dart';
 
 const _correctColor = Color(0xFF7BD88F);
-const _helpColor = Colors.amberAccent;
+const _secondTryColor = Colors.amberAccent;
+const _missedColor = Color(0xFFFF8A80);
 
 /// Opens the flashcard study for [deck] (the regular, non-AI one).
 void openFlashcards(BuildContext context, DeckEntity deck) {
@@ -160,7 +161,7 @@ class _StudyChatPageState extends State<StudyChatPage> {
             padding: const EdgeInsets.only(right: 20),
             child: Center(
               child: Text(
-                '${session.doneCount}/${session.total}',
+                '${session.answeredCount}/${session.total}',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -212,7 +213,8 @@ class _ProgressSegments extends StatelessWidget {
   Widget build(BuildContext context) {
     Color colorOf(int i) {
       final item = session.items[i];
-      if (item.done) return item.misses == 0 ? _correctColor : _helpColor;
+      if (item.done) return item.misses == 0 ? _correctColor : _secondTryColor;
+      if (i < session.answeredCount) return _missedColor;
       if (i == session.current) return Colors.white;
       return Colors.white.withValues(alpha: 0.15);
     }
@@ -389,7 +391,8 @@ class _Summary extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<AiStudyViewModel>();
     final firstTry = session.items.where((i) => i.done && i.misses == 0).length;
-    final withHelp = session.items.where((i) => i.done && i.misses > 0).length;
+    final secondTry = session.items.where((i) => i.done && i.misses > 0).length;
+    final missed = session.items.where((i) => !i.done).length;
     final left = vm.cooldownLeft;
     final deck = context
         .read<DecksViewModel>()
@@ -429,11 +432,18 @@ class _Summary extends StatelessWidget {
                   text: l10n.firstTryCount(firstTry),
                   style: const TextStyle(color: _correctColor),
                 ),
-                if (withHelp > 0) ...[
+                if (secondTry > 0) ...[
                   const TextSpan(text: '  ·  '),
                   TextSpan(
-                    text: l10n.withHelpCount(withHelp),
-                    style: const TextStyle(color: _helpColor),
+                    text: l10n.secondTryCount(secondTry),
+                    style: const TextStyle(color: _secondTryColor),
+                  ),
+                ],
+                if (missed > 0) ...[
+                  const TextSpan(text: '  ·  '),
+                  TextSpan(
+                    text: l10n.missedCount(missed),
+                    style: const TextStyle(color: _missedColor),
                   ),
                 ],
               ],
@@ -461,10 +471,10 @@ class _Summary extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 13,
                       color: !item.done
-                          ? Colors.white54
+                          ? _missedColor
                           : item.misses == 0
                           ? _correctColor
-                          : _helpColor,
+                          : _secondTryColor,
                     ),
                   ),
                 ),
@@ -686,6 +696,9 @@ class _InputBar extends StatelessWidget {
                 maxLength: 300,
                 minLines: 1,
                 maxLines: 4,
+                // The answer is compared letter by letter; autocorrect would change it.
+                autocorrect: false,
+                enableSuggestions: false,
                 textInputAction: TextInputAction.send,
                 onSubmitted: (_) => onSend(),
                 style: const TextStyle(color: Colors.white),

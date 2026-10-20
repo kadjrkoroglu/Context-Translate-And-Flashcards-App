@@ -116,7 +116,7 @@ class _StudyWithAiButtonState extends State<StudyWithAiButton> {
       return;
     }
     final ready = decks
-        .where((d) => studyCardCount(d.cards) >= studySessionCards)
+        .where((d) => studyCardCount(d.cards) >= minStudyCards)
         .toList();
     if (ready.length == 1) {
       _openChat(ready.single);
@@ -147,8 +147,8 @@ class _StudyWithAiButtonState extends State<StudyWithAiButton> {
     if (hasChat && study.hasUnfinishedSession) {
       return _Pill(
         icon: Icons.auto_awesome,
-        label: l10n.continueProgress(session!.doneCount, session.total),
-        progress: session.doneCount / session.total,
+        label: l10n.continueProgress(session!.answeredCount, session.total),
+        progress: session.answeredCount / session.total,
         onTap: () => _continue(session),
       );
     }
@@ -161,8 +161,8 @@ class _StudyWithAiButtonState extends State<StudyWithAiButton> {
         onTap: _showCooldown,
       );
     }
-    if (hasChat && mostCards < studySessionCards) {
-      final missing = studySessionCards - mostCards;
+    if (hasChat && mostCards < minStudyCards) {
+      final missing = minStudyCards - mostCards;
       return _Pill(
         faded: true,
         label: l10n.addMoreWords(missing),
@@ -377,8 +377,8 @@ class _DeckPickerSheet extends StatelessWidget {
 
   Widget _row(BuildContext context, DeckEntity deck) {
     final count = studyCardCount(deck.cards);
-    final ready = count >= studySessionCards;
-    final missing = studySessionCards - count;
+    final ready = count >= minStudyCards;
+    final missing = minStudyCards - count;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Material(

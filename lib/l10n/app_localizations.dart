@@ -413,7 +413,7 @@ abstract class AppLocalizations {
   /// No description provided for @faqA4.
   ///
   /// In en, this message translates to:
-  /// **'Premium: an AI tutor quizzes you on 10 words from a deck. A word counts once you answer it correctly. After a session there is a 3-hour break.'**
+  /// **'Premium: AI writes a new sentence for each of 10 to 30 words from a deck, and you fill in the blank. Each word gets two tries. After a session there is a 3-hour break.'**
   String get faqA4;
 
   /// No description provided for @faqQ5.
@@ -647,7 +647,7 @@ abstract class AppLocalizations {
   /// No description provided for @featStudyDetail.
   ///
   /// In en, this message translates to:
-  /// **'An AI tutor quizzes you on your saved words and checks every answer.'**
+  /// **'AI writes new sentences with your saved words; you fill in the blanks.'**
   String get featStudyDetail;
 
   /// No description provided for @comingSoon.
@@ -1082,11 +1082,17 @@ abstract class AppLocalizations {
   /// **'{count} first try'**
   String firstTryCount(int count);
 
-  /// No description provided for @withHelpCount.
+  /// No description provided for @secondTryCount.
   ///
   /// In en, this message translates to:
-  /// **'{count} with help'**
-  String withHelpCount(int count);
+  /// **'{count} on the second try'**
+  String secondTryCount(int count);
+
+  /// No description provided for @missedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} missed'**
+  String missedCount(int count);
 
   /// No description provided for @nextSessionIn.
   ///
@@ -1181,7 +1187,7 @@ abstract class AppLocalizations {
   /// No description provided for @typeAnswer.
   ///
   /// In en, this message translates to:
-  /// **'Type your answer'**
+  /// **'Type the missing word'**
   String get typeAnswer;
 
   /// No description provided for @errConnectionTitle.
@@ -1481,7 +1487,7 @@ abstract class AppLocalizations {
   /// No description provided for @consentBody1.
   ///
   /// In en, this message translates to:
-  /// **'AI translation, photo translation, Live and Study with AI send the text you enter, the text read from your photo, your voice in Live and your answers to Google Gemini to be processed.'**
+  /// **'AI translation, photo translation, Live and Study with AI send the text you enter, the text read from your photo, your voice in Live and your deck\'s words to Google Gemini to be processed.'**
   String get consentBody1;
 
   /// No description provided for @consentBody2.
@@ -1970,29 +1976,35 @@ abstract class AppLocalizations {
   /// **'Restart the app or sign in to continue.'**
   String get restartOrSignIn;
 
-  /// No description provided for @offTopicNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Only answers to the exercise get a reply.'**
-  String get offTopicNote;
-
-  /// No description provided for @rejectedNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Write the word exactly as it is on your card.'**
-  String get rejectedNote;
-
-  /// No description provided for @limitNote.
-  ///
-  /// In en, this message translates to:
-  /// **'This session reached its message limit.'**
-  String get limitNote;
-
   /// No description provided for @welcomeBackWords.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =1{Welcome back, 1 word to go.} other{Welcome back, {count} words to go.}}'**
   String welcomeBackWords(int count);
+
+  /// No description provided for @studyGreeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s study {count} words from \"{deck}\". Type the missing word in each sentence.'**
+  String studyGreeting(String deck, int count);
+
+  /// No description provided for @studyCorrect.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct!'**
+  String get studyCorrect;
+
+  /// No description provided for @studyTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Not quite. Try again.'**
+  String get studyTryAgain;
+
+  /// No description provided for @studyAnswerWas.
+  ///
+  /// In en, this message translates to:
+  /// **'The answer was \"{word}\".'**
+  String studyAnswerWas(String word);
 
   /// No description provided for @authEmailInUse.
   ///

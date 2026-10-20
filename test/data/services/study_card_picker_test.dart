@@ -41,65 +41,68 @@ void main() {
     expect(pickStudyCards(deck), isEmpty);
   });
 
+  test('takes every card, up to 30', () {
+    expect(pickStudyCards(cards('new', 18)), hasLength(18));
+    expect(pickStudyCards(cards('new', 45)), hasLength(30));
+  });
+
   test('never-studied cards come before studied ones', () {
     final deck = [
       ...cards('old', 5, studied: DateTime(2026, 9)),
-      ...cards('new', 10),
+      ...cards('new', 30),
     ];
 
     final picked = pickStudyCards(deck, random: Random(1));
 
-    expect(picked, hasLength(10));
-    expect(ids(picked), ids(cards('new', 10)));
+    expect(picked, hasLength(30));
+    expect(ids(picked), ids(cards('new', 30)));
   });
 
   test('then the cards studied longest ago', () {
     final deck = [
-      ...cards('new', 4),
-      ...cards('sept', 6, studied: DateTime(2026, 9, 1)),
+      ...cards('new', 10),
+      ...cards('sept', 20, studied: DateTime(2026, 9, 1)),
       ...cards('oct', 6, studied: DateTime(2026, 10, 1)),
     ];
 
     final picked = ids(pickStudyCards(deck, random: Random(2)));
 
-    expect(picked, {...ids(cards('new', 4)), ...ids(cards('sept', 6))});
+    expect(picked, {...ids(cards('new', 10)), ...ids(cards('sept', 20))});
   });
 
-  test('at most 3 cards that needed help come back first', () {
+  test('missed cards come back first, up to 30% of the session', () {
     final deck = [
-      for (var i = 0; i < 5; i++)
+      for (var i = 0; i < 12; i++)
         card('help$i', studied: DateTime(2026, 9, 1 + i), review: true),
-      ...cards('new', 20),
+      ...cards('new', 40),
     ];
 
     final picked = ids(pickStudyCards(deck, random: Random(3)));
 
     expect(picked.where((id) => id.startsWith('help')), {
-      'help0',
-      'help1',
-      'help2',
+      for (var i = 0; i < 9; i++) 'help$i',
     });
-    expect(picked.where((id) => id.startsWith('new')), hasLength(7));
+    expect(picked.where((id) => id.startsWith('new')), hasLength(21));
   });
 
   test('once every card was studied it starts over with the oldest', () {
     final deck = [
-      ...cards('first', 10, studied: DateTime(2026, 9, 1)),
+      ...cards('first', 30, studied: DateTime(2026, 9, 1)),
       ...cards('second', 3, studied: DateTime(2026, 9, 2)),
     ];
 
     final picked = ids(pickStudyCards(deck, random: Random(4)));
 
-    expect(picked, ids(cards('first', 10)));
+    expect(picked, ids(cards('first', 30)));
   });
 
   test('picks at random among equally fresh cards', () {
-    final deck = cards('new', 30);
+    final deck = cards('new', 60);
 
     final a = ids(pickStudyCards(deck, random: Random(5)));
     final b = ids(pickStudyCards(deck, random: Random(6)));
 
-    expect(a, hasLength(10));
+    expect(a, hasLength(30));
     expect(a, isNot(equals(b)));
   });
 }

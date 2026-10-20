@@ -177,7 +177,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get faqA4 =>
-      'Premium: AI öğretmen bir desteden 10 kelimeyle seni sınar. Bir kelime, doğru cevapladığında sayılır. Her oturumdan sonra 3 saatlik bir ara verilir.';
+      'Premium: AI, bir desteden 10 ile 30 arası kelimenin her biri için yeni bir cümle yazar, sen de boşluğu doldurursun. Her kelime için iki hakkın var. Her oturumdan sonra 3 saatlik bir ara verilir.';
 
   @override
   String get faqQ5 => 'Destelerimi cihazlar arasında nasıl senkronize ederim?';
@@ -311,7 +311,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get featStudyDetail =>
-      'AI öğretmen kaydettiğin kelimelerle seni sınar ve her cevabını kontrol eder.';
+      'AI kaydettiğin kelimelerle yeni cümleler yazar, sen de boşlukları doldurursun.';
 
   @override
   String get comingSoon => 'Çok yakında — abonelikler henüz aktif değil.';
@@ -584,8 +584,13 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String withHelpCount(int count) {
-    return '$count yardımla';
+  String secondTryCount(int count) {
+    return '$count ikinci denemede';
+  }
+
+  @override
+  String missedCount(int count) {
+    return '$count bilinemedi';
   }
 
   @override
@@ -638,7 +643,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get retry => 'Yeniden dene';
 
   @override
-  String get typeAnswer => 'Cevabını yaz';
+  String get typeAnswer => 'Boşluğa gelen kelimeyi yaz';
 
   @override
   String get errConnectionTitle => 'Bağlantı Hatası';
@@ -802,7 +807,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get consentBody1 =>
-      'AI çeviri, fotoğraf çevirisi, Canlı ve AI ile Çalış; girdiğin metni, fotoğrafından okunan metni, Canlı\'daki sesini ve cevaplarını işlenmek üzere Google Gemini\'ye gönderir.';
+      'AI çeviri, fotoğraf çevirisi, Canlı ve AI ile Çalış; girdiğin metni, fotoğrafından okunan metni, Canlı\'daki sesini ve destendeki kelimeleri işlenmek üzere Google Gemini\'ye gönderir.';
 
   @override
   String get consentBody2 =>
@@ -1064,18 +1069,24 @@ class AppLocalizationsTr extends AppLocalizations {
       'Devam etmek için uygulamayı yeniden başlat ya da giriş yap.';
 
   @override
-  String get offTopicNote =>
-      'Yalnızca alıştırmaya verilen cevaplar yanıtlanır.';
-
-  @override
-  String get rejectedNote => 'Kelimeyi kartındaki haliyle aynen yaz.';
-
-  @override
-  String get limitNote => 'Bu oturum mesaj sınırına ulaştı.';
-
-  @override
   String welcomeBackWords(int count) {
     return 'Tekrar hoş geldin, $count kelime kaldı.';
+  }
+
+  @override
+  String studyGreeting(String deck, int count) {
+    return '\"$deck\" destesinden $count kelime çalışalım. Her cümlede boşluğa gelen kelimeyi yaz.';
+  }
+
+  @override
+  String get studyCorrect => 'Doğru!';
+
+  @override
+  String get studyTryAgain => 'Olmadı, bir daha dene.';
+
+  @override
+  String studyAnswerWas(String word) {
+    return 'Doğru cevap: \"$word\"';
   }
 
   @override

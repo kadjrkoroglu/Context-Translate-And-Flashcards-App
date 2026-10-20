@@ -52,7 +52,7 @@
   "faqQ3": "What is Live translation?",
   "faqA3": "Premium translates speech as it is spoken, with captions: 60 minutes a month (5 minutes in the free trial). The minutes renew every month.",
   "faqQ4": "How does Study with AI work?",
-  "faqA4": "Premium: an AI tutor quizzes you on 10 words from a deck. A word counts once you answer it correctly. After a session there is a 3-hour break.",
+  "faqA4": "Premium: AI writes a new sentence for each of 10 to 30 words from a deck, and you fill in the blank. Each word gets two tries. After a session there is a 3-hour break.",
   "faqQ5": "How do I sync my decks between devices?",
   "faqA5": "Sign in on the Profile page, then tap Sync Now.",
   "faqQ6": "Can I translate without internet?",
@@ -119,7 +119,7 @@
   "featLive": "AI Live translation",
   "featLiveDetail": "Speech translated as it is spoken, keeping tone and emphasis, with live captions. 60 min/month",
   "studyWithAi": "Study with AI",
-  "featStudyDetail": "An AI tutor quizzes you on your saved words and checks every answer.",
+  "featStudyDetail": "AI writes new sentences with your saved words; you fill in the blanks.",
   "comingSoon": "Coming soon — subscriptions aren't live yet.",
   "plansHeadline": "Turn every translation\ninto a lesson.",
   "plansTrialLine": "Try any plan free for 14 days. Cancel anytime.",
@@ -334,8 +334,16 @@
       }
     }
   },
-  "withHelpCount": "{count} with help",
-  "@withHelpCount": {
+  "secondTryCount": "{count} on the second try",
+  "@secondTryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "missedCount": "{count} missed",
+  "@missedCount": {
     "placeholders": {
       "count": {
         "type": "int"
@@ -364,7 +372,7 @@
   "replyTooLong": "The reply took too long. Try again.",
   "couldNotGetReply": "Couldn't get a reply. Try again.",
   "retry": "Retry",
-  "typeAnswer": "Type your answer",
+  "typeAnswer": "Type the missing word",
   "errConnectionTitle": "Connection Error",
   "errConnectionMsg": "No internet connection. Check your connection and try again.",
   "errUnavailableTitle": "Service Unavailable",
@@ -445,7 +453,7 @@
     }
   },
   "consentTitle": "Before you use AI",
-  "consentBody1": "AI translation, photo translation, Live and Study with AI send the text you enter, the text read from your photo, your voice in Live and your answers to Google Gemini to be processed.",
+  "consentBody1": "AI translation, photo translation, Live and Study with AI send the text you enter, the text read from your photo, your voice in Live and your deck's words to Google Gemini to be processed.",
   "consentBody2": "Your photos never leave your phone. Basic translation works on your phone without this.",
   "notNow": "Not now",
   "allow": "Allow",
@@ -551,14 +559,32 @@
   "tooManyPhotos": "Too many photo translations. Wait a few seconds and retry.",
   "photoNeedsStandard": "Photo translation is available on the Standard plan.",
   "restartOrSignIn": "Restart the app or sign in to continue.",
-  "offTopicNote": "Only answers to the exercise get a reply.",
-  "rejectedNote": "Write the word exactly as it is on your card.",
-  "limitNote": "This session reached its message limit.",
   "welcomeBackWords": "{count, plural, =1{Welcome back, 1 word to go.} other{Welcome back, {count} words to go.}}",
   "@welcomeBackWords": {
     "placeholders": {
       "count": {
         "type": "int"
+      }
+    }
+  },
+  "studyGreeting": "Let's study {count} words from \"{deck}\". Type the missing word in each sentence.",
+  "@studyGreeting": {
+    "placeholders": {
+      "deck": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "studyCorrect": "Correct!",
+  "studyTryAgain": "Not quite. Try again.",
+  "studyAnswerWas": "The answer was \"{word}\".",
+  "@studyAnswerWas": {
+    "placeholders": {
+      "word": {
+        "type": "String"
       }
     }
   },

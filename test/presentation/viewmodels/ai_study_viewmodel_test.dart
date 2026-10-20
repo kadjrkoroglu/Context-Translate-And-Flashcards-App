@@ -12,6 +12,7 @@ import 'package:translate_app/domain/repositories/deck_repository.dart';
 import 'package:translate_app/domain/repositories/translation_repository.dart';
 import 'package:translate_app/domain/usecases/deck_usecase.dart';
 import 'package:translate_app/domain/usecases/translate_usecase.dart';
+import 'package:translate_app/l10n/l10n.dart';
 import 'package:translate_app/presentation/viewmodels/ai_study_viewmodel.dart';
 
 class MockTranslationRepository extends Mock implements TranslationRepository {}
@@ -39,14 +40,17 @@ DeckEntity deckOf(int count) => DeckEntity(
   ],
 );
 
-/// A session over c0..c9 where [done] cards are finished.
+/// A session over c0..c9: [done] cards answered right, [answered] (default
+/// [done]) cards behind.
 StudySession sessionOf({
   int done = 0,
-  String? task = 'Task 1',
+  int? answered,
   List<int> misses = const [],
+  Set<int> noSentence = const {},
   String id = 's1',
 }) {
-  final completed = done == 10;
+  final behind = answered ?? done;
+  final completed = behind == 10;
   return StudySession(
     id: id,
     deckId: 'deck1',
@@ -57,15 +61,17 @@ StudySession sessionOf({
           id: 'c$i',
           word: 'word$i',
           translation: 'kelime$i',
+          sentence: noSentence.contains(i) ? null : 'I like ___ $i.',
           done: i < done,
           misses: misses.contains(i) ? 1 : 0,
         ),
     ],
-    current: completed ? null : done,
-    task: completed ? null : task,
+    current: completed ? null : behind,
     completed: completed,
   );
 }
+
+String taskOf(int i) => 'I like ___ $i. (kelime$i)';
 
 void main() {
   late MockTranslationRepository repository;
@@ -93,7 +99,7 @@ void main() {
 
   tearDown(() => vm.dispose());
 
-  Future<void> startSession() async {
+  Future<void> startSession([StudySession? session]) async {
     when(
       () => repository.startStudy(
         deckId: any(named: 'deckId'),
@@ -101,10 +107,8 @@ void main() {
         cards: any(named: 'cards'),
       ),
     ).thenAnswer(
-      (_) async => StudyStart(
-        state: StudyState(session: sessionOf()),
-        greeting: 'Hi!',
-      ),
+      (_) async =>
+          StudyStart(state: StudyState(session: session ?? sessionOf())),
     );
     await vm.open(deck);
   }
@@ -117,10 +121,10 @@ void main() {
 
   List<String> texts() => [for (final m in vm.messages) m.text];
 
-  test('starting shows the greeting and the first task', () async {
+  test('starting shows the greeting and the first sentence', () async {
     await startSession();
 
-    expect(texts(), ['Hi!', 'Task 1']);
+    expect(texts(), [l10n.studyGreeting('English Words', 12), taskOf(0)]);
     expect(vm.messages.last.label, '1/10');
     final sent =
         verify(
@@ -131,116 +135,98 @@ void main() {
               ),
             ).captured.single
             as List<({String id, String word, String translation})>;
-    expect(sent, hasLength(10));
+    expect(sent, hasLength(12));
   });
 
-  test('the 10 picked cards are marked so they are not picked next', () async {
+  test('the picked cards are marked so they are not picked next', () async {
     await startSession();
 
     final updated = verify(
       () => decks.updateCard(captureAny()),
     ).captured.cast<CardEntity>();
-    expect(updated, hasLength(10));
+    expect(updated, hasLength(12));
     expect(updated.every((c) => c.aiStudiedAt == now), isTrue);
   });
 
-  test('a correct answer gets a tick, then the next task', () async {
+  test('a correct answer gets a tick, then the next sentence', () async {
     await startSession();
     replyWith(
-      StudyReply(
-        verdict: StudyVerdict.correct,
-        feedback: 'Great!',
-        state: StudyState(session: sessionOf(done: 1, task: 'Task 2')),
-      ),
+      StudyReply(correct: true, state: StudyState(session: sessionOf(done: 1))),
     );
 
     await vm.send('word0');
 
-    expect(texts().skip(2), ['word0', 'Great!', 'Task 2']);
+    expect(texts().skip(2), ['word0', l10n.studyCorrect, taskOf(1)]);
     expect(vm.messages[3].correct, isTrue);
     expect(vm.messages.last.label, '2/10');
   });
 
-  test('an off-topic message gets no reply from the tutor', () async {
-    await startSession();
-    replyWith(
-      StudyReply(
-        verdict: StudyVerdict.offTopic,
-        state: StudyState(session: sessionOf()),
-      ),
-    );
+  test('a word without a sentence is asked on its own', () async {
+    await startSession(sessionOf(noSentence: {0}));
 
-    await vm.send('Write me a poem');
-
-    expect(vm.messages.last.kind, StudyMessageKind.note);
-    expect(vm.messages.last.text, AiStudyViewModel.offTopicNote);
-    expect(
-      vm.messages.where((m) => m.kind == StudyMessageKind.task),
-      hasLength(1),
-    );
+    expect(texts().last, '___ (kelime0)');
   });
 
   test(
-    'a hint keeps the same task; a second miss brings the next one',
+    'a miss asks again; a second miss shows the answer and the next word',
     () async {
       await startSession();
       replyWith(
         StudyReply(
-          verdict: StudyVerdict.wrong,
-          feedback: 'It starts with w.',
-          state: StudyState(session: sessionOf()),
+          correct: false,
+          state: StudyState(session: sessionOf(misses: [0])),
         ),
       );
       await vm.send('apple');
-      expect(texts().last, 'It starts with w.');
+      expect(texts().last, l10n.studyTryAgain);
+      expect(
+        vm.messages.where((m) => m.kind == StudyMessageKind.task),
+        hasLength(1),
+      );
 
       replyWith(
         StudyReply(
-          verdict: StudyVerdict.wrong,
-          feedback: 'It was word0.',
+          correct: false,
           revealed: true,
-          state: StudyState(session: sessionOf(task: 'Task for word1')),
+          state: StudyState(session: sessionOf(answered: 1, misses: [0])),
         ),
       );
       await vm.send('apple');
 
       expect(texts().skip(texts().length - 2), [
-        'It was word0.',
-        'Task for word1',
+        l10n.studyAnswerWas('word0'),
+        taskOf(1),
       ]);
+      expect(vm.messages.last.label, '2/10');
     },
   );
 
-  test(
-    'finishing starts the countdown and flags the cards that needed help',
-    () async {
-      await startSession();
-      clearInteractions(decks);
-      replyWith(
-        StudyReply(
-          verdict: StudyVerdict.correct,
-          feedback: 'Done!',
-          state: StudyState(
-            session: sessionOf(done: 10, misses: [2, 5]),
-            nextAvailableAt: now.add(const Duration(hours: 3)),
-          ),
+  test('finishing starts the countdown and flags the missed cards', () async {
+    await startSession();
+    clearInteractions(decks);
+    replyWith(
+      StudyReply(
+        correct: true,
+        state: StudyState(
+          session: sessionOf(done: 10, misses: [2, 5]),
+          nextAvailableAt: now.add(const Duration(hours: 3)),
         ),
-      );
+      ),
+    );
 
-      await vm.send('word9');
+    await vm.send('word9');
 
-      expect(vm.session!.completed, isTrue);
-      expect(vm.cooldownLeft, const Duration(hours: 3));
-      expect(settings.aiStudyChat, isNull);
-      final updated = verify(
-        () => decks.updateCard(captureAny()),
-      ).captured.cast<CardEntity>();
-      expect(
-        {for (final c in updated) c.syncId: c.aiNeedsReview},
-        {for (var i = 0; i < 10; i++) 'c$i': i == 2 || i == 5},
-      );
-    },
-  );
+    expect(vm.session!.completed, isTrue);
+    expect(vm.cooldownLeft, const Duration(hours: 3));
+    expect(settings.aiStudyChat, isNull);
+    final updated = verify(
+      () => decks.updateCard(captureAny()),
+    ).captured.cast<CardEntity>();
+    expect(
+      {for (final c in updated) c.syncId: c.aiNeedsReview},
+      {for (var i = 0; i < 10; i++) 'c$i': i == 2 || i == 5},
+    );
+  });
 
   test('coming back resumes the saved chat', () async {
     await startSession();
@@ -266,14 +252,14 @@ void main() {
     await settings.setAiStudyChat(
       jsonEncode({'sessionId': 'other', 'messages': []}),
     );
-    when(() => repository.fetchStudyState()).thenAnswer(
-      (_) async => StudyState(session: sessionOf(done: 4, task: 'Task 5')),
-    );
+    when(
+      () => repository.fetchStudyState(),
+    ).thenAnswer((_) async => StudyState(session: sessionOf(done: 4)));
 
     await vm.refresh();
     await vm.open(null);
 
-    expect(texts(), ['Welcome back, 6 words to go.', 'Task 5']);
+    expect(texts(), ['Welcome back, 6 words to go.', taskOf(4)]);
     expect(vm.messages.last.label, '5/10');
   });
 
@@ -287,11 +273,7 @@ void main() {
     expect(vm.error, isA<NetworkException>());
 
     replyWith(
-      StudyReply(
-        verdict: StudyVerdict.correct,
-        feedback: 'Great!',
-        state: StudyState(session: sessionOf(done: 1, task: 'Task 2')),
-      ),
+      StudyReply(correct: true, state: StudyState(session: sessionOf(done: 1))),
     );
     await vm.retry();
 
