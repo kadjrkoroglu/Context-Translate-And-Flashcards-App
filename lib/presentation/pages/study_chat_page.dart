@@ -316,7 +316,10 @@ class _Bubble extends StatelessWidget {
 }
 
 class _TypingBubble extends StatefulWidget {
-  const _TypingBubble();
+  /// Left in the chat; centered on the loading screen.
+  final AlignmentGeometry alignment;
+
+  const _TypingBubble({this.alignment = Alignment.centerLeft});
 
   @override
   State<_TypingBubble> createState() => _TypingBubbleState();
@@ -338,7 +341,7 @@ class _TypingBubbleState extends State<_TypingBubble>
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: Alignment.centerLeft,
+      alignment: widget.alignment,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 3),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
@@ -548,7 +551,7 @@ class _StartState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const _TypingBubble(),
+            const _TypingBubble(alignment: Alignment.center),
             const SizedBox(height: 10),
             Text(
               l10n.gettingWordsReady,
