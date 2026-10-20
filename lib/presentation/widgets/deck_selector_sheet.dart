@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
+import 'package:translate_app/domain/entities/card_entity.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
 import 'package:translate_app/l10n/l10n.dart';
@@ -20,7 +21,17 @@ class DeckSelectorSheet extends StatelessWidget {
     BuildContext context,
     String word,
     String translation,
-  ) {
+  ) async {
+    if (!fitsCard(word, translation)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.cardTooLong(maxCardWordLength, maxCardTranslationLength),
+          ),
+        ),
+      );
+      return;
+    }
     return showModalBottomSheet(
       context: context,
       barrierColor: Colors.black54,

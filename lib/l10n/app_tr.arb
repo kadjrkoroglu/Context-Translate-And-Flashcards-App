@@ -329,6 +329,7 @@
   "failedAddDeck": "Deste eklenemedi",
   "failedDeleteDeck": "Deste silinemedi",
   "failedAddCard": "Kart eklenemedi",
+  "cardTooLong": "Kart için çok uzun: kelime en fazla {word}, çevirisi en fazla {translation} karakter olabilir.",
   "failedDeleteCards": "Kartlar silinemedi",
   "failedUpdateDeckSettings": "Deste ayarları güncellenemedi",
   "failedUpdateDeckLimits": "Deste sınırları güncellenemedi",

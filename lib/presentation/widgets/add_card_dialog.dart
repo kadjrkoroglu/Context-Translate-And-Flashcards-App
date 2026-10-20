@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'package:provider/provider.dart';
+import 'package:translate_app/domain/entities/card_entity.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
 import 'package:translate_app/l10n/l10n.dart';
@@ -38,10 +39,15 @@ class AddCardDialog {
                 controller: frontCtrl,
                 focusNode: frontFocus,
                 label: l10n.cardFront,
+                maxLength: maxCardWordLength,
                 autofocus: true,
               ),
               const SizedBox(height: 12),
-              _DialogField(controller: backCtrl, label: l10n.cardBack),
+              _DialogField(
+                controller: backCtrl,
+                label: l10n.cardBack,
+                maxLength: maxCardTranslationLength,
+              ),
             ],
           ),
           actions: [
@@ -91,12 +97,14 @@ class AddCardDialog {
 class _DialogField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
+  final int maxLength;
   final bool autofocus;
   final FocusNode? focusNode;
 
   const _DialogField({
     required this.controller,
     required this.label,
+    required this.maxLength,
     this.autofocus = false,
     this.focusNode,
   });
@@ -107,11 +115,13 @@ class _DialogField extends StatelessWidget {
       controller: controller,
       focusNode: focusNode,
       autofocus: autofocus,
+      maxLength: maxLength,
       style: const TextStyle(color: Colors.white),
       cursorColor: Colors.white,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.white54),
+        counterStyle: const TextStyle(color: Colors.white38),
         filled: true,
         fillColor: Colors.white.withValues(alpha: 0.05),
         border: OutlineInputBorder(

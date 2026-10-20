@@ -599,6 +599,17 @@
   "failedAddDeck": "Failed to add deck",
   "failedDeleteDeck": "Failed to delete deck",
   "failedAddCard": "Failed to add card",
+  "cardTooLong": "Too long for a card: the word can be up to {word} characters, the translation up to {translation}.",
+  "@cardTooLong": {
+    "placeholders": {
+      "word": {
+        "type": "int"
+      },
+      "translation": {
+        "type": "int"
+      }
+    }
+  },
   "failedDeleteCards": "Failed to delete cards",
   "failedUpdateDeckSettings": "Failed to update deck settings",
   "failedUpdateDeckLimits": "Failed to update deck limits",

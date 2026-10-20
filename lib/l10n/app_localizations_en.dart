@@ -1171,6 +1171,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failedAddCard => 'Failed to add card';
 
   @override
+  String cardTooLong(int word, int translation) {
+    return 'Too long for a card: the word can be up to $word characters, the translation up to $translation.';
+  }
+
+  @override
   String get failedDeleteCards => 'Failed to delete cards';
 
   @override

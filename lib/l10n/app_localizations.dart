@@ -2072,6 +2072,12 @@ abstract class AppLocalizations {
   /// **'Failed to add card'**
   String get failedAddCard;
 
+  /// No description provided for @cardTooLong.
+  ///
+  /// In en, this message translates to:
+  /// **'Too long for a card: the word can be up to {word} characters, the translation up to {translation}.'**
+  String cardTooLong(int word, int translation);
+
   /// No description provided for @failedDeleteCards.
   ///
   /// In en, this message translates to:

@@ -1124,6 +1124,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get failedAddCard => 'Kart eklenemedi';
 
   @override
+  String cardTooLong(int word, int translation) {
+    return 'Kart için çok uzun: kelime en fazla $word, çevirisi en fazla $translation karakter olabilir.';
+  }
+
+  @override
   String get failedDeleteCards => 'Kartlar silinemedi';
 
   @override

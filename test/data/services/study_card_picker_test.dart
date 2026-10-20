@@ -33,7 +33,7 @@ void main() {
     final deck = [
       ...cards('n', 9),
       card('deleted', deleted: true),
-      card('long', word: 'x' * 201),
+      card('long', word: 'x' * 41),
       card('blank', word: '  '),
     ];
 

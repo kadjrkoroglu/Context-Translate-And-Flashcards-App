@@ -5,14 +5,12 @@ import 'package:translate_app/domain/entities/card_entity.dart';
 /// Cards in one Study with AI session (the backend accepts this range).
 const int minStudyCards = 10;
 const int maxStudyCards = 30;
-const int _maxCardText = 200;
 
 bool isStudyCard(CardEntity card) =>
     !card.isDeleted &&
     card.word.trim().isNotEmpty &&
     card.translation.trim().isNotEmpty &&
-    card.word.length <= _maxCardText &&
-    card.translation.length <= _maxCardText;
+    fitsCard(card.word, card.translation);
 
 int studyCardCount(List<CardEntity> cards) => cards.where(isStudyCard).length;
 

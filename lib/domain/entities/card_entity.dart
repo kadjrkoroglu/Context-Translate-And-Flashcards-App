@@ -1,3 +1,11 @@
+/// Longest card sides; Study with AI has the learner type the word exactly.
+const int maxCardWordLength = 40;
+const int maxCardTranslationLength = 60;
+
+bool fitsCard(String word, String translation) =>
+    word.trim().length <= maxCardWordLength &&
+    translation.trim().length <= maxCardTranslationLength;
+
 class CardEntity {
   final int id;
   final String syncId;
