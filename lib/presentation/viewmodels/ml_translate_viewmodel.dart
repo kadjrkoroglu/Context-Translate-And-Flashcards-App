@@ -209,6 +209,7 @@ class MLTranslateViewModel extends ChangeNotifier {
       try {
         // Mobile data too: the plugin waits for Wi-Fi by default.
         await modelManager.downloadModel(bcpCode, isWifiRequired: false);
+        _downloadedModels = {..._downloadedModels, languageName};
       } catch (e) {
         _setError(l10n.failedDownloadModel(languageLabel(languageName)));
       } finally {
