@@ -1562,12 +1562,6 @@ abstract class AppLocalizations {
   /// **'Please close and reopen the app to keep translating as a guest, or sign back in.'**
   String get restartBody;
 
-  /// No description provided for @didYouMean.
-  ///
-  /// In en, this message translates to:
-  /// **'Did you mean: '**
-  String get didYouMean;
-
   /// No description provided for @translateFrom.
   ///
   /// In en, this message translates to:

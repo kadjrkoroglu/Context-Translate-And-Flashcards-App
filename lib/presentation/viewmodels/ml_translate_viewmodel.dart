@@ -3,7 +3,6 @@ import 'package:translate_app/presentation/utils/sound_level.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:translate_app/data/services/dictionary_service.dart';
 import 'package:translate_app/data/constants/ml_languages.dart';
 import 'package:translate_app/presentation/viewmodels/history_viewmodel.dart';
 import 'package:translate_app/data/services/settings_service.dart';
@@ -11,7 +10,6 @@ import 'package:google_mlkit_language_id/google_mlkit_language_id.dart';
 import 'package:translate_app/l10n/l10n.dart';
 
 class MLTranslateViewModel extends ChangeNotifier {
-  final DictionaryService _dictionaryService = DictionaryService();
   final SpeechToText _speechToText = SpeechToText();
   final SoundLevel soundLevel = SoundLevel();
   final FocusNode inputFocus = FocusNode();
@@ -24,7 +22,6 @@ class MLTranslateViewModel extends ChangeNotifier {
   late String _targetLanguage;
   bool _isLoading = false;
   String? _error;
-  String? _spellingCorrection;
   String? _detectedLanguage;
   String? _downloadingLanguage;
   bool _speechEnabled = false;
@@ -38,7 +35,6 @@ class MLTranslateViewModel extends ChangeNotifier {
   String get targetLanguage => _targetLanguage;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  String? get spellingCorrection => _spellingCorrection;
   String? get detectedLanguage => _detectedLanguage;
   String? get downloadingLanguage => _downloadingLanguage;
   bool get speechEnabled => _speechEnabled;
@@ -102,7 +98,6 @@ class MLTranslateViewModel extends ChangeNotifier {
     _debounce = Timer(const Duration(milliseconds: 500), () {
       if (text.isEmpty) {
         outputController.text = '';
-        _spellingCorrection = null;
         _detectedLanguage = null;
         notifyListeners();
       } else {
@@ -212,14 +207,6 @@ class MLTranslateViewModel extends ChangeNotifier {
       notifyListeners();
 
       try {
-        // The spelling dictionary is optional; it must never block the model.
-        try {
-          if (!(await _dictionaryService.isDictionaryDownloaded(bcpCode))) {
-            await _dictionaryService.downloadDictionary(bcpCode);
-          }
-        } catch (e) {
-          debugPrint('Dictionary download failed for $bcpCode: $e');
-        }
         // Mobile data too: the plugin waits for Wi-Fi by default.
         await modelManager.downloadModel(bcpCode, isWifiRequired: false);
       } catch (e) {
@@ -239,7 +226,6 @@ class MLTranslateViewModel extends ChangeNotifier {
         _sourceLanguage == '-') {
       if (_textController.text.isEmpty) {
         outputController.text = '';
-        _spellingCorrection = null;
         _detectedLanguage = null;
       }
       _isLoading = false;
@@ -253,19 +239,7 @@ class MLTranslateViewModel extends ChangeNotifier {
     try {
       final sourceLang = MlLanguages.mapStringToLanguage(_sourceLanguage);
       final targetLang = MlLanguages.mapStringToLanguage(_targetLanguage);
-      final sourceBcp = MlLanguages.mapNameToBCP(_sourceLanguage);
-
-      await _dictionaryService.loadDictionary(sourceBcp);
-
       final originalText = _textController.text;
-      final correctedText = _dictionaryService.correctSentence(
-        originalText,
-        sourceBcp,
-      );
-
-      _spellingCorrection = (correctedText != originalText.toLowerCase())
-          ? correctedText
-          : null;
 
       _onDeviceTranslator?.close();
       try {
@@ -275,7 +249,7 @@ class MLTranslateViewModel extends ChangeNotifier {
         );
 
         final String? response = await _onDeviceTranslator?.translateText(
-          correctedText,
+          originalText,
         );
         outputController.text = response ?? '';
       } catch (e) {
@@ -329,15 +303,6 @@ class MLTranslateViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void applyCorrection(TextEditingController outputController) {
-    if (_spellingCorrection != null) {
-      _textController.text = _spellingCorrection!;
-      _spellingCorrection = null;
-      translate(outputController);
-      notifyListeners();
-    }
-  }
-
   void saveHistoryNow(String translation) {
     _historyTimer?.cancel();
     final word = _textController.text.trim();
@@ -359,7 +324,6 @@ class MLTranslateViewModel extends ChangeNotifier {
 
     _textController.clear();
     outputController.clear();
-    _spellingCorrection = null;
     _detectedLanguage = null;
     _clearError();
     notifyListeners();

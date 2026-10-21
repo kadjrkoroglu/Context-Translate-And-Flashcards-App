@@ -172,58 +172,6 @@ class MLInputBody extends StatelessWidget {
               ),
             ),
           ),
-        if (viewModel.spellingCorrection != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Material(
-              color: Colors.white.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () =>
-                    viewModel.applyCorrection(outputController),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.auto_fix_high,
-                        size: 16,
-                        color: Colors.blueAccent,
-                      ),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text.rich(
-                          TextSpan(
-                            text: l10n.didYouMean,
-                            style: TextStyle(
-                              color: Colors.white.withValues(
-                                alpha: 0.6,
-                              ),
-                              fontSize: 13,
-                            ),
-                            children: [
-                              TextSpan(
-                                text: viewModel.spellingCorrection,
-                                style: const TextStyle(
-                                  color: Colors.blueAccent,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
         if (viewModel.detectedLanguage != null)
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),

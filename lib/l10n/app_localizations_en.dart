@@ -880,9 +880,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please close and reopen the app to keep translating as a guest, or sign back in.';
 
   @override
-  String get didYouMean => 'Did you mean: ';
-
-  @override
   String get translateFrom => 'Translate from: ';
 
   @override

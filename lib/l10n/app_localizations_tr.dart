@@ -850,9 +850,6 @@ class AppLocalizationsTr extends AppLocalizations {
       'Misafir olarak çeviriye devam etmek için uygulamayı kapatıp yeniden aç ya da tekrar giriş yap.';
 
   @override
-  String get didYouMean => 'Bunu mu demek istedin: ';
-
-  @override
   String get translateFrom => 'Şu dilden çevir: ';
 
   @override
