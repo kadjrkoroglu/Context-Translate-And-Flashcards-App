@@ -26,12 +26,11 @@ class TranslationRepositoryImpl implements TranslationRepository {
   }
 
   @override
-  Future<PhotoTranslation> translatePhotoLines(
-    List<String> lines,
-    String sourceLang,
+  Future<PhotoTranslation> translatePhotoBlocks(
+    List<List<String>> blocks,
     String targetLang,
   ) {
-    return _geminiService.translatePhotoLines(lines, sourceLang, targetLang);
+    return _geminiService.translatePhotoBlocks(blocks, targetLang);
   }
 
   @override

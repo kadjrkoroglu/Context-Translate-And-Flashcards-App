@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:translate_app/core/languages.dart';
 import 'package:http/http.dart' as http;
 import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/data/constants/api_config.dart';
@@ -25,21 +24,21 @@ class GeminiService {
         .toList();
   }
 
-  /// Only the text read on the device is sent, never the photo.
-  Future<PhotoTranslation> translatePhotoLines(
-    List<String> lines,
-    String sourceLanguage,
+  /// Only the text read on the device is sent, never the photo. The photo's
+  /// language isn't sent: the model recognizes it, so a wrong pick can't matter.
+  Future<PhotoTranslation> translatePhotoBlocks(
+    List<List<String>> blocks,
     String targetLanguage,
   ) async {
     final data = await _post(_photoUrl, {
-      'lines': lines,
-      if (sourceLanguage != autoDetect) 'sourceLanguage': sourceLanguage,
+      'blocks': blocks,
       'targetLanguage': targetLanguage,
     });
     return PhotoTranslation(
-      translations: (data['translations'] as List<dynamic>)
-          .map((t) => t.toString())
-          .toList(),
+      translations: [
+        for (final group in data['translations'] as List<dynamic>)
+          [for (final t in group as List<dynamic>) t.toString()],
+      ],
       words: [
         for (final w in data['words'] as List<dynamic>? ?? const [])
           if (w is Map && w['word'] is String && w['translation'] is String)

@@ -1343,7 +1343,7 @@ class _WordsDrawer extends StatelessWidget {
     final glass = Theme.of(context).extension<GlassThemeExtension>();
     final peek = (peekHeight / availableHeight).clamp(0.1, 0.5).toDouble();
     final words = vm.words;
-    final lineCount = vm.blocks.length;
+    final lineCount = vm.lineCount;
 
     return DraggableScrollableSheet(
       initialChildSize: peek,
@@ -1571,12 +1571,12 @@ class _StatusBar extends StatelessWidget {
       PhotoTranslateStatus.reading => (null, l10n.readingText, null),
       PhotoTranslateStatus.translating => (
         null,
-        l10n.translatingLines(vm.blocks.length),
+        l10n.translatingLines(vm.lineCount),
         null,
       ),
       PhotoTranslateStatus.done => (
         Icons.check_circle_rounded,
-        l10n.linesTranslatedTo(vm.blocks.length, languageLabel(targetLanguage)),
+        l10n.linesTranslatedTo(vm.lineCount, languageLabel(targetLanguage)),
         null,
       ),
       PhotoTranslateStatus.noText => (

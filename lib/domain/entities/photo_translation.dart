@@ -1,6 +1,7 @@
-/// One translation per line plus a word list for flashcards.
+/// Per group of lines: one translation for the whole group when its lines are
+/// one text, else one per line. Plus a word list for flashcards.
 class PhotoTranslation {
-  final List<String> translations;
+  final List<List<String>> translations;
   final List<PhotoWord> words;
 
   const PhotoTranslation({required this.translations, required this.words});

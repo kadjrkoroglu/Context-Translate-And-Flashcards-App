@@ -17,12 +17,11 @@ class TranslateUsecase {
     return _repository.translate(text, sourceLang, targetLang);
   }
 
-  Future<PhotoTranslation> executePhotoLines(
-    List<String> lines,
-    String sourceLang,
+  Future<PhotoTranslation> executePhotoBlocks(
+    List<List<String>> blocks,
     String targetLang,
   ) {
-    return _repository.translatePhotoLines(lines, sourceLang, targetLang);
+    return _repository.translatePhotoBlocks(blocks, targetLang);
   }
 
   Future<LiveSessionGrant> startLiveSession(String targetLanguageCode) {

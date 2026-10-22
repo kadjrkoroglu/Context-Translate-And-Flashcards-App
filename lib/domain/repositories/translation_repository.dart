@@ -10,11 +10,10 @@ abstract class TranslationRepository {
     String targetLang,
   );
 
-  /// Translates text lines read from a photo on the device; one translation
-  /// per line, in the same order.
-  Future<PhotoTranslation> translatePhotoLines(
-    List<String> lines,
-    String sourceLang,
+  /// Translates groups of lines read from a photo on the device, in the
+  /// same order.
+  Future<PhotoTranslation> translatePhotoBlocks(
+    List<List<String>> blocks,
     String targetLang,
   );
 

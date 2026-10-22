@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:translate_app/core/errors/app_exception.dart';
+import 'package:translate_app/data/ocr/line_grouping.dart';
 import 'package:translate_app/data/ocr/ocr_core.dart';
 import 'package:translate_app/data/services/text_recognition_service.dart';
 import 'package:translate_app/domain/entities/photo_text_block.dart';
@@ -24,10 +25,11 @@ class PhotoTranslateViewModel extends ChangeNotifier {
   PhotoTranslateStatus _status = PhotoTranslateStatus.camera;
   ui.Image? _image;
   RgbaImage? _pixels;
+  // As read, one per line; [_blocks] is what's drawn (joined text as one box).
+  List<PhotoTextBlock> _lines = [];
+  List<List<int>> _groups = [];
   List<PhotoTextBlock> _blocks = [];
   List<PhotoWord> _words = [];
-  // Sent so the word list goes photo language → target language.
-  String _sourceLanguage = '';
   AppException? _exception;
   bool _showOriginal = false;
   bool _disposed = false;
@@ -37,6 +39,7 @@ class PhotoTranslateViewModel extends ChangeNotifier {
   /// Same pixels that were read, so positions match exactly.
   ui.Image? get image => _image;
   List<PhotoTextBlock> get blocks => _blocks;
+  int get lineCount => _lines.length;
 
   List<PhotoWord> get words => _words;
   AppException? get exception => _exception;
@@ -89,6 +92,7 @@ class PhotoTranslateViewModel extends ChangeNotifier {
     if (pixels == null) return;
     final script = TextRecognitionService.scriptFor(sourceLanguage);
     if (script == null) {
+      _lines = [];
       _blocks = [];
       _fail(
         UnsupportedLanguageException(
@@ -99,13 +103,13 @@ class PhotoTranslateViewModel extends ChangeNotifier {
       return;
     }
 
+    _lines = [];
     _blocks = [];
-    _sourceLanguage = sourceLanguage;
     _setStatus(PhotoTranslateStatus.reading);
     try {
       final lines = await _textRecognition.recognize(pixels, script);
       if (_disposed) return;
-      _blocks = [
+      _lines = [
         for (final line in lines)
           PhotoTextBlock(
             text: line.text,
@@ -115,6 +119,11 @@ class PhotoTranslateViewModel extends ChangeNotifier {
             foreground: ui.Color(line.colors.foreground),
           ),
       ];
+      _groups = groupLines([
+        for (final line in lines)
+          LineBox(_toPixels(line.corners, pixels), line.colors),
+      ]);
+      _blocks = _lines;
     } catch (e) {
       _fail(e is AppException ? e : GeneralException('$e'));
       return;
@@ -128,23 +137,26 @@ class PhotoTranslateViewModel extends ChangeNotifier {
   }
 
   Future<void> translate(String targetLanguage) async {
-    if (_blocks.isEmpty) return;
+    if (_lines.isEmpty) return;
+    _blocks = _lines;
     _setStatus(PhotoTranslateStatus.translating);
     try {
-      final count = _countWithinLimits();
-      final result = await _translateUsecase.executePhotoLines(
-        _blocks.take(count).map((b) => b.text).toList(),
-        _sourceLanguage,
+      final count = _groupsWithinLimits();
+      final result = await _translateUsecase.executePhotoBlocks(
+        [
+          for (final group in _groups.take(count))
+            [for (final i in group) _lines[i].text],
+        ],
         targetLanguage,
       );
       if (_disposed) return;
-      final translations = result.translations;
       _words = result.words;
-      // Lines past the request limits keep their original text.
+      // Groups past the request limits keep their original text.
       _blocks = [
-        for (var i = 0; i < _blocks.length; i++)
-          _blocks[i].withTranslation(
-            i < translations.length ? translations[i] : '',
+        for (var g = 0; g < _groups.length; g++)
+          ..._drawn(
+            _groups[g],
+            g < result.translations.length ? result.translations[g] : null,
           ),
       ];
       _setStatus(PhotoTranslateStatus.done);
@@ -158,23 +170,67 @@ class PhotoTranslateViewModel extends ChangeNotifier {
   }
 
   Future<void> retry(String sourceLanguage, String targetLanguage) {
-    return _blocks.isEmpty
+    return _lines.isEmpty
         ? readText(sourceLanguage, targetLanguage)
         : translate(targetLanguage);
   }
 
-  int _countWithinLimits() {
+  /// One text over its whole group, or each line with its own translation.
+  List<PhotoTextBlock> _drawn(List<int> group, List<String>? translation) {
+    final lines = [for (final i in group) _lines[i]];
+    if (translation == null) return lines;
+    if (translation.length == 1 && lines.length > 1) {
+      final pixels = _pixels!;
+      return [
+        PhotoTextBlock(
+          text: lines.map((l) => l.text).join(' '),
+          translation: translation.single,
+          corners: _toUnit(
+            enclosingCorners([
+              for (final i in group)
+                LineBox(
+                  _toPixels(_lines[i].corners, pixels),
+                  LabelColors(0, 0),
+                ),
+            ]),
+            pixels,
+          ),
+          background: lines.first.background,
+          foreground: lines.first.foreground,
+        ),
+      ];
+    }
+    return [
+      for (var i = 0; i < lines.length; i++)
+        lines[i].withTranslation(i < translation.length ? translation[i] : ''),
+    ];
+  }
+
+  // Whole groups only, within the backend's limits.
+  int _groupsWithinLimits() {
+    var lines = 0;
     var chars = 0;
     var count = 0;
-    for (final block in _blocks) {
-      if (count == _maxLines || chars + block.text.length > _maxTotalChars) {
+    for (final group in _groups) {
+      final length = group.fold(0, (sum, i) => sum + _lines[i].text.length);
+      if (lines + group.length > _maxLines || chars + length > _maxTotalChars) {
         break;
       }
-      chars += block.text.length;
+      lines += group.length;
+      chars += length;
       count++;
     }
     return count;
   }
+
+  // Grouping needs real pixels: the photo isn't square.
+  static List<Offset> _toPixels(List<Offset> corners, RgbaImage image) => [
+    for (final c in corners) Offset(c.dx * image.width, c.dy * image.height),
+  ];
+
+  static List<Offset> _toUnit(List<Offset> corners, RgbaImage image) => [
+    for (final c in corners) Offset(c.dx / image.width, c.dy / image.height),
+  ];
 
   void _setStatus(PhotoTranslateStatus status) {
     _status = status;
@@ -194,6 +250,8 @@ class PhotoTranslateViewModel extends ChangeNotifier {
     _image?.dispose();
     _image = null;
     _pixels = null;
+    _lines = [];
+    _groups = [];
     _blocks = [];
     _setStatus(PhotoTranslateStatus.camera);
   }
