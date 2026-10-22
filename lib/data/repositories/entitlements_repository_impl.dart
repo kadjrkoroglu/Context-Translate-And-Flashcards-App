@@ -12,4 +12,8 @@ class EntitlementsRepositoryImpl implements EntitlementsRepository {
     final json = await _service.fetchEntitlements();
     return EntitlementsEntity.fromJson(json);
   }
+
+  @override
+  Future<EntitlementsEntity> refreshEntitlements() async =>
+      EntitlementsEntity.fromJson(await _service.refreshEntitlements());
 }

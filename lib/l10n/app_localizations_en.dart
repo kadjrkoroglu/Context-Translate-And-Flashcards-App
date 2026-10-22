@@ -322,13 +322,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'AI writes new sentences with your saved words; you fill in the blanks.';
 
   @override
-  String get comingSoon => 'Coming soon — subscriptions aren\'t live yet.';
-
-  @override
   String get plansHeadline => 'Turn every translation\ninto a lesson.';
 
   @override
-  String get plansTrialLine => 'Try any plan free for 14 days. Cancel anytime.';
+  String plansTrialLine(int days) {
+    return 'Try any plan free for $days days. Cancel anytime.';
+  }
 
   @override
   String yourPlanLine(String tier) {
@@ -343,8 +342,9 @@ class AppLocalizationsEn extends AppLocalizations {
       '* The Premium trial includes 5 minutes of Live translation.';
 
   @override
-  String get trialTerms =>
-      'After the 14-day free trial, the subscription starts automatically unless you cancel at least 24 hours before the trial ends. One free trial per account. ';
+  String trialTerms(int days) {
+    return 'After the $days-day free trial, the subscription starts automatically unless you cancel at least 24 hours before the trial ends. One free trial per Apple ID. ';
+  }
 
   @override
   String get renewalTerms =>
@@ -365,7 +365,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get startTrial => 'Start 14-day free trial';
+  String startTrial(int days) {
+    return 'Start $days-day free trial';
+  }
 
   @override
   String thenPerMonth(String price) {
@@ -376,7 +378,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get yourPlan => 'Your plan';
 
   @override
-  String get fourteenDaysFree => '14 days free';
+  String daysFree(int days) {
+    return '$days days free';
+  }
 
   @override
   String planSemantics(String name, String price) {
@@ -397,13 +401,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get trialDay12 => 'Day 12';
+  String trialDay(int day) {
+    return 'Day $day';
+  }
 
   @override
   String get trialDay12Detail => 'We\'ll remind you that your trial is ending.';
-
-  @override
-  String get trialDay14 => 'Day 14';
 
   @override
   String trialDay14Detail(String price) {
@@ -1250,4 +1253,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get failedSaveRating => 'Failed to save rating';
+
+  @override
+  String get subscribe => 'Subscribe';
+
+  @override
+  String get plansLoadFailed =>
+      'Couldn\'t load the plans. Check your connection.';
+
+  @override
+  String get signInToSubscribe =>
+      'Sign in first so your plan stays with your account.';
+
+  @override
+  String get purchaseDone => 'Your plan is active.';
+
+  @override
+  String get purchaseFailed => 'The purchase didn\'t go through. Try again.';
+
+  @override
+  String get restoreDone => 'Your purchases are restored.';
+
+  @override
+  String get restoreNothing =>
+      'No active subscription was found for this Apple ID.';
+
+  @override
+  String get restoreFailed => 'Couldn\'t restore purchases. Try again.';
+
+  @override
+  String get manageSubscription => 'Manage subscription';
 }

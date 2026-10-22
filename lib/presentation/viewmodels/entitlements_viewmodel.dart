@@ -28,12 +28,15 @@ class EntitlementsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> load() async {
+  /// [fromStore]: the server first reads the plan from RevenueCat.
+  Future<void> load({bool fromStore = false}) async {
     _setLoading(true);
     _error = null;
 
     try {
-      _entitlements = await _usecase.execute();
+      _entitlements = fromStore
+          ? await _usecase.executeRefresh()
+          : await _usecase.execute();
       debugPrint(
         '[ENTITLEMENTS] OK tier=${_entitlements!.tier} '
         'maxDecks=${_entitlements!.entitlements.maxDecks} '

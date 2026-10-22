@@ -9,4 +9,7 @@ class EntitlementsUsecase {
   Future<EntitlementsEntity> execute() {
     return _repository.getEntitlements();
   }
+
+  Future<EntitlementsEntity> executeRefresh() =>
+      _repository.refreshEntitlements();
 }

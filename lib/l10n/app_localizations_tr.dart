@@ -314,14 +314,12 @@ class AppLocalizationsTr extends AppLocalizations {
       'AI kaydettiğin kelimelerle yeni cümleler yazar, sen de boşlukları doldurursun.';
 
   @override
-  String get comingSoon => 'Çok yakında — abonelikler henüz aktif değil.';
-
-  @override
   String get plansHeadline => 'Her çeviriyi\nbir derse dönüştür.';
 
   @override
-  String get plansTrialLine =>
-      'Her planı 14 gün ücretsiz dene. İstediğin zaman iptal et.';
+  String plansTrialLine(int days) {
+    return 'Her planı $days gün ücretsiz dene. İstediğin zaman iptal et.';
+  }
 
   @override
   String yourPlanLine(String tier) {
@@ -336,8 +334,9 @@ class AppLocalizationsTr extends AppLocalizations {
       '* Premium denemesi 5 dakika Canlı çeviri içerir.';
 
   @override
-  String get trialTerms =>
-      '14 günlük ücretsiz deneme bitmeden en az 24 saat önce iptal etmezsen abonelik otomatik olarak başlar. Her hesap için bir ücretsiz deneme. ';
+  String trialTerms(int days) {
+    return '$days günlük ücretsiz deneme bitmeden en az 24 saat önce iptal etmezsen abonelik otomatik olarak başlar. Her Apple Kimliği için bir ücretsiz deneme. ';
+  }
 
   @override
   String get renewalTerms =>
@@ -358,7 +357,9 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get startTrial => '14 günlük ücretsiz denemeyi başlat';
+  String startTrial(int days) {
+    return '$days günlük ücretsiz denemeyi başlat';
+  }
 
   @override
   String thenPerMonth(String price) {
@@ -369,7 +370,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get yourPlan => 'Planın';
 
   @override
-  String get fourteenDaysFree => '14 gün ücretsiz';
+  String daysFree(int days) {
+    return '$days gün ücretsiz';
+  }
 
   @override
   String planSemantics(String name, String price) {
@@ -390,14 +393,13 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get trialDay12 => '12. gün';
+  String trialDay(int day) {
+    return '$day. gün';
+  }
 
   @override
   String get trialDay12Detail =>
       'Denemenin bitmek üzere olduğunu sana hatırlatırız.';
-
-  @override
-  String get trialDay14 => '14. gün';
 
   @override
   String trialDay14Detail(String price) {
@@ -1203,4 +1205,33 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get failedSaveRating => 'Puan kaydedilemedi';
+
+  @override
+  String get subscribe => 'Abone ol';
+
+  @override
+  String get plansLoadFailed => 'Planlar yüklenemedi. Bağlantını kontrol et.';
+
+  @override
+  String get signInToSubscribe =>
+      'Planın hesabında kalsın diye önce giriş yap.';
+
+  @override
+  String get purchaseDone => 'Planın aktif.';
+
+  @override
+  String get purchaseFailed => 'Satın alma tamamlanamadı. Tekrar dene.';
+
+  @override
+  String get restoreDone => 'Satın alımların geri yüklendi.';
+
+  @override
+  String get restoreNothing =>
+      'Bu Apple Kimliği için aktif bir abonelik bulunamadı.';
+
+  @override
+  String get restoreFailed => 'Satın alımlar geri yüklenemedi. Tekrar dene.';
+
+  @override
+  String get manageSubscription => 'Aboneliği yönet';
 }

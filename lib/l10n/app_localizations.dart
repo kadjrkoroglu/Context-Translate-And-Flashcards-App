@@ -650,12 +650,6 @@ abstract class AppLocalizations {
   /// **'AI writes new sentences with your saved words; you fill in the blanks.'**
   String get featStudyDetail;
 
-  /// No description provided for @comingSoon.
-  ///
-  /// In en, this message translates to:
-  /// **'Coming soon — subscriptions aren\'t live yet.'**
-  String get comingSoon;
-
   /// No description provided for @plansHeadline.
   ///
   /// In en, this message translates to:
@@ -665,8 +659,8 @@ abstract class AppLocalizations {
   /// No description provided for @plansTrialLine.
   ///
   /// In en, this message translates to:
-  /// **'Try any plan free for 14 days. Cancel anytime.'**
-  String get plansTrialLine;
+  /// **'Try any plan free for {days} days. Cancel anytime.'**
+  String plansTrialLine(int days);
 
   /// No description provided for @yourPlanLine.
   ///
@@ -689,8 +683,8 @@ abstract class AppLocalizations {
   /// No description provided for @trialTerms.
   ///
   /// In en, this message translates to:
-  /// **'After the 14-day free trial, the subscription starts automatically unless you cancel at least 24 hours before the trial ends. One free trial per account. '**
-  String get trialTerms;
+  /// **'After the {days}-day free trial, the subscription starts automatically unless you cancel at least 24 hours before the trial ends. One free trial per Apple ID. '**
+  String trialTerms(int days);
 
   /// No description provided for @renewalTerms.
   ///
@@ -725,8 +719,8 @@ abstract class AppLocalizations {
   /// No description provided for @startTrial.
   ///
   /// In en, this message translates to:
-  /// **'Start 14-day free trial'**
-  String get startTrial;
+  /// **'Start {days}-day free trial'**
+  String startTrial(int days);
 
   /// No description provided for @thenPerMonth.
   ///
@@ -740,11 +734,11 @@ abstract class AppLocalizations {
   /// **'Your plan'**
   String get yourPlan;
 
-  /// No description provided for @fourteenDaysFree.
+  /// No description provided for @daysFree.
   ///
   /// In en, this message translates to:
-  /// **'14 days free'**
-  String get fourteenDaysFree;
+  /// **'{days} days free'**
+  String daysFree(int days);
 
   /// No description provided for @planSemantics.
   ///
@@ -770,23 +764,17 @@ abstract class AppLocalizations {
   /// **'Full access to {name} starts.'**
   String trialTodayDetail(String name);
 
-  /// No description provided for @trialDay12.
+  /// No description provided for @trialDay.
   ///
   /// In en, this message translates to:
-  /// **'Day 12'**
-  String get trialDay12;
+  /// **'Day {day}'**
+  String trialDay(int day);
 
   /// No description provided for @trialDay12Detail.
   ///
   /// In en, this message translates to:
   /// **'We\'ll remind you that your trial is ending.'**
   String get trialDay12Detail;
-
-  /// No description provided for @trialDay14.
-  ///
-  /// In en, this message translates to:
-  /// **'Day 14'**
-  String get trialDay14;
 
   /// No description provided for @trialDay14Detail.
   ///
@@ -2209,6 +2197,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to save rating'**
   String get failedSaveRating;
+
+  /// No description provided for @subscribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe'**
+  String get subscribe;
+
+  /// No description provided for @plansLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the plans. Check your connection.'**
+  String get plansLoadFailed;
+
+  /// No description provided for @signInToSubscribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in first so your plan stays with your account.'**
+  String get signInToSubscribe;
+
+  /// No description provided for @purchaseDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Your plan is active.'**
+  String get purchaseDone;
+
+  /// No description provided for @purchaseFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The purchase didn\'t go through. Try again.'**
+  String get purchaseFailed;
+
+  /// No description provided for @restoreDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Your purchases are restored.'**
+  String get restoreDone;
+
+  /// No description provided for @restoreNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'No active subscription was found for this Apple ID.'**
+  String get restoreNothing;
+
+  /// No description provided for @restoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t restore purchases. Try again.'**
+  String get restoreFailed;
+
+  /// No description provided for @manageSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage subscription'**
+  String get manageSubscription;
 }
 
 class _AppLocalizationsDelegate

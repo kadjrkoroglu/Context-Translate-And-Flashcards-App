@@ -120,9 +120,15 @@
   "featLiveDetail": "Speech translated as it is spoken, keeping tone and emphasis, with live captions. 60 min/month",
   "studyWithAi": "Study with AI",
   "featStudyDetail": "AI writes new sentences with your saved words; you fill in the blanks.",
-  "comingSoon": "Coming soon — subscriptions aren't live yet.",
   "plansHeadline": "Turn every translation\ninto a lesson.",
-  "plansTrialLine": "Try any plan free for 14 days. Cancel anytime.",
+  "plansTrialLine": "Try any plan free for {days} days. Cancel anytime.",
+  "@plansTrialLine": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "yourPlanLine": "Your plan: {tier}",
   "@yourPlanLine": {
     "placeholders": {
@@ -133,7 +139,14 @@
   },
   "recommended": "Recommended",
   "liveTrialNote": "* The Premium trial includes 5 minutes of Live translation.",
-  "trialTerms": "After the 14-day free trial, the subscription starts automatically unless you cancel at least 24 hours before the trial ends. One free trial per account. ",
+  "trialTerms": "After the {days}-day free trial, the subscription starts automatically unless you cancel at least 24 hours before the trial ends. One free trial per Apple ID. ",
+  "@trialTerms": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "renewalTerms": "Subscriptions renew automatically each month at the price shown unless you cancel at least 24 hours before the current period ends. Payment is charged to your Apple ID. You can manage or cancel your subscription in your App Store account settings.",
   "currentPlan": "Current plan",
   "includedInPremium": "Included in Premium",
@@ -146,7 +159,14 @@
       }
     }
   },
-  "startTrial": "Start 14-day free trial",
+  "startTrial": "Start {days}-day free trial",
+  "@startTrial": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "thenPerMonth": "then {price}/month · cancel anytime",
   "@thenPerMonth": {
     "placeholders": {
@@ -156,7 +176,14 @@
     }
   },
   "yourPlan": "Your plan",
-  "fourteenDaysFree": "14 days free",
+  "daysFree": "{days} days free",
+  "@daysFree": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
   "planSemantics": "{name}, {price} per month",
   "@planSemantics": {
     "placeholders": {
@@ -185,9 +212,15 @@
       }
     }
   },
-  "trialDay12": "Day 12",
+  "trialDay": "Day {day}",
+  "@trialDay": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      }
+    }
+  },
   "trialDay12Detail": "We'll remind you that your trial is ending.",
-  "trialDay14": "Day 14",
   "trialDay14Detail": "Your subscription starts at {price}/month unless you cancel.",
   "@trialDay14Detail": {
     "placeholders": {
@@ -652,5 +685,14 @@
   "failedInitTranslator": "Failed to initialize translator",
   "translationFailed": "Translation failed",
   "failedInitStudy": "Failed to initialize study session",
-  "failedSaveRating": "Failed to save rating"
+  "failedSaveRating": "Failed to save rating",
+  "subscribe": "Subscribe",
+  "plansLoadFailed": "Couldn't load the plans. Check your connection.",
+  "signInToSubscribe": "Sign in first so your plan stays with your account.",
+  "purchaseDone": "Your plan is active.",
+  "purchaseFailed": "The purchase didn't go through. Try again.",
+  "restoreDone": "Your purchases are restored.",
+  "restoreNothing": "No active subscription was found for this Apple ID.",
+  "restoreFailed": "Couldn't restore purchases. Try again.",
+  "manageSubscription": "Manage subscription"
 }

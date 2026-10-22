@@ -66,6 +66,7 @@ dependencies:
   sign_in_with_apple: ^8.2.0
   crypto: ^3.0.7
   swipeable_page_route: ^0.4.8
+  purchases_flutter: ^10.17.0
 
 dev_dependencies:
   flutter_test:

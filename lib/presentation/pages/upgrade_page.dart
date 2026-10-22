@@ -1,25 +1,27 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:translate_app/core/app_links.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/domain/entities/entitlements_entity.dart';
+import 'package:translate_app/presentation/pages/auth/login_page.dart';
+import 'package:translate_app/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/subscription_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/app_background.dart';
 import 'package:translate_app/l10n/l10n.dart';
 
-enum _Plan { standard, premium }
-
-class _PlanInfo {
+class _PlanStyle {
   final String name;
-  final String price;
   final Color color;
 
-  const _PlanInfo(this.name, this.price, this.color);
+  const _PlanStyle(this.name, this.color);
 }
 
-// Prices are placeholders until App Store prices are loaded from StoreKit.
-const _standard = _PlanInfo('Standard', r'$5.99', Colors.lightBlueAccent);
-const _premium = _PlanInfo('Premium', r'$9.99', Colors.amberAccent);
+const _styles = {
+  PlanOption.standard: _PlanStyle('Standard', Colors.lightBlueAccent),
+  PlanOption.premium: _PlanStyle('Premium', Colors.amberAccent),
+};
 
 class _Feature {
   final IconData icon;
@@ -45,30 +47,48 @@ List<_Feature> get _sharedFeatures => [
 ];
 
 // Spelled out per plan (no "everything in Standard"); Premium-only first.
-List<_Feature> _featuresOf(_Plan plan, {required bool trial}) => switch (plan) {
-  _Plan.standard => _sharedFeatures,
-  _Plan.premium => [
-    _Feature(
-      Icons.graphic_eq_rounded,
-      l10n.featLive,
-      '${l10n.featLiveDetail}${trial ? '*' : ''}',
-    ),
-    _Feature(Icons.school_rounded, l10n.studyWithAi, l10n.featStudyDetail),
-    ..._sharedFeatures,
-  ],
-};
+List<_Feature> _featuresOf(PlanOption plan, {required bool trial}) =>
+    switch (plan) {
+      PlanOption.standard => _sharedFeatures,
+      PlanOption.premium => [
+        _Feature(
+          Icons.graphic_eq_rounded,
+          l10n.featLive,
+          '${l10n.featLiveDetail}${trial ? '*' : ''}',
+        ),
+        _Feature(Icons.school_rounded, l10n.studyWithAi, l10n.featStudyDetail),
+        ..._sharedFeatures,
+      ],
+    };
 
-/// Billing isn't wired up yet; every purchase button says so.
-void showSubscriptionsComingSoon(BuildContext context) {
+/// A subscription belongs to an account, so guests sign in first.
+bool _requireAccount(BuildContext context) {
+  if (context.read<AuthViewModel>().isAuthenticated) return true;
   ScaffoldMessenger.of(
     context,
-  ).showSnackBar(SnackBar(content: Text(l10n.comingSoon)));
+  ).showSnackBar(SnackBar(content: Text(l10n.signInToSubscribe)));
+  Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginPage()));
+  return false;
+}
+
+Future<void> restorePurchases(BuildContext context) async {
+  if (!_requireAccount(context)) return;
+  final messenger = ScaffoldMessenger.of(context);
+  final outcome = await context.read<SubscriptionViewModel>().restore();
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(switch (outcome) {
+        RestoreOutcome.restored => l10n.restoreDone,
+        RestoreOutcome.nothing => l10n.restoreNothing,
+        RestoreOutcome.failed => l10n.restoreFailed,
+      }),
+    ),
+  );
 }
 
 /// Plans screen: pick Standard or Premium (Premium preselected), see exactly
-/// what that plan includes, start the trial from the pinned button. Billing
-/// isn't wired up yet, so the buttons only say "coming soon"; the tier can
-/// only change on the server.
+/// what that plan includes and subscribe from the pinned button. Prices and
+/// the trial come from the App Store through RevenueCat.
 class UpgradePage extends StatefulWidget {
   const UpgradePage({super.key});
 
@@ -77,21 +97,51 @@ class UpgradePage extends StatefulWidget {
 }
 
 class _UpgradePageState extends State<UpgradePage> {
-  _Plan _selected = _Plan.premium;
+  PlanOption _selected = PlanOption.premium;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<SubscriptionViewModel>().load();
+    });
+  }
+
+  Future<void> _buy() async {
+    if (!_requireAccount(context)) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final outcome = await context.read<SubscriptionViewModel>().buy(_selected);
+    if (outcome == PurchaseOutcome.cancelled) return;
+    if (outcome == PurchaseOutcome.done) HapticFeedback.successNotification();
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          outcome == PurchaseOutcome.done
+              ? l10n.purchaseDone
+              : l10n.purchaseFailed,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final tier = context.watch<EntitlementsViewModel>().tier;
+    final plans = context.watch<SubscriptionViewModel>();
     final onStandard =
         tier == AppTier.standard || tier == AppTier.trialStandard;
     final onPremium = tier == AppTier.premium || tier == AppTier.trialPremium;
-    // One free trial per account: only people on no plan are offered it.
-    final trial = !onStandard && !onPremium;
-    final plan = _selected == _Plan.premium ? _premium : _standard;
+    final price = plans.priceOf(_selected);
+    final trialDays = plans.trialDaysOf(_selected);
+    // Apple decides who gets the trial: one per Apple ID in the group.
+    final trial = !onStandard && !onPremium && plans.trialAvailable(_selected);
+    final style = _styles[_selected]!;
     final cta = _ctaFor(
       _selected,
       onStandard: onStandard,
       onPremium: onPremium,
+      price: price,
+      trialDays: trial ? trialDays : null,
     );
 
     return AppBackground(
@@ -116,7 +166,9 @@ class _UpgradePageState extends State<UpgradePage> {
             ),
             const SizedBox(height: 8),
             Text(
-              trial ? l10n.plansTrialLine : l10n.yourPlanLine(tier.label),
+              trial
+                  ? l10n.plansTrialLine(trialDays!)
+                  : l10n.yourPlanLine(tier.label),
               style: const TextStyle(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 18),
@@ -124,26 +176,30 @@ class _UpgradePageState extends State<UpgradePage> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: _PlanTile(
-                      plan: _standard,
-                      selected: _selected == _Plan.standard,
-                      current: onStandard,
-                      trial: trial,
-                      onTap: () => setState(() => _selected = _Plan.standard),
+                  for (final option in PlanOption.values) ...[
+                    if (option != PlanOption.values.first)
+                      const SizedBox(width: 10),
+                    Expanded(
+                      child: _PlanTile(
+                        plan: _styles[option]!,
+                        price: plans.priceOf(option),
+                        badge: option == PlanOption.premium
+                            ? l10n.recommended
+                            : null,
+                        selected: _selected == option,
+                        current: option == PlanOption.premium
+                            ? onPremium
+                            : onStandard,
+                        trialDays:
+                            !onStandard &&
+                                !onPremium &&
+                                plans.trialAvailable(option)
+                            ? plans.trialDaysOf(option)
+                            : null,
+                        onTap: () => setState(() => _selected = option),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _PlanTile(
-                      plan: _premium,
-                      badge: l10n.recommended,
-                      selected: _selected == _Plan.premium,
-                      current: onPremium,
-                      trial: trial,
-                      onTap: () => setState(() => _selected = _Plan.premium),
-                    ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -155,25 +211,42 @@ class _UpgradePageState extends State<UpgradePage> {
                 duration: const Duration(milliseconds: 200),
                 child: _FeatureList(
                   key: ValueKey(_selected),
-                  color: plan.color,
+                  color: style.color,
                   features: _featuresOf(_selected, trial: trial),
                 ),
               ),
             ),
             if (trial) ...[
               const SizedBox(height: 14),
-              _TrialTimeline(plan: plan),
+              _TrialTimeline(plan: style, price: price!, days: trialDays!),
             ],
-            if (trial && _selected == _Plan.premium) ...[
+            if (trial && _selected == PlanOption.premium) ...[
               const SizedBox(height: 10),
               Text(
                 l10n.liveTrialNote,
                 style: TextStyle(color: Colors.white54, fontSize: 12),
               ),
             ],
+            if (plans.loadFailed) ...[
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.plansLoadFailed,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                  TextButton(onPressed: plans.load, child: Text(l10n.tryAgain)),
+                ],
+              ),
+            ],
             const SizedBox(height: 16),
             Text(
-              '${trial ? l10n.trialTerms : ''}${l10n.renewalTerms}',
+              '${trial ? l10n.trialTerms(trialDays!) : ''}${l10n.renewalTerms}',
               style: const TextStyle(
                 color: Colors.white54,
                 fontSize: 12,
@@ -186,10 +259,7 @@ class _UpgradePageState extends State<UpgradePage> {
               spacing: 16,
               children: [
                 for (final (label, onPressed) in [
-                  (
-                    l10n.restorePurchases,
-                    () => showSubscriptionsComingSoon(context),
-                  ),
+                  (l10n.restorePurchases, () => restorePurchases(context)),
                   (l10n.termsOfUse, () => AppLinks.open(AppLinks.termsOfUse)),
                   (
                     l10n.privacyPolicy,
@@ -197,7 +267,7 @@ class _UpgradePageState extends State<UpgradePage> {
                   ),
                 ])
                   TextButton(
-                    onPressed: onPressed,
+                    onPressed: plans.isBusy ? null : onPressed,
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white70,
                       padding: EdgeInsets.zero,
@@ -209,58 +279,69 @@ class _UpgradePageState extends State<UpgradePage> {
           ],
         ),
         bottomNavigationBar: _CtaBar(
-          color: plan.color,
+          color: style.color,
           label: cta.label,
           subtitle: cta.subtitle,
-          onTap: cta.enabled
-              ? () => showSubscriptionsComingSoon(context)
-              : null,
+          busy: plans.isBusy,
+          onTap: cta.enabled && !plans.isBusy ? _buy : null,
         ),
       ),
     );
   }
 
   static ({String label, String? subtitle, bool enabled}) _ctaFor(
-    _Plan selected, {
+    PlanOption selected, {
     required bool onStandard,
     required bool onPremium,
+    required String? price,
+    required int? trialDays,
   }) {
-    final plan = selected == _Plan.premium ? _premium : _standard;
-    if ((selected == _Plan.premium && onPremium) ||
-        (selected == _Plan.standard && onStandard)) {
+    if ((selected == PlanOption.premium && onPremium) ||
+        (selected == PlanOption.standard && onStandard)) {
       return (label: l10n.currentPlan, subtitle: null, enabled: false);
     }
-    if (selected == _Plan.standard && onPremium) {
+    if (selected == PlanOption.standard && onPremium) {
       return (label: l10n.includedInPremium, subtitle: null, enabled: false);
     }
+    // Not loaded from the App Store yet (or it failed).
+    final enabled = price != null;
     if (onStandard) {
       return (
         label: l10n.upgradeToPremium,
-        subtitle: l10n.perMonthCancelAnytime(plan.price),
-        enabled: true,
+        subtitle: enabled ? l10n.perMonthCancelAnytime(price) : null,
+        enabled: enabled,
+      );
+    }
+    if (trialDays != null) {
+      return (
+        label: l10n.startTrial(trialDays),
+        subtitle: enabled ? l10n.thenPerMonth(price) : null,
+        enabled: enabled,
       );
     }
     return (
-      label: l10n.startTrial,
-      subtitle: l10n.thenPerMonth(plan.price),
-      enabled: true,
+      label: l10n.subscribe,
+      subtitle: enabled ? l10n.perMonthCancelAnytime(price) : null,
+      enabled: enabled,
     );
   }
 }
 
 class _PlanTile extends StatelessWidget {
-  final _PlanInfo plan;
+  final _PlanStyle plan;
+  final String? price;
   final bool selected;
   final bool current;
-  final bool trial;
+  final int? trialDays;
   final String? badge;
   final VoidCallback onTap;
 
   const _PlanTile({
     required this.plan,
+    required this.price,
     required this.selected,
     required this.current,
-    required this.trial,
+    required this.trialDays,
     required this.onTap,
     this.badge,
   });
@@ -269,13 +350,13 @@ class _PlanTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final note = current
         ? l10n.yourPlan
-        : trial
-        ? l10n.fourteenDaysFree
+        : trialDays != null
+        ? l10n.daysFree(trialDays!)
         : null;
     return Semantics(
       button: true,
       selected: selected,
-      label: l10n.planSemantics(plan.name, plan.price),
+      label: l10n.planSemantics(plan.name, price ?? ''),
       child: GestureDetector(
         onTap: onTap,
         child: AnimatedContainer(
@@ -338,7 +419,8 @@ class _PlanTile extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                l10n.pricePerMonth(plan.price),
+                // Filled in once the App Store answers.
+                price == null ? '…' : l10n.pricePerMonth(price!),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 14,
@@ -418,12 +500,18 @@ class _FeatureList extends StatelessWidget {
   }
 }
 
-/// Today → day 12 reminder → day 14 billing. The day-12 reminder is a promise:
+/// Today → reminder two days before → billing. The reminder is a promise:
 /// it must be scheduled when billing goes live.
 class _TrialTimeline extends StatelessWidget {
-  final _PlanInfo plan;
+  final _PlanStyle plan;
+  final String price;
+  final int days;
 
-  const _TrialTimeline({required this.plan});
+  const _TrialTimeline({
+    required this.plan,
+    required this.price,
+    required this.days,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -433,15 +521,16 @@ class _TrialTimeline extends StatelessWidget {
         l10n.trialToday,
         l10n.trialTodayDetail(plan.name),
       ),
-      (
-        Icons.notifications_active_rounded,
-        l10n.trialDay12,
-        l10n.trialDay12Detail,
-      ),
+      if (days > 2)
+        (
+          Icons.notifications_active_rounded,
+          l10n.trialDay(days - 2),
+          l10n.trialDay12Detail,
+        ),
       (
         Icons.event_available_rounded,
-        l10n.trialDay14,
-        l10n.trialDay14Detail(plan.price),
+        l10n.trialDay(days),
+        l10n.trialDay14Detail(price),
       ),
     ];
     return Container(
@@ -543,12 +632,14 @@ class _CtaBar extends StatelessWidget {
   final Color color;
   final String label;
   final String? subtitle;
+  final bool busy;
   final VoidCallback? onTap;
 
   const _CtaBar({
     required this.color,
     required this.label,
     required this.subtitle,
+    required this.busy,
     required this.onTap,
   });
 
@@ -590,13 +681,22 @@ class _CtaBar extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: Text(
-                        label,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: busy
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white70,
+                              ),
+                            )
+                          : Text(
+                              label,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                   if (subtitle != null) ...[

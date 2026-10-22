@@ -2,21 +2,68 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:translate_app/data/services/purchases_service.dart';
 import 'package:translate_app/domain/entities/entitlements_entity.dart';
 import 'package:translate_app/presentation/pages/upgrade_page.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/subscription_viewmodel.dart';
 
 class MockEntitlementsViewModel extends ChangeNotifier
     with Mock
     implements EntitlementsViewModel {}
 
+class MockPurchasesService extends Mock implements PurchasesService {}
+
+Package package(String id, String price) => Package(
+  '${id}_monthly',
+  PackageType.monthly,
+  StoreProduct(
+    'decklingo_${id}_monthly',
+    '',
+    '',
+    0,
+    price,
+    'USD',
+    introductoryPrice: const IntroductoryPrice(
+      0,
+      r'$0.00',
+      'P2W',
+      1,
+      PeriodUnit.week,
+      2,
+    ),
+  ),
+  const PresentedOfferingContext('default', null, null),
+);
+
 Widget subject(AppTier tier) {
   final vm = MockEntitlementsViewModel();
   when(() => vm.tier).thenReturn(tier);
-  return ChangeNotifierProvider<EntitlementsViewModel>.value(
-    value: vm,
+  final purchases = MockPurchasesService();
+  when(() => purchases.onCustomerInfoChanged(any())).thenReturn(null);
+  when(() => purchases.plans()).thenAnswer(
+    (_) async => Offering('default', '', const {}, [
+      package('standard', r'$5.99'),
+      package('premium', r'$9.99'),
+    ]),
+  );
+  when(() => purchases.trialEligibility(any())).thenAnswer((_) async => {});
+  return MultiProvider(
+    providers: [
+      ChangeNotifierProvider<EntitlementsViewModel>.value(value: vm),
+      ChangeNotifierProvider(
+        create: (_) => SubscriptionViewModel(purchases, vm),
+      ),
+    ],
     child: const MaterialApp(home: UpgradePage()),
   );
+}
+
+Future<void> open(WidgetTester tester, AppTier tier) async {
+  await tester.pumpWidget(subject(tier));
+  // The App Store plans load after the first frame.
+  await tester.pumpAndSettle();
 }
 
 ElevatedButton cta(WidgetTester tester) =>
@@ -24,7 +71,7 @@ ElevatedButton cta(WidgetTester tester) =>
 
 void main() {
   testWidgets('Premium is preselected and offers the trial', (tester) async {
-    await tester.pumpWidget(subject(AppTier.free));
+    await open(tester, AppTier.free);
 
     expect(find.text('AI Live translation'), findsOneWidget);
     expect(find.text('Start 14-day free trial'), findsOneWidget);
@@ -33,7 +80,7 @@ void main() {
   });
 
   testWidgets('choosing Standard shows its own list and price', (tester) async {
-    await tester.pumpWidget(subject(AppTier.free));
+    await open(tester, AppTier.free);
     await tester.tap(find.text('Standard'));
     await tester.pumpAndSettle();
 
@@ -45,14 +92,14 @@ void main() {
   testWidgets('a Standard subscriber is offered an upgrade, not a trial', (
     tester,
   ) async {
-    await tester.pumpWidget(subject(AppTier.standard));
+    await open(tester, AppTier.standard);
 
     expect(find.text('Upgrade to Premium'), findsOneWidget);
     expect(find.text('How the free trial works'), findsNothing);
   });
 
   testWidgets('a Premium subscriber sees the current plan', (tester) async {
-    await tester.pumpWidget(subject(AppTier.trialPremium));
+    await open(tester, AppTier.trialPremium);
 
     expect(find.text('Current plan'), findsOneWidget);
     expect(cta(tester).onPressed, isNull);

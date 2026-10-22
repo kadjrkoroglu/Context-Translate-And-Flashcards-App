@@ -14,6 +14,8 @@ import 'package:translate_app/domain/usecases/translate_usecase.dart';
 import 'package:translate_app/domain/usecases/entitlements_usecase.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
 import 'package:translate_app/data/services/entitlements_service.dart';
+import 'package:translate_app/data/services/purchases_service.dart';
+import 'package:translate_app/presentation/viewmodels/subscription_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/pages/auth/auth_wrapper.dart';
 import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
@@ -57,6 +59,13 @@ void main() async {
   final settingsService = SettingsService(prefs);
 
   final geminiService = GeminiService();
+  final purchasesService = PurchasesService();
+  try {
+    await purchasesService.configure();
+  } catch (e) {
+    debugPrint('RevenueCat setup failed: $e');
+  }
+
   final entitlementsUsecase = EntitlementsUsecase(
     EntitlementsRepositoryImpl(EntitlementsService()),
   );
@@ -81,6 +90,12 @@ void main() async {
           Provider<TtsService>(create: (_) => TtsService()),
           ChangeNotifierProvider(
             create: (_) => EntitlementsViewModel(entitlementsUsecase),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => SubscriptionViewModel(
+              purchasesService,
+              context.read<EntitlementsViewModel>(),
+            ),
           ),
           ChangeNotifierProvider(
             create: (context) => AuthViewModel(

@@ -8,17 +8,22 @@ import 'package:translate_app/data/constants/api_config.dart';
 class EntitlementsService {
   static const String _baseUrl = '${ApiConfig.baseUrl}/entitlements';
 
-  Future<Map<String, dynamic>> fetchEntitlements() async {
+  Future<Map<String, dynamic>> fetchEntitlements() => _send(refresh: false);
+
+  /// Has the server read the plan from RevenueCat first (after a purchase).
+  Future<Map<String, dynamic>> refreshEntitlements() => _send(refresh: true);
+
+  Future<Map<String, dynamic>> _send({required bool refresh}) async {
     try {
       final token = await FirebaseAuth.instance.currentUser?.getIdToken();
       if (token == null) {
         throw const AuthException('Sign in required to fetch entitlements');
       }
 
-      final response = await http.get(
-        Uri.parse(_baseUrl),
-        headers: {'Authorization': 'Bearer $token'},
-      );
+      final headers = {'Authorization': 'Bearer $token'};
+      final response = refresh
+          ? await http.post(Uri.parse('$_baseUrl/refresh'), headers: headers)
+          : await http.get(Uri.parse(_baseUrl), headers: headers);
 
       if (response.statusCode != 200) {
         throw GeneralException('Failed to fetch entitlements', details: response.body);

@@ -17,6 +17,8 @@ import 'package:translate_app/domain/entities/entitlements_entity.dart';
 import 'package:translate_app/presentation/pages/help_page.dart';
 import 'package:translate_app/presentation/pages/upgrade_page.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/subscription_viewmodel.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:translate_app/theme/theme.dart';
 import 'package:translate_app/l10n/l10n.dart';
 
@@ -38,12 +40,21 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  // Apple's subscription settings, where plans are changed or cancelled.
+  Future<void> _manageSubscription(BuildContext context) async {
+    final url =
+        await context.read<SubscriptionViewModel>().managementUrl() ??
+        AppLinks.manageSubscriptions;
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  }
+
   @override
   Widget build(BuildContext context) {
     final authViewModel = context.watch<AuthViewModel>();
     final syncService = context.watch<SyncService>();
     final user = authViewModel.user;
     final bool isAuthenticated = authViewModel.isAuthenticated;
+    final hasPlan = context.watch<EntitlementsViewModel>().tier != AppTier.free;
 
     final glassTheme = Theme.of(context).extension<GlassThemeExtension>()!;
     const Color textColor = Colors.white;
@@ -162,10 +173,16 @@ class _ProfilePageState extends State<ProfilePage> {
                     title: l10n.termsOfUse,
                     onTap: () => AppLinks.open(AppLinks.termsOfUse),
                   ),
+                  if (hasPlan)
+                    _SettingsRow(
+                      icon: Icons.credit_card_rounded,
+                      title: l10n.manageSubscription,
+                      onTap: () => _manageSubscription(context),
+                    ),
                   _SettingsRow(
                     icon: Icons.restore_rounded,
                     title: l10n.restorePurchases,
-                    onTap: () => showSubscriptionsComingSoon(context),
+                    onTap: () => restorePurchases(context),
                   ),
                 ],
               ),

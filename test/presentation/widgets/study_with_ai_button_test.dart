@@ -11,6 +11,7 @@ import 'package:translate_app/presentation/viewmodels/ai_study_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/auth_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
+import 'package:translate_app/presentation/viewmodels/subscription_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/study_with_ai_button.dart';
 
 class MockAiStudyViewModel extends ChangeNotifier
@@ -28,6 +29,10 @@ class MockDecksViewModel extends ChangeNotifier
 class MockEntitlementsViewModel extends ChangeNotifier
     with Mock
     implements EntitlementsViewModel {}
+
+class MockSubscriptionViewModel extends ChangeNotifier
+    with Mock
+    implements SubscriptionViewModel {}
 
 final now = DateTime(2026, 10, 4);
 
@@ -68,6 +73,16 @@ void main() {
   late MockEntitlementsViewModel entitlements;
   final auth = MockAuthViewModel();
   when(() => auth.isAuthenticated).thenReturn(false);
+  final plans = MockSubscriptionViewModel();
+  setUpAll(() => registerFallbackValue(PlanOption.premium));
+  when(() => plans.load()).thenAnswer((_) async {});
+  when(() => plans.isBusy).thenReturn(false);
+  when(() => plans.loadFailed).thenReturn(false);
+  setUpAll(() {
+    when(() => plans.priceOf(any())).thenReturn(null);
+    when(() => plans.trialDaysOf(any())).thenReturn(null);
+    when(() => plans.trialAvailable(any())).thenReturn(false);
+  });
 
   setUp(() {
     study = MockAiStudyViewModel();
@@ -89,6 +104,7 @@ void main() {
       ChangeNotifierProvider<DecksViewModel>.value(value: decks),
       ChangeNotifierProvider<EntitlementsViewModel>.value(value: entitlements),
       ChangeNotifierProvider<AuthViewModel>.value(value: auth),
+      ChangeNotifierProvider<SubscriptionViewModel>.value(value: plans),
     ],
     child: const MaterialApp(
       home: Scaffold(body: Center(child: StudyWithAiButton())),
