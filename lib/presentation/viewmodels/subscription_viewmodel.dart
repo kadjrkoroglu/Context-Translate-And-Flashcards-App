@@ -68,10 +68,13 @@ class SubscriptionViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       final offering = await _purchases.plans();
-      _packages = {
-        for (final entry in _packageIds.entries)
-          entry.key: ?offering?.getPackage(entry.value),
-      };
+      // A plain loop: isar_generator's parser can't read null-aware map entries.
+      final packages = <PlanOption, Package>{};
+      for (final entry in _packageIds.entries) {
+        final package = offering?.getPackage(entry.value);
+        if (package != null) packages[entry.key] = package;
+      }
+      _packages = packages;
       _loadFailed = _packages.length != _packageIds.length;
       if (!_loadFailed) {
         _trialEligible = await _purchases.trialEligibility([
