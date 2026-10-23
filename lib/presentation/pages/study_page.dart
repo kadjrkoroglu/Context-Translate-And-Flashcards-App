@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import '../viewmodels/study_viewmodel.dart';
+import '../viewmodels/decks_viewmodel.dart';
+import '../widgets/add_card_dialog.dart';
 import '../../data/services/srs_service.dart';
 import '../widgets/app_background.dart';
 import 'package:translate_app/l10n/l10n.dart';
@@ -111,6 +113,14 @@ class _StudyPageState extends State<StudyPage> with TickerProviderStateMixin {
         : HapticFeedback.lightImpact();
   }
 
+  // An empty deck starts its session with the cards added here.
+  Future<void> _addFirstCards(StudyViewModel vm) async {
+    final decks = context.read<DecksViewModel>();
+    await AddCardDialog.show(context, vm.deck);
+    final updated = decks.decks.where((d) => d.id == vm.deck.id).firstOrNull;
+    if (updated != null) vm.cardsAdded(updated);
+  }
+
   @override
   Widget build(BuildContext context) {
     final vm = Provider.of<StudyViewModel>(context);
@@ -118,6 +128,7 @@ class _StudyPageState extends State<StudyPage> with TickerProviderStateMixin {
 
     if (vm.isLoading) return _LoadingView();
     if (vm.error != null) return _ErrorView(message: vm.error!);
+    if (vm.deckIsEmpty) return _EmptyDeckView(onAdd: () => _addFirstCards(vm));
     if (vm.isFinished) return _FinishedView();
 
     final card = vm.currentCard;
@@ -139,6 +150,8 @@ class _StudyPageState extends State<StudyPage> with TickerProviderStateMixin {
     return AppBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
+        // The add card dialog's keyboard must not push the card around.
+        resizeToAvoidBottomInset: false,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           title: Text(
@@ -148,6 +161,14 @@ class _StudyPageState extends State<StudyPage> with TickerProviderStateMixin {
           backgroundColor: Colors.transparent,
           elevation: 0,
           foregroundColor: ip,
+          actions: [
+            // Added cards wait for the next session.
+            IconButton(
+              tooltip: l10n.addCard,
+              icon: const Icon(Icons.add_rounded),
+              onPressed: () => AddCardDialog.show(context, vm.deck),
+            ),
+          ],
           flexibleSpace: ClipRect(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -323,6 +344,68 @@ class _FinishedView extends StatelessWidget {
               child: Text(
                 l10n.backToDecks,
                 style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// A deck without cards: add the first ones right here.
+class _EmptyDeckView extends StatelessWidget {
+  final VoidCallback onAdd;
+
+  const _EmptyDeckView({required this.onAdd});
+
+  @override
+  Widget build(BuildContext context) => AppBackground(
+    child: Scaffold(
+      backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.white,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.style_rounded,
+              size: 80,
+              color: Colors.white.withValues(alpha: 0.3),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              l10n.noCardsAdded,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: onAdd,
+              icon: const Icon(Icons.add_rounded),
+              label: Text(
+                l10n.addCard,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: 0.2),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 40,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  side: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                ),
               ),
             ),
           ],

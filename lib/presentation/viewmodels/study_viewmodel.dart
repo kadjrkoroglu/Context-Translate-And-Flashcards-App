@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:translate_app/domain/entities/card_entity.dart';
 import 'package:translate_app/domain/entities/deck_entity.dart';
@@ -7,7 +9,7 @@ import 'package:translate_app/l10n/l10n.dart';
 
 class StudyViewModel extends ChangeNotifier {
   final DeckUsecase _deckUsecase;
-  final DeckEntity deck;
+  DeckEntity _deck;
 
   List<CardEntity> _queue = [];
   int _completedCount = 0;
@@ -24,8 +26,23 @@ class StudyViewModel extends ChangeNotifier {
   final Set<int> _sessionNewCardIds = {};
   final Set<int> _sessionReviewCardIds = {};
 
-  StudyViewModel(this.deck, this._deckUsecase) {
+  StudyViewModel(DeckEntity deck, this._deckUsecase) : _deck = deck {
     _initializeStudySession();
+  }
+
+  DeckEntity get deck => _deck;
+  bool get deckIsEmpty => _deck.cards.every((c) => c.isDeleted);
+
+  /// Starts an empty deck's session with the cards just added to it.
+  void cardsAdded(DeckEntity deck) {
+    _deck = deck;
+    _rebuildQueue();
+    _totalSessionCards = max(
+      _totalSessionCards,
+      _completedCount + _queue.length,
+    );
+    _isFinished = _queue.isEmpty;
+    notifyListeners();
   }
 
   List<CardEntity> get dueCards => _queue;

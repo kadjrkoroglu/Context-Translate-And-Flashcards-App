@@ -1283,4 +1283,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get manageSubscription => 'Manage subscription';
+
+  @override
+  String get editCard => 'Edit card';
+
+  @override
+  String get failedEditCard => 'Failed to save the card';
+
+  @override
+  String get noCardsAdded => 'No cards added yet';
 }

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:translate_app/core/text_case.dart';
 import 'package:translate_app/domain/entities/card_entity.dart';
 import 'package:translate_app/domain/entities/deck_entity.dart';
 import 'package:translate_app/domain/usecases/deck_usecase.dart';
@@ -102,7 +103,15 @@ class DecksViewModel extends ChangeNotifier {
   }
 
   /// Returns false (without saving) if the deck's card limit is reached.
-  Future<bool> addCard(int deckId, String word, String translation) async {
+  /// Both sides start with a capital; the languages, when known, pick the
+  /// right one (Turkish "i" → "İ").
+  Future<bool> addCard(
+    int deckId,
+    String word,
+    String translation, {
+    String? wordLanguage,
+    String? translationLanguage,
+  }) async {
     final deck = _decks.where((d) => d.id == deckId).firstOrNull;
     if (deck != null && !canAddCard(deck)) return false;
     _clearError();
@@ -111,8 +120,8 @@ class DecksViewModel extends ChangeNotifier {
       id: 0,
       syncId:
           '${now.millisecondsSinceEpoch.toRadixString(36)}_${now.microsecondsSinceEpoch.toRadixString(36)}',
-      word: word,
-      translation: translation,
+      word: capitalizeFirst(word, language: wordLanguage),
+      translation: capitalizeFirst(translation, language: translationLanguage),
       createdAt: now,
       lastModified: now,
     );
@@ -124,6 +133,23 @@ class DecksViewModel extends ChangeNotifier {
       _setError(l10n.failedAddCard);
     }
     return true;
+  }
+
+  Future<void> editCard(
+    CardEntity card,
+    String word,
+    String translation,
+  ) async {
+    _clearError();
+    card
+      ..word = word.trim()
+      ..translation = translation.trim();
+    try {
+      await _usecase.executeUpdateCard(card);
+    } catch (e) {
+      _setError(l10n.failedEditCard);
+    }
+    await loadDecks();
   }
 
   Future<void> deleteMultipleCards(List<int> cardIds) async {

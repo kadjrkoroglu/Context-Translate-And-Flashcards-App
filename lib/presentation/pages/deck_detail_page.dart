@@ -38,6 +38,14 @@ class _DeckDetailPageState extends State<DeckDetailPage> {
     });
   }
 
+  void _editSelectedCard(DeckEntity deck) {
+    final card = deck.cards
+        .where((c) => c.id == _selectedCardIds.single)
+        .firstOrNull;
+    if (card == null) return;
+    EditCardDialog.show(context, card, onSaved: _clearSelection);
+  }
+
   Future<void> _deleteSelectedCards(DecksViewModel viewModel) async {
     final count = _selectedCardIds.length;
     final confirmed = await showDialog<bool>(
@@ -151,6 +159,13 @@ class _DeckDetailPageState extends State<DeckDetailPage> {
                       ),
                     ),
                     actions: [
+                      // Editing works on one card at a time.
+                      if (_selectedCardIds.length == 1)
+                        IconButton(
+                          tooltip: l10n.editCard,
+                          icon: const Icon(Icons.edit_rounded),
+                          onPressed: () => _editSelectedCard(currentDeck),
+                        ),
                       if (_isSelectionMode)
                         IconButton(
                           icon: const Icon(

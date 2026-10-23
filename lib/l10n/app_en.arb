@@ -694,5 +694,8 @@
   "restoreDone": "Your purchases are restored.",
   "restoreNothing": "No active subscription was found for this Apple ID.",
   "restoreFailed": "Couldn't restore purchases. Try again.",
-  "manageSubscription": "Manage subscription"
+  "manageSubscription": "Manage subscription",
+  "editCard": "Edit card",
+  "failedEditCard": "Failed to save the card",
+  "noCardsAdded": "No cards added yet"
 }

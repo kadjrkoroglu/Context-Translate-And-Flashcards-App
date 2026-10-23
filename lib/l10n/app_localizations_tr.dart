@@ -1234,4 +1234,13 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get manageSubscription => 'Aboneliği yönet';
+
+  @override
+  String get editCard => 'Kartı düzenle';
+
+  @override
+  String get failedEditCard => 'Kart kaydedilemedi';
+
+  @override
+  String get noCardsAdded => 'Henüz kart eklenmedi';
 }

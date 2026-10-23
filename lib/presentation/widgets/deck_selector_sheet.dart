@@ -10,18 +10,24 @@ import 'package:translate_app/l10n/l10n.dart';
 class DeckSelectorSheet extends StatelessWidget {
   final String word;
   final String translation;
+  final String? wordLanguage;
+  final String? translationLanguage;
 
   const DeckSelectorSheet({
     super.key,
     required this.word,
     required this.translation,
+    this.wordLanguage,
+    this.translationLanguage,
   });
 
   static Future<void> show(
     BuildContext context,
     String word,
-    String translation,
-  ) async {
+    String translation, {
+    String? wordLanguage,
+    String? translationLanguage,
+  }) async {
     if (!fitsCard(word, translation)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -38,7 +44,12 @@ class DeckSelectorSheet extends StatelessWidget {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (_) => DeckSelectorSheet(word: word, translation: translation),
+      builder: (_) => DeckSelectorSheet(
+        word: word,
+        translation: translation,
+        wordLanguage: wordLanguage,
+        translationLanguage: translationLanguage,
+      ),
     );
   }
 
@@ -223,7 +234,13 @@ class DeckSelectorSheet extends StatelessWidget {
     );
 
     if (confirmed == true) {
-      final added = await decksVM.addCard(deck.id, word, translation);
+      final added = await decksVM.addCard(
+        deck.id,
+        word,
+        translation,
+        wordLanguage: wordLanguage,
+        translationLanguage: translationLanguage,
+      );
       if (!added) {
         if (context.mounted) {
           await showCardLimitDialog(context, decksVM.maxCardsPerDeck);

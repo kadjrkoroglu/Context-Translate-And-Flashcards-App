@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:translate_app/core/languages.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
@@ -401,16 +402,23 @@ class _DeckAddButton extends StatelessWidget {
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(minWidth: 36),
       onPressed: () {
-        final word = mainVM.isMLPage
-            ? Provider.of<MLTranslateViewModel>(
-                context,
-                listen: false,
-              ).textController.text
-            : Provider.of<GeminiTranslateViewModel>(
-                context,
-                listen: false,
-              ).textController.text;
-        DeckSelectorSheet.show(context, word, translation);
+        final ml = mainVM.isMLPage
+            ? Provider.of<MLTranslateViewModel>(context, listen: false)
+            : null;
+        final ai = ml == null
+            ? Provider.of<GeminiTranslateViewModel>(context, listen: false)
+            : null;
+        final word = ml?.textController.text ?? ai!.textController.text;
+        final source = ml?.sourceLanguage ?? ai!.sourceLanguage;
+        final target = ml?.targetLanguage ?? ai!.targetLanguage;
+        DeckSelectorSheet.show(
+          context,
+          word,
+          translation,
+          // Auto-detect leaves the word's language unknown.
+          wordLanguage: source == autoDetect ? null : source,
+          translationLanguage: target,
+        );
       },
       icon: Icon(
         Icons.library_add_rounded,

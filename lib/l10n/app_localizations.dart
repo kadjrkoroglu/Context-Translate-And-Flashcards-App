@@ -2251,6 +2251,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Manage subscription'**
   String get manageSubscription;
+
+  /// No description provided for @editCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit card'**
+  String get editCard;
+
+  /// No description provided for @failedEditCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save the card'**
+  String get failedEditCard;
+
+  /// No description provided for @noCardsAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'No cards added yet'**
+  String get noCardsAdded;
 }
 
 class _AppLocalizationsDelegate

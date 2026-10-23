@@ -358,5 +358,8 @@
   "restoreDone": "Satın alımların geri yüklendi.",
   "restoreNothing": "Bu Apple Kimliği için aktif bir abonelik bulunamadı.",
   "restoreFailed": "Satın alımlar geri yüklenemedi. Tekrar dene.",
-  "manageSubscription": "Aboneliği yönet"
+  "manageSubscription": "Aboneliği yönet",
+  "editCard": "Kartı düzenle",
+  "failedEditCard": "Kart kaydedilemedi",
+  "noCardsAdded": "Henüz kart eklenmedi"
 }
