@@ -105,4 +105,15 @@ void main() {
     expect(box[2], const Offset(120, 56));
     expect(box[3], const Offset(10, 56));
   });
+
+  test('a centered caption is told apart from left-aligned text', () {
+    expect(
+      isCentered([line(100, 10, 200), line(40, 36, 320), line(70, 62, 260)]),
+      isTrue,
+    );
+    expect(
+      isCentered([line(10, 10, 200), line(10, 36, 320), line(10, 62, 260)]),
+      isFalse,
+    );
+  });
 }

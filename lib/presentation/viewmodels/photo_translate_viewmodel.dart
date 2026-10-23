@@ -142,13 +142,10 @@ class PhotoTranslateViewModel extends ChangeNotifier {
     _setStatus(PhotoTranslateStatus.translating);
     try {
       final count = _groupsWithinLimits();
-      final result = await _translateUsecase.executePhotoBlocks(
-        [
-          for (final group in _groups.take(count))
-            [for (final i in group) _lines[i].text],
-        ],
-        targetLanguage,
-      );
+      final result = await _translateUsecase.executePhotoBlocks([
+        for (final group in _groups.take(count))
+          [for (final i in group) _lines[i].text],
+      ], targetLanguage);
       if (_disposed) return;
       _words = result.words;
       // Groups past the request limits keep their original text.
@@ -181,22 +178,19 @@ class PhotoTranslateViewModel extends ChangeNotifier {
     if (translation == null) return lines;
     if (translation.length == 1 && lines.length > 1) {
       final pixels = _pixels!;
+      final boxes = [
+        for (final line in lines)
+          LineBox(_toPixels(line.corners, pixels), LabelColors(0, 0)),
+      ];
       return [
         PhotoTextBlock(
           text: lines.map((l) => l.text).join(' '),
           translation: translation.single,
-          corners: _toUnit(
-            enclosingCorners([
-              for (final i in group)
-                LineBox(
-                  _toPixels(_lines[i].corners, pixels),
-                  LabelColors(0, 0),
-                ),
-            ]),
-            pixels,
-          ),
+          corners: _toUnit(enclosingCorners(boxes), pixels),
           background: lines.first.background,
           foreground: lines.first.foreground,
+          lines: lines.length,
+          centered: isCentered(boxes),
         ),
       ];
     }

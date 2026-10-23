@@ -93,6 +93,25 @@ List<List<int>> groupLines(List<LineBox> lines) {
   return groups..sort((a, b) => a.first.compareTo(b.first));
 }
 
+/// Whether [lines] are centered under each other rather than left-aligned.
+bool isCentered(List<LineBox> lines) {
+  if (lines.length < 2) return false;
+  final first = lines.first;
+  final origin = first.corners[0];
+  final starts = <double>[];
+  final middles = <double>[];
+  for (final line in lines) {
+    final start = _dot(line.corners[0] - origin, first._u);
+    final end = _dot(line.corners[1] - origin, first._u);
+    starts.add(start);
+    middles.add((start + end) / 2);
+  }
+  double spread(List<double> v) => v.reduce(math.max) - v.reduce(math.min);
+  // Ragged left edges around a steady middle.
+  return spread(starts) > first.height * 0.5 &&
+      spread(middles) < spread(starts) * 0.5;
+}
+
 /// One box around all [lines], in the first line's direction.
 List<Offset> enclosingCorners(List<LineBox> lines) {
   final first = lines.first;

@@ -1193,6 +1193,8 @@ class _PhotoCanvas extends StatelessWidget {
           foreground: block.foreground,
           width: labelWidth,
           height: labelHeight,
+          lineSize: labelHeight / block.lines,
+          centered: block.centered,
           rightToLeft: rightToLeft,
         ),
       ),
@@ -1236,6 +1238,10 @@ class _TranslationLabel extends StatelessWidget {
   final Color foreground;
   final double width;
   final double height;
+
+  /// One photo line's height; a joined block spans several.
+  final double lineSize;
+  final bool centered;
   final bool rightToLeft;
 
   const _TranslationLabel({
@@ -1244,6 +1250,8 @@ class _TranslationLabel extends StatelessWidget {
     required this.foreground,
     required this.width,
     required this.height,
+    required this.lineSize,
+    required this.centered,
     required this.rightToLeft,
   });
 
@@ -1251,29 +1259,38 @@ class _TranslationLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final padding = height * 0.08;
+    final padding = lineSize * 0.08;
     final direction = rightToLeft ? TextDirection.rtl : TextDirection.ltr;
-    final style = TextStyle(
-      color: foreground,
+    final align = centered ? TextAlign.center : TextAlign.start;
+    // Measured with exactly what is drawn: the theme adds letter spacing.
+    final base = DefaultTextStyle.of(context).style.merge(
+      TextStyle(
+        color: foreground,
+        height: _lineHeight,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+    final style = base.copyWith(
       fontSize: _fittingFontSize(
+        base,
         width - 2 * padding,
         height - 2 * padding,
         direction,
+        align,
       ),
-      height: _lineHeight,
-      fontWeight: FontWeight.w600,
     );
 
     return Container(
       padding: EdgeInsets.all(padding),
-      alignment: AlignmentDirectional.centerStart,
+      alignment: centered ? Alignment.center : AlignmentDirectional.centerStart,
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(height * 0.12),
+        borderRadius: BorderRadius.circular(lineSize * 0.12),
       ),
       child: Text(
         text,
         textDirection: direction,
+        textAlign: align,
         textScaler: TextScaler.noScaling,
         overflow: TextOverflow.clip,
         style: style,
@@ -1283,9 +1300,11 @@ class _TranslationLabel extends StatelessWidget {
 
   // Largest size that fits without breaking a word.
   double _fittingFontSize(
+    TextStyle base,
     double maxWidth,
     double maxHeight,
     TextDirection direction,
+    TextAlign align,
   ) {
     if (maxWidth <= 0 || maxHeight <= 0) return 1;
     var low = 1.0;
@@ -1295,13 +1314,10 @@ class _TranslationLabel extends StatelessWidget {
       final painter = TextPainter(
         text: TextSpan(
           text: text,
-          style: TextStyle(
-            fontSize: mid,
-            height: _lineHeight,
-            fontWeight: FontWeight.w600,
-          ),
+          style: base.copyWith(fontSize: mid),
         ),
         textDirection: direction,
+        textAlign: align,
         textScaler: TextScaler.noScaling,
       )..layout(maxWidth: maxWidth);
       final fits =
