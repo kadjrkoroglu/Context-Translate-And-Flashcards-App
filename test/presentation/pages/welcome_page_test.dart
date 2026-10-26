@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/data/services/settings_service.dart';
+import 'package:translate_app/l10n/l10n.dart';
 import 'package:translate_app/presentation/pages/welcome_page.dart';
 
 class MockSettingsService extends Mock implements SettingsService {}
@@ -19,7 +20,11 @@ void main() {
   Widget buildSubject() {
     return Provider<SettingsService>.value(
       value: mockSettings,
-      child: const MaterialApp(home: WelcomePage()),
+      child: const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: WelcomePage(),
+      ),
     );
   }
 
