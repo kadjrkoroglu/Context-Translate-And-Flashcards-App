@@ -207,8 +207,7 @@ class MLTranslateViewModel extends ChangeNotifier {
       notifyListeners();
 
       try {
-        // Mobile data too: the plugin waits for Wi-Fi by default.
-        await modelManager.downloadModel(bcpCode, isWifiRequired: false);
+        await _downloadModel(modelManager, bcpCode);
         _downloadedModels = {..._downloadedModels, languageName};
       } catch (e) {
         _setError(l10n.failedDownloadModel(languageLabel(languageName)));
@@ -219,6 +218,34 @@ class MLTranslateViewModel extends ChangeNotifier {
         translate(outputController);
       }
     }
+  }
+
+  // The plugin's iOS "download finished" callback can go missing and the
+  // spinner never stops, so the model's state is checked every second too.
+  static Future<void> _downloadModel(
+    OnDeviceTranslatorModelManager manager,
+    String bcpCode,
+  ) async {
+    var done = false;
+    var failed = false;
+    // Mobile data too: the plugin waits for Wi-Fi by default.
+    unawaited(
+      manager
+          .downloadModel(bcpCode, isWifiRequired: false)
+          .then(
+            (ok) => ok ? done = true : failed = true,
+            // A state check cancels the plugin's callback; the download goes on.
+            onError: (_) => false,
+          ),
+    );
+    final deadline = DateTime.now().add(const Duration(minutes: 3));
+    while (DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(const Duration(seconds: 1));
+      if (done) return;
+      if (failed) throw StateError('Model download failed');
+      if (await manager.isModelDownloaded(bcpCode)) return;
+    }
+    throw TimeoutException('Model download timed out');
   }
 
   Future<void> translate(TextEditingController outputController) async {
