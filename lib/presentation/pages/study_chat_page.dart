@@ -625,7 +625,7 @@ class _StartState extends StatelessWidget {
     final left = vm.cooldownLeft;
     final String message;
     if (error is FeatureNotAvailableException) {
-      message = l10n.studyIsPremium;
+      message = l10n.studyNeedsPlan;
     } else if (left != null) {
       message = l10n.nextSessionStartsIn(formatCountdown(left));
     } else {

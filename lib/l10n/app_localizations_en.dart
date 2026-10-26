@@ -174,7 +174,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get faqA4 =>
-      'Premium: AI writes a new sentence for each of 10 to 30 words from a deck, and you fill in the blank. Each word gets two tries. A new session can start 3 hours after the last one began.';
+      'Standard and Premium: AI writes a new sentence for each of 10 to 30 words from a deck, and you fill in the blank. Each word gets two tries. A new session can start 3 hours after the last one began.';
 
   @override
   String get faqQ5 => 'How do I sync my decks between devices?';
@@ -633,7 +633,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get gettingWordsReady => 'Getting your words ready';
 
   @override
-  String get studyIsPremium => 'Study with AI is part of Premium.';
+  String get studyNeedsPlan =>
+      'Study with AI is available on the Standard and Premium plans.';
 
   @override
   String nextSessionStartsIn(String time) {

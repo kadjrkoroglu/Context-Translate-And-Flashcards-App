@@ -32,6 +32,7 @@ class _Feature {
 }
 
 List<_Feature> get _sharedFeatures => [
+  _Feature(Icons.school_rounded, l10n.studyWithAi, l10n.featStudyDetail),
   _Feature(
     Icons.auto_awesome_rounded,
     l10n.featTranslations,
@@ -56,7 +57,6 @@ List<_Feature> _featuresOf(PlanOption plan, {required bool trial}) =>
           l10n.featLive,
           '${l10n.featLiveDetail}${trial ? '*' : ''}',
         ),
-        _Feature(Icons.school_rounded, l10n.studyWithAi, l10n.featStudyDetail),
         ..._sharedFeatures,
       ],
     };

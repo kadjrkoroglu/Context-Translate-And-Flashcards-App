@@ -413,7 +413,7 @@ abstract class AppLocalizations {
   /// No description provided for @faqA4.
   ///
   /// In en, this message translates to:
-  /// **'Premium: AI writes a new sentence for each of 10 to 30 words from a deck, and you fill in the blank. Each word gets two tries. A new session can start 3 hours after the last one began.'**
+  /// **'Standard and Premium: AI writes a new sentence for each of 10 to 30 words from a deck, and you fill in the blank. Each word gets two tries. A new session can start 3 hours after the last one began.'**
   String get faqA4;
 
   /// No description provided for @faqQ5.
@@ -1112,11 +1112,11 @@ abstract class AppLocalizations {
   /// **'Getting your words ready'**
   String get gettingWordsReady;
 
-  /// No description provided for @studyIsPremium.
+  /// No description provided for @studyNeedsPlan.
   ///
   /// In en, this message translates to:
-  /// **'Study with AI is part of Premium.'**
-  String get studyIsPremium;
+  /// **'Study with AI is available on the Standard and Premium plans.'**
+  String get studyNeedsPlan;
 
   /// No description provided for @nextSessionStartsIn.
   ///

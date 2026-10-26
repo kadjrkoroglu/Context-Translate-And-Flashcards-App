@@ -177,7 +177,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get faqA4 =>
-      'Premium: AI, bir desteden 10 ile 30 arası kelimenin her biri için yeni bir cümle yazar, sen de boşluğu doldurursun. Her kelime için iki hakkın var. Yeni oturum, bir öncekinin başlamasından 3 saat sonra açılır.';
+      'Standard ve Premium: AI, bir desteden 10 ile 30 arası kelimenin her biri için yeni bir cümle yazar, sen de boşluğu doldurursun. Her kelime için iki hakkın var. Yeni oturum, bir öncekinin başlamasından 3 saat sonra açılır.';
 
   @override
   String get faqQ5 => 'Destelerimi cihazlar arasında nasıl senkronize ederim?';
@@ -612,7 +612,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get gettingWordsReady => 'Kelimelerin hazırlanıyor';
 
   @override
-  String get studyIsPremium => 'AI ile Çalış, Premium\'un bir parçası.';
+  String get studyNeedsPlan =>
+      'AI ile Çalış, Standard ve Premium planlarda var.';
 
   @override
   String nextSessionStartsIn(String time) {

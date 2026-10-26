@@ -52,7 +52,7 @@
   "faqQ3": "What is Live translation?",
   "faqA3": "Premium translates speech as it is spoken, with captions: 60 minutes a month (5 minutes in the free trial). The minutes renew every month.",
   "faqQ4": "How does Study with AI work?",
-  "faqA4": "Premium: AI writes a new sentence for each of 10 to 30 words from a deck, and you fill in the blank. Each word gets two tries. A new session can start 3 hours after the last one began.",
+  "faqA4": "Standard and Premium: AI writes a new sentence for each of 10 to 30 words from a deck, and you fill in the blank. Each word gets two tries. A new session can start 3 hours after the last one began.",
   "faqQ5": "How do I sync my decks between devices?",
   "faqA5": "Sign in on the Profile page, then tap Sync Now.",
   "faqQ6": "Can I translate without internet?",
@@ -395,7 +395,7 @@
   "reviewWithFlashcardsShort": "Review with flashcards",
   "done": "Done",
   "gettingWordsReady": "Getting your words ready",
-  "studyIsPremium": "Study with AI is part of Premium.",
+  "studyNeedsPlan": "Study with AI is available on the Standard and Premium plans.",
   "nextSessionStartsIn": "Your next session starts in {time}.",
   "@nextSessionStartsIn": {
     "placeholders": {
