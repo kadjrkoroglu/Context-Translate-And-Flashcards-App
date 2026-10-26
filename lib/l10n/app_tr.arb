@@ -112,7 +112,6 @@
   "trialToday": "Bugün",
   "trialTodayDetail": "{name} planına tam erişimin başlar.",
   "trialDay": "{day}. gün",
-  "trialDay12Detail": "Denemenin bitmek üzere olduğunu sana hatırlatırız.",
   "trialDay14Detail": "İptal etmezsen aboneliğin {price}/ay fiyatla başlar.",
   "howTrialWorks": "Ücretsiz deneme nasıl işler?",
   "tierFree": "Ücretsiz",

@@ -406,9 +406,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get trialDay12Detail => 'We\'ll remind you that your trial is ending.';
-
-  @override
   String trialDay14Detail(String price) {
     return 'Your subscription starts at $price/month unless you cancel.';
   }

@@ -398,10 +398,6 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get trialDay12Detail =>
-      'Denemenin bitmek üzere olduğunu sana hatırlatırız.';
-
-  @override
   String trialDay14Detail(String price) {
     return 'İptal etmezsen aboneliğin $price/ay fiyatla başlar.';
   }

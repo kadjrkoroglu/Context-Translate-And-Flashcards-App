@@ -500,8 +500,7 @@ class _FeatureList extends StatelessWidget {
   }
 }
 
-/// Today → reminder two days before → billing. The reminder is a promise:
-/// it must be scheduled when billing goes live.
+/// Today → billing day. Apple itself reminds people before a trial ends.
 class _TrialTimeline extends StatelessWidget {
   final _PlanStyle plan;
   final String price;
@@ -521,12 +520,6 @@ class _TrialTimeline extends StatelessWidget {
         l10n.trialToday,
         l10n.trialTodayDetail(plan.name),
       ),
-      if (days > 2)
-        (
-          Icons.notifications_active_rounded,
-          l10n.trialDay(days - 2),
-          l10n.trialDay12Detail,
-        ),
       (
         Icons.event_available_rounded,
         l10n.trialDay(days),

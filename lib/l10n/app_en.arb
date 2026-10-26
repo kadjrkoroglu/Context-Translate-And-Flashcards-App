@@ -220,7 +220,6 @@
       }
     }
   },
-  "trialDay12Detail": "We'll remind you that your trial is ending.",
   "trialDay14Detail": "Your subscription starts at {price}/month unless you cancel.",
   "@trialDay14Detail": {
     "placeholders": {

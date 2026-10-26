@@ -770,12 +770,6 @@ abstract class AppLocalizations {
   /// **'Day {day}'**
   String trialDay(int day);
 
-  /// No description provided for @trialDay12Detail.
-  ///
-  /// In en, this message translates to:
-  /// **'We\'ll remind you that your trial is ending.'**
-  String get trialDay12Detail;
-
   /// No description provided for @trialDay14Detail.
   ///
   /// In en, this message translates to:
