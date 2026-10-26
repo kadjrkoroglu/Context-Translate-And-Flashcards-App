@@ -1,5 +1,6 @@
 import '../entities/translation_entity.dart';
 import '../repositories/translation_repository.dart';
+import '../entities/example_sentence.dart';
 import '../entities/live_session_grant.dart';
 import '../entities/photo_translation.dart';
 import '../entities/study_session.dart';
@@ -23,6 +24,18 @@ class TranslateUsecase {
   ) {
     return _repository.translatePhotoBlocks(blocks, targetLang);
   }
+
+  Future<List<ExampleSentence>> exampleSentences({
+    required String text,
+    required String translation,
+    String? sourceLanguage,
+    String? targetLanguage,
+  }) => _repository.exampleSentences(
+    text: text,
+    translation: translation,
+    sourceLanguage: sourceLanguage,
+    targetLanguage: targetLanguage,
+  );
 
   Future<LiveSessionGrant> startLiveSession(String targetLanguageCode) {
     return _repository.startLiveSession(targetLanguageCode);

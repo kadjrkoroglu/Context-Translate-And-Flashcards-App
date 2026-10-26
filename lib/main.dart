@@ -18,6 +18,7 @@ import 'package:translate_app/data/services/purchases_service.dart';
 import 'package:translate_app/presentation/viewmodels/subscription_viewmodel.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/presentation/pages/auth/auth_wrapper.dart';
+import 'package:translate_app/presentation/viewmodels/examples_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
 import 'package:translate_app/theme/theme.dart';
 import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
@@ -113,6 +114,7 @@ void main() async {
           Provider<FavoriteUsecase>.value(value: favoriteUsecase),
           Provider<DeckUsecase>.value(value: deckUsecase),
           Provider<TranslateUsecase>.value(value: translateUsecase),
+          Provider(create: (_) => ExamplesViewModel(translateUsecase)),
           ChangeNotifierProvider(
             create: (context) => LiveTranslateViewModel(
               translateUsecase,

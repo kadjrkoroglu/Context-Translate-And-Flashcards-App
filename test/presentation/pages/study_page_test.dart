@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:provider/provider.dart';
+import 'package:translate_app/data/services/tts_service.dart';
 import 'package:translate_app/domain/entities/card_entity.dart';
 import 'package:translate_app/domain/entities/deck_entity.dart';
 import 'package:translate_app/domain/repositories/deck_repository.dart';
@@ -42,8 +43,12 @@ void main() {
     final vm = StudyViewModel(deck, DeckUsecase(repository));
 
     await tester.pumpWidget(
-      ChangeNotifierProvider.value(
-        value: vm,
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: vm),
+          // The cards' speaker buttons.
+          Provider(create: (_) => TtsService()),
+        ],
         child: const MaterialApp(home: StudyPage()),
       ),
     );
@@ -76,8 +81,12 @@ void main() {
   testWidgets('a card let go too early slides back', (tester) async {
     final vm = StudyViewModel(deck, DeckUsecase(MockDeckRepository()));
     await tester.pumpWidget(
-      ChangeNotifierProvider.value(
-        value: vm,
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: vm),
+          // The cards' speaker buttons.
+          Provider(create: (_) => TtsService()),
+        ],
         child: const MaterialApp(home: StudyPage()),
       ),
     );

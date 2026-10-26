@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:translate_app/core/errors/app_exception.dart';
 import 'package:translate_app/data/constants/api_config.dart';
+import 'package:translate_app/domain/entities/example_sentence.dart';
 import 'package:translate_app/domain/entities/live_session_grant.dart';
 import 'package:translate_app/domain/entities/photo_translation.dart';
 import 'package:translate_app/domain/entities/study_session.dart';
@@ -11,6 +12,7 @@ import 'package:translate_app/domain/entities/study_session.dart';
 class GeminiService {
   static const String _translateUrl = '${ApiConfig.baseUrl}/translate';
   static const String _photoUrl = '${ApiConfig.baseUrl}/translate/photo';
+  static const String _examplesUrl = '${ApiConfig.baseUrl}/translate/examples';
   static const String _liveSessionUrl = '${ApiConfig.baseUrl}/live/session';
   static const String _studyUrl = '${ApiConfig.baseUrl}/study';
 
@@ -45,6 +47,29 @@ class GeminiService {
             PhotoWord(word: w['word'], translation: w['translation']),
       ],
     );
+  }
+
+  /// Unknown (null) languages are recognized by the model.
+  Future<List<ExampleSentence>> exampleSentences({
+    required String text,
+    required String translation,
+    String? sourceLanguage,
+    String? targetLanguage,
+  }) async {
+    final data = await _post(_examplesUrl, {
+      'text': text,
+      'translation': translation,
+      'sourceLanguage': sourceLanguage,
+      'targetLanguage': targetLanguage,
+    });
+    return [
+      for (final e in data['examples'] as List<dynamic>)
+        if (e is Map && e['sentence'] is String && e['translation'] is String)
+          ExampleSentence(
+            sentence: e['sentence'],
+            translation: e['translation'],
+          ),
+    ];
   }
 
   /// Reserves Live time; returns a token for Gemini (the key stays on the server).

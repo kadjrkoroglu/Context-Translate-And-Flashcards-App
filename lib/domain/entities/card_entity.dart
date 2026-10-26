@@ -28,6 +28,14 @@ class CardEntity {
   DateTime? aiStudiedAt;
   bool aiNeedsReview = false;
 
+  /// Null when unknown (auto-detect, typed by hand); the voice then guesses.
+  String? wordLanguage;
+  String? translationLanguage;
+
+  /// Example sentences and their translations, the word marked with [[ ]].
+  List<String>? exampleSentences;
+  List<String>? exampleTranslations;
+
   String? userId;
   String? remoteId;
   bool isSynced = false;
@@ -51,6 +59,10 @@ class CardEntity {
     this.firstStudiedAt,
     this.aiStudiedAt,
     this.aiNeedsReview = false,
+    this.wordLanguage,
+    this.translationLanguage,
+    this.exampleSentences,
+    this.exampleTranslations,
     this.userId,
     this.remoteId,
     this.isSynced = false,

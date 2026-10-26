@@ -4,12 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:translate_app/core/languages.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:translate_app/domain/entities/card_entity.dart';
+import 'package:translate_app/domain/entities/example_sentence.dart';
+import 'package:translate_app/presentation/viewmodels/examples_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/favorite_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/main_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/ml_translate_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/gemini_translate_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/ai_consent_dialog.dart';
 import 'package:translate_app/presentation/widgets/deck_selector_sheet.dart';
+import 'package:translate_app/presentation/widgets/example_sentences_sheet.dart';
 import 'package:translate_app/presentation/widgets/speech_toggle_button.dart';
 import 'package:translate_app/presentation/utils/font_size_helper.dart';
 import 'package:translate_app/presentation/utils/haptics.dart';
@@ -25,33 +29,144 @@ class OutputTranslationField extends StatelessWidget {
     this.hintText,
   });
 
+  // Card-sized pairs only, and only for the text that was translated.
+  bool _examplesFit(
+    MainViewModel mainVM,
+    GeminiTranslateViewModel ai,
+    MLTranslateViewModel ml,
+  ) {
+    final output = controller.text.trim();
+    if (output.isEmpty || output.length > maxCardTranslationLength) {
+      return false;
+    }
+    if (mainVM.isMLPage) {
+      return !ml.isLoading && fitsExamples(ml.textController.text);
+    }
+    return !ai.isLoading &&
+        ai.isUpToDate &&
+        fitsExamples(ai.textController.text);
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<MainViewModel>(context);
+    final ai = context.read<GeminiTranslateViewModel>();
+    final ml = context.read<MLTranslateViewModel>();
 
     return AnimatedBuilder(
-      animation: Listenable.merge([viewModel.pageController, controller]),
+      animation: Listenable.merge([
+        viewModel.pageController,
+        controller,
+        ai,
+        ai.textController,
+        ml,
+        ml.textController,
+      ]),
       builder: (context, _) {
         final fontSize = FontSizeHelper.getDynamicFontSize(
           controller.text.length,
         );
+        final showExamples = _examplesFit(viewModel, ai, ml);
 
-        return TextField(
-          controller: controller,
-          readOnly: true,
-          maxLines: null,
-          minLines: 1,
-          textAlignVertical: TextAlignVertical.top,
-          style: TextStyle(
-            fontSize: fontSize,
-            color: Colors.white.withValues(alpha: 0.85),
-            fontWeight: FontWeight.w500,
-          ),
-          decoration: InputDecoration(
-            hintText: hintText ?? l10n.translationHint,
-            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
-            contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-            border: InputBorder.none,
+        return Stack(
+          children: [
+            TextField(
+              controller: controller,
+              readOnly: true,
+              maxLines: null,
+              minLines: 1,
+              textAlignVertical: TextAlignVertical.top,
+              style: TextStyle(
+                fontSize: fontSize,
+                color: Colors.white.withValues(alpha: 0.85),
+                fontWeight: FontWeight.w500,
+              ),
+              decoration: InputDecoration(
+                hintText: hintText ?? l10n.translationHint,
+                hintStyle: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.3),
+                ),
+                contentPadding: EdgeInsets.fromLTRB(
+                  20,
+                  16,
+                  showExamples ? 48 : 20,
+                  8,
+                ),
+                border: InputBorder.none,
+              ),
+            ),
+            if (showExamples)
+              Positioned(
+                top: 6,
+                right: 2,
+                child: _ExamplesButton(
+                  mainVM: viewModel,
+                  translation: controller.text,
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// The input and languages of whichever page (AI or Basic) is showing;
+// auto-detect leaves the word's language unknown.
+({String text, String? source, String target}) _pageInput(
+  BuildContext context,
+  MainViewModel mainVM,
+) {
+  ({String text, String? source, String target}) input(
+    String text,
+    String source,
+    String target,
+  ) => (
+    text: text,
+    source: source == autoDetect ? null : source,
+    target: target,
+  );
+
+  if (mainVM.isMLPage) {
+    final ml = context.read<MLTranslateViewModel>();
+    return input(ml.textController.text, ml.sourceLanguage, ml.targetLanguage);
+  }
+  final ai = context.read<GeminiTranslateViewModel>();
+  return input(ai.textController.text, ai.sourceLanguage, ai.targetLanguage);
+}
+
+/// AI example sentences for a short translation.
+class _ExamplesButton extends StatelessWidget {
+  final MainViewModel mainVM;
+  final String translation;
+
+  const _ExamplesButton({required this.mainVM, required this.translation});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: l10n.exampleSentences,
+      icon: Icon(
+        Icons.info_outline_rounded,
+        color: Colors.white.withValues(alpha: 0.6),
+      ),
+      onPressed: () async {
+        final input = _pageInput(context, mainVM);
+        final examples = context.read<ExamplesViewModel>();
+        if (examples.cached(input.text, translation) == null &&
+            !await ensureAiConsent(context)) {
+          return;
+        }
+        if (!context.mounted) return;
+        HapticFeedback.lightImpact();
+        ExampleSentencesSheet.show(
+          context,
+          title: input.text.trim(),
+          load: () => examples.load(
+            text: input.text,
+            translation: translation,
+            sourceLanguage: input.source,
+            targetLanguage: input.target,
           ),
         );
       },
@@ -402,22 +517,18 @@ class _DeckAddButton extends StatelessWidget {
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(minWidth: 36),
       onPressed: () {
-        final ml = mainVM.isMLPage
-            ? Provider.of<MLTranslateViewModel>(context, listen: false)
-            : null;
-        final ai = ml == null
-            ? Provider.of<GeminiTranslateViewModel>(context, listen: false)
-            : null;
-        final word = ml?.textController.text ?? ai!.textController.text;
-        final source = ml?.sourceLanguage ?? ai!.sourceLanguage;
-        final target = ml?.targetLanguage ?? ai!.targetLanguage;
+        final input = _pageInput(context, mainVM);
         DeckSelectorSheet.show(
           context,
-          word,
+          input.text,
           translation,
-          // Auto-detect leaves the word's language unknown.
-          wordLanguage: source == autoDetect ? null : source,
-          translationLanguage: target,
+          wordLanguage: input.source,
+          translationLanguage: input.target,
+          // Looked up already: the card keeps them.
+          examples: context.read<ExamplesViewModel>().cached(
+            input.text,
+            translation,
+          ),
         );
       },
       icon: Icon(

@@ -360,5 +360,6 @@
   "manageSubscription": "Aboneliği yönet",
   "editCard": "Kartı düzenle",
   "failedEditCard": "Kart kaydedilemedi",
-  "noCardsAdded": "Henüz kart eklenmedi"
+  "noCardsAdded": "Henüz kart eklenmedi",
+  "exampleSentences": "Örnek cümleler"
 }

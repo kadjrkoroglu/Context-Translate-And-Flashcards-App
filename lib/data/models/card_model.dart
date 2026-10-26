@@ -33,6 +33,14 @@ class CardItem {
   DateTime? aiStudiedAt;
   bool aiNeedsReview = false;
 
+  // Null when unknown (auto-detect, typed by hand).
+  String? wordLanguage;
+  String? translationLanguage;
+
+  // Example sentences and their translations, the word marked with [[ ]].
+  List<String>? exampleSentences;
+  List<String>? exampleTranslations;
+
   String? userId;
   String? remoteId;
   bool isSynced = false;
@@ -58,6 +66,10 @@ class CardItem {
       'firstStudiedAt': firstStudiedAt?.toIso8601String(),
       'aiStudiedAt': aiStudiedAt?.toIso8601String(),
       'aiNeedsReview': aiNeedsReview,
+      'wordLanguage': wordLanguage,
+      'translationLanguage': translationLanguage,
+      'exampleSentences': exampleSentences,
+      'exampleTranslations': exampleTranslations,
       'userId': userId,
       'isDeleted': isDeleted,
       'deckSyncId': deckSyncId,
@@ -91,6 +103,11 @@ class CardItem {
           ? DateTime.parse(map['aiStudiedAt'])
           : null
       ..aiNeedsReview = map['aiNeedsReview'] ?? false
+      ..wordLanguage = map['wordLanguage']
+      ..translationLanguage = map['translationLanguage']
+      ..exampleSentences = (map['exampleSentences'] as List?)?.cast<String>()
+      ..exampleTranslations = (map['exampleTranslations'] as List?)
+          ?.cast<String>()
       ..userId = map['userId']
       ..remoteId = remoteId
       ..isSynced = true

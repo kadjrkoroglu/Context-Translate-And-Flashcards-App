@@ -8,10 +8,16 @@ class SpeechToggleButton extends StatefulWidget {
     super.key,
     required this.text,
     required this.language,
+    this.builder,
   });
 
   final String text;
-  final String language;
+
+  /// Null when unknown: recognized from [text].
+  final String? language;
+
+  /// Draws the button; a plain icon button by default.
+  final Widget Function(bool speaking, VoidCallback onPressed)? builder;
 
   @override
   State<SpeechToggleButton> createState() => _SpeechToggleButtonState();
@@ -50,6 +56,9 @@ class _SpeechToggleButtonState extends State<SpeechToggleButton> {
   @override
   Widget build(BuildContext context) {
     final tts = context.read<TtsService>();
+    if (widget.builder case final builder?) {
+      return builder(_speaking, () => _toggle(tts));
+    }
     return IconButton(
       icon: Icon(
         _speaking ? Icons.stop_rounded : Icons.volume_up_rounded,

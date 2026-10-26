@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'package:translate_app/domain/entities/card_entity.dart';
+import 'package:translate_app/domain/entities/example_sentence.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/upgrade_required_dialog.dart';
 import 'package:translate_app/l10n/l10n.dart';
@@ -12,6 +13,7 @@ class DeckSelectorSheet extends StatelessWidget {
   final String translation;
   final String? wordLanguage;
   final String? translationLanguage;
+  final List<ExampleSentence>? examples;
 
   const DeckSelectorSheet({
     super.key,
@@ -19,6 +21,7 @@ class DeckSelectorSheet extends StatelessWidget {
     required this.translation,
     this.wordLanguage,
     this.translationLanguage,
+    this.examples,
   });
 
   static Future<void> show(
@@ -27,6 +30,7 @@ class DeckSelectorSheet extends StatelessWidget {
     String translation, {
     String? wordLanguage,
     String? translationLanguage,
+    List<ExampleSentence>? examples,
   }) async {
     if (!fitsCard(word, translation)) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -49,6 +53,7 @@ class DeckSelectorSheet extends StatelessWidget {
         translation: translation,
         wordLanguage: wordLanguage,
         translationLanguage: translationLanguage,
+        examples: examples,
       ),
     );
   }
@@ -240,6 +245,7 @@ class DeckSelectorSheet extends StatelessWidget {
         translation,
         wordLanguage: wordLanguage,
         translationLanguage: translationLanguage,
+        examples: examples,
       );
       if (!added) {
         if (context.mounted) {

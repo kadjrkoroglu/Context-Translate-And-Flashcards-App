@@ -1548,8 +1548,15 @@ class _WordRow extends StatelessWidget {
           ),
           IconButton(
             tooltip: l10n.addToDeck,
-            onPressed: () =>
-                DeckSelectorSheet.show(context, word.word, word.translation),
+            // The words are translated into the page's target language.
+            onPressed: () => DeckSelectorSheet.show(
+              context,
+              word.word,
+              word.translation,
+              translationLanguage: context
+                  .read<GeminiTranslateViewModel>()
+                  .targetLanguage,
+            ),
             icon: Icon(
               Icons.library_add_rounded,
               color: Colors.white.withValues(alpha: 0.7),

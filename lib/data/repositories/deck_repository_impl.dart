@@ -194,6 +194,10 @@ class DeckRepositoryImpl implements DeckRepository {
       firstStudiedAt: c.firstStudiedAt,
       aiStudiedAt: c.aiStudiedAt,
       aiNeedsReview: c.aiNeedsReview,
+      wordLanguage: c.wordLanguage,
+      translationLanguage: c.translationLanguage,
+      exampleSentences: c.exampleSentences,
+      exampleTranslations: c.exampleTranslations,
       userId: c.userId,
       remoteId: c.remoteId,
       isSynced: c.isSynced,
@@ -224,6 +228,10 @@ class DeckRepositoryImpl implements DeckRepository {
       ..firstStudiedAt = c.firstStudiedAt
       ..aiStudiedAt = c.aiStudiedAt
       ..aiNeedsReview = c.aiNeedsReview
+      ..wordLanguage = c.wordLanguage
+      ..translationLanguage = c.translationLanguage
+      ..exampleSentences = c.exampleSentences
+      ..exampleTranslations = c.exampleTranslations
       ..userId = c.userId
       ..remoteId = c.remoteId
       ..isSynced = c.isSynced

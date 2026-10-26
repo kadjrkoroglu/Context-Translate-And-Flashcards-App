@@ -6,6 +6,12 @@ import 'dart:ui';
 import '../viewmodels/study_viewmodel.dart';
 import '../viewmodels/decks_viewmodel.dart';
 import '../widgets/add_card_dialog.dart';
+import '../widgets/ai_consent_dialog.dart';
+import '../widgets/example_sentences_sheet.dart';
+import '../widgets/speech_toggle_button.dart';
+import '../viewmodels/examples_viewmodel.dart';
+import '../../domain/entities/card_entity.dart';
+import '../../domain/entities/example_sentence.dart';
 import '../../data/services/srs_service.dart';
 import '../widgets/app_background.dart';
 import 'package:translate_app/l10n/l10n.dart';
@@ -532,7 +538,10 @@ class _FlashcardStack extends StatelessWidget {
                 leaving.to,
                 Curves.easeOutCubic.transform(leaveProgress),
               )!,
-              child: _CardSide(text: leaving.card.translation, isBack: true),
+              // Flying off: its buttons are no longer for tapping.
+              child: IgnorePointer(
+                child: _CardSide(card: leaving.card, isBack: true),
+              ),
             ),
           ),
       ],
@@ -553,9 +562,9 @@ class _FlashcardStack extends StatelessWidget {
             ? Transform(
                 transform: Matrix4.identity()..rotateY(pi),
                 alignment: Alignment.center,
-                child: _CardSide(text: card.translation, isBack: true),
+                child: _CardSide(card: card, isBack: true),
               )
-            : _CardSide(text: card.word, isBack: false),
+            : _CardSide(card: card, isBack: false),
       );
     },
   );
@@ -615,9 +624,11 @@ class _RatingFeedback extends StatelessWidget {
 }
 
 class _CardSide extends StatelessWidget {
-  final String text;
+  final CardEntity card;
   final bool isBack;
-  const _CardSide({required this.text, required this.isBack});
+  const _CardSide({required this.card, required this.isBack});
+
+  String get text => isBack ? card.translation : card.word;
 
   @override
   Widget build(BuildContext context) => ClipRRect(
@@ -635,23 +646,90 @@ class _CardSide extends StatelessWidget {
             width: 1.5,
           ),
         ),
-        padding: const EdgeInsets.all(32),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: isBack ? 28 : 34,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(32),
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Text(
+                    text,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: isBack ? 28 : 34,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
+            if (fitsExamples(card.word))
+              Positioned(
+                left: 14,
+                bottom: 14,
+                child: _CardExamplesButton(card: card, isBack: isBack),
+              ),
+            Positioned(
+              right: 14,
+              bottom: 14,
+              child: SpeechToggleButton(
+                text: text,
+                language: isBack ? card.translationLanguage : card.wordLanguage,
+              ),
+            ),
+          ],
         ),
       ),
     ),
   );
+}
+
+/// The word in sentences: the front lists them, the back their translations.
+/// Fetched once, then kept on the card.
+class _CardExamplesButton extends StatelessWidget {
+  final CardEntity card;
+  final bool isBack;
+  const _CardExamplesButton({required this.card, required this.isBack});
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+    tooltip: l10n.exampleSentences,
+    icon: Icon(
+      Icons.info_outline_rounded,
+      color: Colors.white.withValues(alpha: 0.5),
+    ),
+    onPressed: () async {
+      final examplesVM = context.read<ExamplesViewModel>();
+      final decksVM = context.read<DecksViewModel>();
+      final cached = examplesVM.cached(card.word, card.translation);
+      if (card.examples == null &&
+          cached == null &&
+          !await ensureAiConsent(context)) {
+        return;
+      }
+      if (!context.mounted) return;
+      HapticFeedback.lightImpact();
+      ExampleSentencesSheet.show(
+        context,
+        title: text,
+        side: isBack ? ExampleSide.translations : ExampleSide.sentences,
+        load: () async {
+          if (card.examples case final saved?) return saved;
+          final examples = await examplesVM.load(
+            text: card.word,
+            translation: card.translation,
+            sourceLanguage: card.wordLanguage,
+            targetLanguage: card.translationLanguage,
+          );
+          if (examples.isNotEmpty) await decksVM.saveExamples(card, examples);
+          return examples;
+        },
+      );
+    },
+  );
+
+  String get text => isBack ? card.translation : card.word;
 }
 
 class _StudyActionArea extends StatelessWidget {

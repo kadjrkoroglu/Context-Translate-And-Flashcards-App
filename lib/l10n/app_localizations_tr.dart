@@ -1240,4 +1240,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get noCardsAdded => 'Henüz kart eklenmedi';
+
+  @override
+  String get exampleSentences => 'Örnek cümleler';
 }

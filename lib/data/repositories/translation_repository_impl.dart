@@ -1,6 +1,7 @@
 import '../../domain/entities/translation_entity.dart';
 import '../../domain/repositories/translation_repository.dart';
 import '../services/gemini_service.dart';
+import '../../domain/entities/example_sentence.dart';
 import '../../domain/entities/live_session_grant.dart';
 import '../../domain/entities/photo_translation.dart';
 import '../../domain/entities/study_session.dart';
@@ -32,6 +33,19 @@ class TranslationRepositoryImpl implements TranslationRepository {
   ) {
     return _geminiService.translatePhotoBlocks(blocks, targetLang);
   }
+
+  @override
+  Future<List<ExampleSentence>> exampleSentences({
+    required String text,
+    required String translation,
+    String? sourceLanguage,
+    String? targetLanguage,
+  }) => _geminiService.exampleSentences(
+    text: text,
+    translation: translation,
+    sourceLanguage: sourceLanguage,
+    targetLanguage: targetLanguage,
+  );
 
   @override
   Future<LiveSessionGrant> startLiveSession(String targetLanguageCode) {

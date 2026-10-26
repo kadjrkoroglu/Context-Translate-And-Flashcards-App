@@ -2263,6 +2263,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No cards added yet'**
   String get noCardsAdded;
+
+  /// No description provided for @exampleSentences.
+  ///
+  /// In en, this message translates to:
+  /// **'Example sentences'**
+  String get exampleSentences;
 }
 
 class _AppLocalizationsDelegate

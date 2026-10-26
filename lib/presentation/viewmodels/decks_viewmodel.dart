@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:translate_app/core/text_case.dart';
 import 'package:translate_app/domain/entities/card_entity.dart';
 import 'package:translate_app/domain/entities/deck_entity.dart';
+import 'package:translate_app/domain/entities/example_sentence.dart';
 import 'package:translate_app/domain/usecases/deck_usecase.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
 import 'package:translate_app/l10n/l10n.dart';
@@ -104,13 +105,14 @@ class DecksViewModel extends ChangeNotifier {
 
   /// Returns false (without saving) if the deck's card limit is reached.
   /// Both sides start with a capital; the languages, when known, pick the
-  /// right one (Turkish "i" → "İ").
+  /// right one (Turkish "i" → "İ") and the voice.
   Future<bool> addCard(
     int deckId,
     String word,
     String translation, {
     String? wordLanguage,
     String? translationLanguage,
+    List<ExampleSentence>? examples,
   }) async {
     final deck = _decks.where((d) => d.id == deckId).firstOrNull;
     if (deck != null && !canAddCard(deck)) return false;
@@ -124,6 +126,10 @@ class DecksViewModel extends ChangeNotifier {
       translation: capitalizeFirst(translation, language: translationLanguage),
       createdAt: now,
       lastModified: now,
+      wordLanguage: wordLanguage,
+      translationLanguage: translationLanguage,
+      exampleSentences: examples?.map((e) => e.sentence).toList(),
+      exampleTranslations: examples?.map((e) => e.translation).toList(),
     );
 
     try {
@@ -141,6 +147,12 @@ class DecksViewModel extends ChangeNotifier {
     String translation,
   ) async {
     _clearError();
+    // Examples for the old word would no longer fit.
+    if (word.trim() != card.word || translation.trim() != card.translation) {
+      card
+        ..exampleSentences = null
+        ..exampleTranslations = null;
+    }
     card
       ..word = word.trim()
       ..translation = translation.trim();
@@ -148,6 +160,22 @@ class DecksViewModel extends ChangeNotifier {
       await _usecase.executeUpdateCard(card);
     } catch (e) {
       _setError(l10n.failedEditCard);
+    }
+    await loadDecks();
+  }
+
+  /// Kept on the card so they load once, and offline.
+  Future<void> saveExamples(
+    CardEntity card,
+    List<ExampleSentence> examples,
+  ) async {
+    card
+      ..exampleSentences = [for (final e in examples) e.sentence]
+      ..exampleTranslations = [for (final e in examples) e.translation];
+    try {
+      await _usecase.executeUpdateCard(card);
+    } catch (e) {
+      debugPrint('[DECKS] saving examples failed: $e');
     }
     await loadDecks();
   }

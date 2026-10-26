@@ -138,29 +138,78 @@ class GeminiInputBody extends StatelessWidget {
             final fontSize = FontSizeHelper.getDynamicFontSize(
               value.text.length,
             );
-            return TextField(
-              controller: viewModel.textController,
-              focusNode: viewModel.inputFocus,
-              maxLines: null,
-              minLines: 1,
-              textAlignVertical: TextAlignVertical.top,
-              style: TextStyle(
-                fontSize: fontSize,
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-              cursorColor: Colors.white,
-              decoration: InputDecoration(
-                hintText: l10n.enterText,
-                hintStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.3),
+            final hasText = value.text.isNotEmpty;
+            return Stack(
+              children: [
+                TextField(
+                  controller: viewModel.textController,
+                  focusNode: viewModel.inputFocus,
+                  maxLines: null,
+                  minLines: 1,
+                  textAlignVertical: TextAlignVertical.top,
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  cursorColor: Colors.white,
+                  decoration: InputDecoration(
+                    hintText: l10n.enterText,
+                    hintStyle: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.3),
+                    ),
+                    // Room for the clear button, kept after translating so the text doesn't reflow.
+                    contentPadding: EdgeInsets.fromLTRB(
+                      20,
+                      16,
+                      hasText ? 52 : 20,
+                      8,
+                    ),
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (val) {
+                    if (val.isEmpty) outputController.clear();
+                  },
                 ),
-                contentPadding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                border: InputBorder.none,
-              ),
-              onChanged: (val) {
-                if (val.isEmpty) outputController.clear();
-              },
+                Positioned(
+                  top: 11,
+                  // In line with the X shown after translating.
+                  right: 12,
+                  // Only while typing; gone once Translate is pressed.
+                  child: ListenableBuilder(
+                    listenable: outputController,
+                    builder: (context, _) {
+                      final visible =
+                          hasText &&
+                          outputController.text.isEmpty &&
+                          !viewModel.isLoading;
+                      return AnimatedOpacity(
+                        opacity: visible ? 1 : 0,
+                        duration: const Duration(milliseconds: 200),
+                        child: IgnorePointer(
+                          ignoring: !visible,
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 40,
+                              minHeight: 40,
+                            ),
+                            icon: Icon(
+                              Icons.clear_rounded,
+                              color: Colors.white.withValues(alpha: 0.5),
+                            ),
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              viewModel.inputFocus.unfocus();
+                              viewModel.clear(outputController);
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             );
           },
         ),

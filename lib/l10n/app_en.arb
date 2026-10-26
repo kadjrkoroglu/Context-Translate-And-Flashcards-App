@@ -696,5 +696,6 @@
   "manageSubscription": "Manage subscription",
   "editCard": "Edit card",
   "failedEditCard": "Failed to save the card",
-  "noCardsAdded": "No cards added yet"
+  "noCardsAdded": "No cards added yet",
+  "exampleSentences": "Example sentences"
 }

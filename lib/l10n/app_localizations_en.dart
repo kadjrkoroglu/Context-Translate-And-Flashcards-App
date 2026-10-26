@@ -1290,4 +1290,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noCardsAdded => 'No cards added yet';
+
+  @override
+  String get exampleSentences => 'Example sentences';
 }

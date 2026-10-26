@@ -512,7 +512,7 @@ class MainPage extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           child: IgnorePointer(
             ignoring: isMLPage || gVM.isLoading,
-            // Translate centred; camera and clear 15 px from the sides, like the bottom gap.
+            // Translate centred; camera and speaker 15 px from the sides, like the bottom gap.
             child: SizedBox(
               width: double.infinity,
               height: 42,
@@ -533,16 +533,22 @@ class MainPage extends StatelessWidget {
                   ),
                   Positioned(
                     right: 15,
-                    // Clears what was typed; hidden with no text or while translating.
+                    // Reads what was typed; hidden with no text or while translating.
                     child: AnimatedOpacity(
                       opacity: gVM.isLoading || !hasText ? 0.0 : 1.0,
                       duration: const Duration(milliseconds: 200),
                       child: IgnorePointer(
                         ignoring: !hasText,
-                        child: _buildCornerButton(Icons.close_rounded, () {
-                          HapticFeedback.lightImpact();
-                          gVM.clear(viewModel.outputController);
-                        }),
+                        child: SpeechToggleButton(
+                          text: gVM.textController.text,
+                          language: gVM.sourceLanguage,
+                          builder: (speaking, onPressed) => _buildCornerButton(
+                            speaking
+                                ? Icons.stop_rounded
+                                : Icons.volume_up_rounded,
+                            onPressed,
+                          ),
+                        ),
                       ),
                     ),
                   ),

@@ -1,4 +1,5 @@
 import '../entities/translation_entity.dart';
+import '../entities/example_sentence.dart';
 import '../entities/live_session_grant.dart';
 import '../entities/photo_translation.dart';
 import '../entities/study_session.dart';
@@ -16,6 +17,14 @@ abstract class TranslationRepository {
     List<List<String>> blocks,
     String targetLang,
   );
+
+  /// Sentences using [text] in the meaning given by [translation].
+  Future<List<ExampleSentence>> exampleSentences({
+    required String text,
+    required String translation,
+    String? sourceLanguage,
+    String? targetLanguage,
+  });
 
   /// Reserves Live time and returns what is needed to connect.
   Future<LiveSessionGrant> startLiveSession(String targetLanguageCode);
