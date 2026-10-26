@@ -12,6 +12,9 @@ class WelcomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The app's resolved locale: this first screen may be built before the
+    // phone's language reaches the global l10n.
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: AppBackground(
         child: SafeArea(
@@ -54,14 +57,16 @@ class WelcomePage extends StatelessWidget {
                       ),
                     ),
                     Positioned(
-                      right: 0,
+                      left: 0,
                       bottom: 0,
-                      child: ClipRRect(
-                          borderRadius: BorderRadius.circular(25),
+                      // Oval: a rounded square leaks the blur past the circle.
+                      child: ClipOval(
                           child: BackdropFilter(
                             filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                             child: Container(
-                              padding: const EdgeInsets.all(8),
+                              width: 69,
+                              height: 69,
+                              alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.15),
                                 shape: BoxShape.circle,
@@ -70,10 +75,15 @@ class WelcomePage extends StatelessWidget {
                                   width: 1.5,
                                 ),
                               ),
-                              child: Image.asset(
-                                'assets/images/flashcard.png',
-                                width: 38,
-                                height: 38,
+                              // The cards sit a little up-left in their image;
+                              // nudged so the gap to the circle is even.
+                              child: Transform.translate(
+                                offset: const Offset(1, 2),
+                                child: Image.asset(
+                                  'assets/images/flashcard.png',
+                                  width: 66,
+                                  height: 66,
+                                ),
                               ),
                             ),
                           ),
