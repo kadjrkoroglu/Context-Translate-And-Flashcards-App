@@ -87,16 +87,16 @@ void main() {
     return vm;
   }
 
-  group('Free (1 deck, 20 cards per deck)', () {
-    final free = plan('free', maxDecks: 1, maxCardsPerDeck: 20);
+  group('Free (2 decks, 20 cards per deck)', () {
+    final free = plan('free', maxDecks: 2, maxCardsPerDeck: 20);
 
-    test('the first deck can be made, a second one cannot', () async {
-      final empty = await decksWith([], free);
+    test('two decks can be made, a third one cannot', () async {
+      final empty = await decksWith([deck(1)], free);
       expect(empty.canAddDeck, isTrue);
       expect(await empty.addDeck('Words'), isTrue);
       verify(() => repository.saveDeck(any())).called(1);
 
-      final full = await decksWith([deck(1)], free);
+      final full = await decksWith([deck(1), deck(2)], free);
       expect(full.canAddDeck, isFalse);
       expect(await full.addDeck('More'), isFalse);
       verifyNever(() => repository.saveDeck(any()));
@@ -148,7 +148,7 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    final free = plan('free', maxDecks: 1, maxCardsPerDeck: 20);
+    final free = plan('free', maxDecks: 2, maxCardsPerDeck: 20);
 
     testWidgets('a full deck gets the limit message, not the form', (
       tester,
