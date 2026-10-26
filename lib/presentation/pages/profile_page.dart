@@ -652,20 +652,20 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 }
 
-/// Current plan; tapping it opens the plans screen.
+/// The plan, opening the plans screen; on Free it plainly offers an upgrade.
+/// Shown even before the plan is known.
 class _PlanBadge extends StatelessWidget {
   const _PlanBadge();
 
   @override
   Widget build(BuildContext context) {
-    final entitlements = context.watch<EntitlementsViewModel>().entitlements;
-    if (entitlements == null) return const SizedBox(height: 30);
-    final tier = entitlements.tier;
+    final tier = context.watch<EntitlementsViewModel>().entitlements?.tier;
     final color = switch (tier) {
       AppTier.premium || AppTier.trialPremium => Colors.amberAccent,
       AppTier.standard || AppTier.trialStandard => Colors.lightBlueAccent,
-      AppTier.free => Colors.white70,
+      AppTier.free || null => Colors.white70,
     };
+    final free = tier == AppTier.free;
     return InkWell(
       borderRadius: BorderRadius.circular(20),
       onTap: () => Navigator.push(
@@ -673,8 +673,8 @@ class _PlanBadge extends StatelessWidget {
         MaterialPageRoute(builder: (_) => const UpgradePage()),
       ),
       child: Container(
-        height: 30,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        height: 36,
+        padding: EdgeInsets.only(left: 14, right: free ? 4 : 8),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(20),
@@ -686,13 +686,45 @@ class _PlanBadge extends StatelessWidget {
             Icon(Icons.workspace_premium_rounded, color: color, size: 16),
             const SizedBox(width: 6),
             Text(
-              tier.label,
+              tier?.label ?? l10n.seePlans,
               style: TextStyle(
                 color: color,
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
             ),
+            if (free) ...[
+              const SizedBox(width: 10),
+              Container(
+                height: 28,
+                padding: const EdgeInsets.only(left: 12, right: 6),
+                decoration: BoxDecoration(
+                  color: Colors.blueAccent,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      l10n.upgrade,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                  ],
+                ),
+              ),
+            ] else ...[
+              const SizedBox(width: 2),
+              Icon(Icons.chevron_right_rounded, color: color, size: 18),
+            ],
           ],
         ),
       ),
