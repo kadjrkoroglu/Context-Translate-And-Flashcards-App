@@ -12,6 +12,9 @@ class AuthViewModel extends ChangeNotifier {
   final SyncService _syncService;
   final EntitlementsViewModel _entitlementsViewModel;
   AuthEntity? _user;
+
+  // The account whose plan is loaded; a linked guest keeps its uid.
+  String? _planUid;
   bool _isLoading = false;
   String? _error;
 
@@ -23,13 +26,19 @@ class AuthViewModel extends ChangeNotifier {
       _syncService = syncService,
       _entitlementsViewModel = entitlementsViewModel,
       // Seed the session so a cold-start restore isn't treated as a login.
-      _user = authUsecase.currentUser {
+      _user = authUsecase.currentUser,
+      _planUid = authUsecase.currentUser?.uid {
     // True only before the listener runs, so signOut() doesn't grant a fresh
     // anonymous quota (resetting the daily limit).
     final noSessionAtStartup = _user == null;
 
     _authUsecase.user.listen((AuthEntity? user) async {
       _user = user;
+      // Another account: never show the last one's plan, even if loading fails.
+      if (user?.uid != _planUid) {
+        _planUid = user?.uid;
+        _entitlementsViewModel.reset();
+      }
 
       // Refresh tier/quota on login and cold-start restore.
       if (user != null) _entitlementsViewModel.load();

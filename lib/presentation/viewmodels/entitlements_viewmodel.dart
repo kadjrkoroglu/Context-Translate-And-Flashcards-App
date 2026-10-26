@@ -12,11 +12,12 @@ class EntitlementsViewModel extends ChangeNotifier {
     bool refreshOnResume = false,
   }) : _isSubscribed = isSubscribed {
     _checkDevice();
-    // A plan changed elsewhere (another device, App Store settings) shows up on return.
+    // A plan changed elsewhere (another device, App Store settings) shows up
+    // on return, and a failed load is tried again.
     if (refreshOnResume) {
       _lifecycle = AppLifecycleListener(
         onResume: () {
-          if (_entitlements != null && !_isLoading) load();
+          if (!_isLoading) load();
         },
       );
     }
@@ -62,26 +63,42 @@ class EntitlementsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Only the newest load's answer counts.
+  int _loads = 0;
+
+  /// Forgets the plan of an account that just left.
+  void reset() {
+    _loads++;
+    _entitlements = null;
+    _error = null;
+    _isLoading = false;
+    notifyListeners();
+  }
+
   /// [fromStore]: the server first reads the plan from RevenueCat.
   Future<void> load({bool fromStore = false}) async {
+    final load = ++_loads;
     _checkDevice();
     _setLoading(true);
     _error = null;
 
     try {
-      _entitlements = fromStore
+      final entitlements = fromStore
           ? await _usecase.executeRefresh()
           : await _usecase.execute();
+      if (load != _loads) return;
+      _entitlements = entitlements;
       debugPrint(
         '[ENTITLEMENTS] OK tier=${_entitlements!.tier} '
         'maxDecks=${_entitlements!.entitlements.maxDecks} '
         'translateRemaining=${_entitlements!.translateQuota.remaining}',
       );
     } catch (e) {
+      if (load != _loads) return;
       debugPrint('[ENTITLEMENTS] FAILED: $e');
       _setError(l10n.failedLoadLimits);
     } finally {
-      _setLoading(false);
+      if (load == _loads) _setLoading(false);
     }
   }
 
