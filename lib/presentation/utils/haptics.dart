@@ -9,7 +9,7 @@ Future<void> translateWithHaptics(
   TextEditingController output,
 ) async {
   final runs =
-      !vm.isUpToDate &&
+      !vm.isOnScreen(output) &&
       vm.textController.text.isNotEmpty &&
       vm.targetLanguage != '-';
   if (runs) HapticFeedback.lightImpact();

@@ -28,7 +28,7 @@ void main() {
     vm = MockGeminiTranslateViewModel();
     when(() => vm.textController).thenReturn(input);
     when(() => vm.targetLanguage).thenReturn('Italian');
-    when(() => vm.isUpToDate).thenReturn(false);
+    when(() => vm.isOnScreen(output)).thenReturn(false);
     when(() => vm.translate(output)).thenAnswer((_) async {});
   });
 
@@ -48,7 +48,7 @@ void main() {
   });
 
   test('stays still when already translated', () async {
-    when(() => vm.isUpToDate).thenReturn(true);
+    when(() => vm.isOnScreen(output)).thenReturn(true);
     when(() => vm.error).thenReturn(null);
     await translateWithHaptics(vm, output);
     expect(haptics, isEmpty);

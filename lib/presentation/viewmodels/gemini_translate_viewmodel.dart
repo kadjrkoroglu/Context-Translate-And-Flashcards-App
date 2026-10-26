@@ -37,6 +37,11 @@ class GeminiTranslateViewModel extends ChangeNotifier {
 
   /// This text was already translated between these languages.
   bool get isUpToDate => _lastTranslateKey == _currentKey;
+
+  /// Its translation is still on screen, so Translate skips it; a cleared
+  /// one (X, deleted text, page switch) is translated again.
+  bool isOnScreen(TextEditingController output) =>
+      isUpToDate && output.text.isNotEmpty;
   String get sourceLanguage => _sourceLanguage;
   String get targetLanguage => _targetLanguage;
   bool get speechEnabled => _speechEnabled;
@@ -227,7 +232,7 @@ class GeminiTranslateViewModel extends ChangeNotifier {
     }
 
     final translateKey = _currentKey;
-    if (translateKey == _lastTranslateKey) return;
+    if (isOnScreen(outputController)) return;
 
     _setLoading(true);
     clearError();

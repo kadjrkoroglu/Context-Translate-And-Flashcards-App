@@ -124,6 +124,37 @@ void main() {
     },
   );
 
+  test(
+    'the same text is translated again once its output is cleared',
+    () async {
+      when(() => repository.translate(any(), any(), any())).thenAnswer(
+        (_) async => TranslationEntity(
+          originalText: 'hello',
+          translatedText: 'merhaba',
+          sourceLanguage: 'English',
+          targetLanguage: 'Turkish',
+        ),
+      );
+      vm.textController.text = 'hello';
+      await vm.translate(output);
+      // Still on screen: no second request.
+      await vm.translate(output);
+      verify(() => repository.translate(any(), any(), any())).called(1);
+
+      // Cleared with X, then typed again.
+      vm.clear(output);
+      vm.textController.text = 'hello';
+      await vm.translate(output);
+      expect(output.text, 'merhaba');
+
+      // Emptied by a page switch.
+      output.clear();
+      await vm.translate(output);
+      expect(output.text, 'merhaba');
+      verify(() => repository.translate(any(), any(), any())).called(2);
+    },
+  );
+
   test('a restored item counts as translated until something changes', () {
     vm.restore(word: 'hello', shown: 'merhaba', translations: const []);
     expect(vm.isUpToDate, isTrue);
