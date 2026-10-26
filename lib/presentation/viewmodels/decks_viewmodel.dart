@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:translate_app/core/text_case.dart';
 import 'package:translate_app/domain/entities/card_entity.dart';
 import 'package:translate_app/domain/entities/deck_entity.dart';
+import 'package:translate_app/domain/entities/entitlements_entity.dart';
 import 'package:translate_app/domain/entities/example_sentence.dart';
 import 'package:translate_app/domain/usecases/deck_usecase.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
@@ -25,12 +26,18 @@ class DecksViewModel extends ChangeNotifier {
     loadDecks();
   }
 
-  // Tier limits; null = unlimited (also while entitlements are loading or
-  // offline). Only new additions are limited.
-  int? get maxDecks =>
-      _entitlementsViewModel.entitlements?.entitlements.maxDecks;
-  int? get maxCardsPerDeck =>
-      _entitlementsViewModel.entitlements?.entitlements.maxCardsPerDeck;
+  // Tier limits, null = unlimited. Until the server's plan is known (offline,
+  // starting up) a subscription on the phone means none, else the free ones.
+  // Only new additions are limited.
+  int? get maxDecks => switch (_entitlementsViewModel.entitlements) {
+    final known? => known.entitlements.maxDecks,
+    null => _entitlementsViewModel.subscribedOnDevice ? null : freeMaxDecks,
+  };
+  int? get maxCardsPerDeck => switch (_entitlementsViewModel.entitlements) {
+    final known? => known.entitlements.maxCardsPerDeck,
+    null =>
+      _entitlementsViewModel.subscribedOnDevice ? null : freeMaxCardsPerDeck,
+  };
 
   bool get canAddDeck {
     final limit = maxDecks;

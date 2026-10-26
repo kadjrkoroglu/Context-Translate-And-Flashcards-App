@@ -20,6 +20,10 @@ AppTier tierFromString(String value) => switch (value) {
   _ => AppTier.free,
 };
 
+/// The free plan's limits, used until the server's plan is known.
+const int freeMaxDecks = 2;
+const int freeMaxCardsPerDeck = 20;
+
 class TierEntitlements {
   final int? maxDecks;
   final int? maxCardsPerDeck;

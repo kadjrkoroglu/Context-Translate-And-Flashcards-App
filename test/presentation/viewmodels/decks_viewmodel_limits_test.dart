@@ -7,11 +7,14 @@ import 'package:translate_app/domain/entities/deck_entity.dart';
 import 'package:translate_app/domain/entities/entitlements_entity.dart';
 import 'package:translate_app/domain/repositories/deck_repository.dart';
 import 'package:translate_app/domain/usecases/deck_usecase.dart';
+import 'package:translate_app/domain/usecases/entitlements_usecase.dart';
 import 'package:translate_app/presentation/viewmodels/decks_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
 import 'package:translate_app/presentation/widgets/add_card_dialog.dart';
 
 class MockDeckRepository extends Mock implements DeckRepository {}
+
+class MockEntitlementsUsecase extends Mock implements EntitlementsUsecase {}
 
 class MockEntitlementsViewModel extends ChangeNotifier
     with Mock
@@ -118,6 +121,42 @@ void main() {
       expect(vm.canAddCard(vm.decks.single), isTrue);
     });
   });
+
+  group('Plan not known yet (offline, starting up)', () {
+    test('without a subscription the free limits hold', () async {
+      when(() => entitlements.subscribedOnDevice).thenReturn(false);
+      final vm = await decksWith([deck(1), deck(2, cards: 20)], null);
+      expect(vm.canAddDeck, isFalse);
+      expect(vm.canAddCard(vm.decks.last), isFalse);
+      expect(await vm.addDeck('Third'), isFalse);
+    });
+
+    test('a subscription on the phone lifts them', () async {
+      when(() => entitlements.subscribedOnDevice).thenReturn(true);
+      final vm = await decksWith([deck(1), deck(2, cards: 20)], null);
+      expect(vm.canAddDeck, isTrue);
+      expect(vm.canAddCard(vm.decks.last), isTrue);
+    });
+  });
+
+  test(
+    'a subscription found on the phone is remembered, even offline',
+    () async {
+      final vm = EntitlementsViewModel(
+        MockEntitlementsUsecase(),
+        isSubscribed: () async => true,
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(vm.subscribedOnDevice, isTrue);
+
+      final failing = EntitlementsViewModel(
+        MockEntitlementsUsecase(),
+        isSubscribed: () async => throw Exception('offline, nothing cached'),
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(failing.subscribedOnDevice, isFalse);
+    },
+  );
 
   test('Standard has no deck or card limit', () async {
     final vm = await decksWith([

@@ -76,6 +76,10 @@ class PurchasesService {
   Future<bool> restore() async =>
       (await Purchases.restorePurchases()).entitlements.active.isNotEmpty;
 
+  /// From RevenueCat's copy on the phone when offline; it knows the expiry date.
+  Future<bool> isSubscribed() async =>
+      (await Purchases.getCustomerInfo()).entitlements.active.isNotEmpty;
+
   Future<String?> managementUrl() async =>
       (await Purchases.getCustomerInfo()).managementURL;
 

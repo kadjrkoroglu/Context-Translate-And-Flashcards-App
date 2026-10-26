@@ -90,7 +90,11 @@ void main() async {
         providers: [
           Provider<TtsService>(create: (_) => TtsService()),
           ChangeNotifierProvider(
-            create: (_) => EntitlementsViewModel(entitlementsUsecase),
+            create: (_) => EntitlementsViewModel(
+              entitlementsUsecase,
+              isSubscribed: purchasesService.isSubscribed,
+              refreshOnResume: true,
+            ),
           ),
           ChangeNotifierProvider(
             create: (context) => SubscriptionViewModel(
