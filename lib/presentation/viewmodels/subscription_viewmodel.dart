@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:translate_app/data/services/purchases_service.dart';
+import 'package:translate_app/domain/entities/entitlements_entity.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
 
 enum PlanOption { standard, premium }
@@ -29,6 +30,8 @@ class SubscriptionViewModel extends ChangeNotifier {
   bool _loading = false;
   bool _loadFailed = false;
   bool _busy = false;
+  // Asked for here, before the server hears of it from RevenueCat.
+  bool _askedForStandard = false;
 
   bool get isLoading => _loading;
   bool get loadFailed => _loadFailed;
@@ -37,6 +40,24 @@ class SubscriptionViewModel extends ChangeNotifier {
   bool get isBusy => _busy;
 
   Package? packageOf(PlanOption plan) => _packages[plan];
+
+  bool get _onPremium => switch (_entitlements.tier) {
+    AppTier.premium || AppTier.trialPremium => true,
+    _ => false,
+  };
+
+  /// Premium moves down to Standard when the paid period ends; null if not.
+  /// The date may be unknown right after asking.
+  ({DateTime? at})? get standardSwitch {
+    if (!_onPremium) return null;
+    final pending = _entitlements.entitlements?.pendingSwitch;
+    final at = pending?.at;
+    if (pending?.plan == AppTier.standard &&
+        (at == null || at.isAfter(DateTime.now()))) {
+      return (at: at);
+    }
+    return _askedForStandard ? (at: null) : null;
+  }
 
   /// Formatted by the App Store in the local currency.
   String? priceOf(PlanOption plan) => _packages[plan]?.storeProduct.priceString;
@@ -94,9 +115,11 @@ class SubscriptionViewModel extends ChangeNotifier {
   Future<PurchaseOutcome> buy(PlanOption plan) async {
     final package = _packages[plan];
     if (package == null || _busy) return PurchaseOutcome.failed;
+    final downgrade = plan == PlanOption.standard && _onPremium;
     _setBusy(true);
     try {
       if (!await _purchases.buy(package)) return PurchaseOutcome.cancelled;
+      if (downgrade) _askedForStandard = true;
       await _entitlements.load(fromStore: true);
       return PurchaseOutcome.done;
     } catch (e) {

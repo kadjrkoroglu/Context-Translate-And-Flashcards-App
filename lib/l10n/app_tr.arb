@@ -100,7 +100,6 @@
   "trialTerms": "{days} günlük ücretsiz deneme bitmeden en az 24 saat önce iptal etmezsen abonelik otomatik olarak başlar. Her Apple Kimliği için bir ücretsiz deneme. ",
   "renewalTerms": "Abonelikler, mevcut dönem bitmeden en az 24 saat önce iptal edilmezse her ay gösterilen fiyattan otomatik olarak yenilenir. Ödeme Apple Kimliğinden alınır. Aboneliğini App Store hesap ayarlarından yönetebilir ya da iptal edebilirsin.",
   "currentPlan": "Mevcut plan",
-  "includedInPremium": "Premium'a dahil",
   "upgradeToPremium": "Premium'a geç",
   "perMonthCancelAnytime": "{price}/ay · istediğin zaman iptal et",
   "startTrial": "{days} günlük ücretsiz denemeyi başlat",
@@ -361,5 +360,11 @@
   "editCard": "Kartı düzenle",
   "failedEditCard": "Kart kaydedilemedi",
   "noCardsAdded": "Henüz kart eklenmedi",
-  "exampleSentences": "Örnek cümleler"
+  "exampleSentences": "Örnek cümleler",
+  "switchToStandard": "Standard'a geç",
+  "switchStartsLater": "{price}/ay · mevcut dönem bitince başlar",
+  "switchScheduled": "Mevcut dönemin bitince Standard'a geçeceksin.",
+  "switchPlanned": "Standard'a geçiş planlandı",
+  "switchStartsOn": "{date} tarihinde başlar",
+  "switchAtPeriodEnd": "Mevcut dönem bitince başlar"
 }

@@ -111,18 +111,34 @@ class TranslateQuotaStatus {
   }
 }
 
+/// A plan Apple switches to when the paid period ends (Premium → Standard).
+class PendingSwitch {
+  final AppTier plan;
+  final DateTime? at;
+
+  const PendingSwitch(this.plan, this.at);
+
+  static PendingSwitch? fromJson(Object? json) {
+    if (json is! Map || json['plan'] is! String) return null;
+    final at = json['at'] is String ? DateTime.tryParse(json['at']) : null;
+    return PendingSwitch(tierFromString(json['plan']), at?.toLocal());
+  }
+}
+
 class EntitlementsEntity {
   final AppTier tier;
   final TierEntitlements entitlements;
   final TranslateQuotaStatus translateQuota;
 
   final TranslateQuotaStatus liveQuota;
+  final PendingSwitch? pendingSwitch;
 
   const EntitlementsEntity({
     required this.tier,
     required this.entitlements,
     required this.translateQuota,
     this.liveQuota = const TranslateQuotaStatus.empty(),
+    this.pendingSwitch,
   });
 
   factory EntitlementsEntity.fromJson(Map<String, dynamic> json) {
@@ -137,6 +153,7 @@ class EntitlementsEntity {
       liveQuota: TranslateQuotaStatus.fromJson(
         json['live'] as Map<String, dynamic>? ?? const {},
       ),
+      pendingSwitch: PendingSwitch.fromJson(json['pendingSwitch']),
     );
   }
 }

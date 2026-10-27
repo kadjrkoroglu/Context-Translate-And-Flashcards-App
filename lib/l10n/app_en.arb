@@ -149,7 +149,6 @@
   },
   "renewalTerms": "Subscriptions renew automatically each month at the price shown unless you cancel at least 24 hours before the current period ends. Payment is charged to your Apple ID. You can manage or cancel your subscription in your App Store account settings.",
   "currentPlan": "Current plan",
-  "includedInPremium": "Included in Premium",
   "upgradeToPremium": "Upgrade to Premium",
   "perMonthCancelAnytime": "{price}/month · cancel anytime",
   "@perMonthCancelAnytime": {
@@ -697,5 +696,25 @@
   "editCard": "Edit card",
   "failedEditCard": "Failed to save the card",
   "noCardsAdded": "No cards added yet",
-  "exampleSentences": "Example sentences"
+  "exampleSentences": "Example sentences",
+  "switchToStandard": "Switch to Standard",
+  "switchStartsLater": "{price}/month · starts when your current period ends",
+  "switchScheduled": "You'll move to Standard when your current period ends.",
+  "@switchStartsLater": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "switchPlanned": "Switch to Standard planned",
+  "switchStartsOn": "Starts on {date}",
+  "switchAtPeriodEnd": "Starts when your current period ends",
+  "@switchStartsOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  }
 }

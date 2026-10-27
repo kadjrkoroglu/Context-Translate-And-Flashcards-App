@@ -346,9 +346,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get currentPlan => 'Mevcut plan';
 
   @override
-  String get includedInPremium => 'Premium\'a dahil';
-
-  @override
   String get upgradeToPremium => 'Premium\'a geç';
 
   @override
@@ -1243,4 +1240,27 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get exampleSentences => 'Örnek cümleler';
+
+  @override
+  String get switchToStandard => 'Standard\'a geç';
+
+  @override
+  String switchStartsLater(String price) {
+    return '$price/ay · mevcut dönem bitince başlar';
+  }
+
+  @override
+  String get switchScheduled =>
+      'Mevcut dönemin bitince Standard\'a geçeceksin.';
+
+  @override
+  String get switchPlanned => 'Standard\'a geçiş planlandı';
+
+  @override
+  String switchStartsOn(String date) {
+    return '$date tarihinde başlar';
+  }
+
+  @override
+  String get switchAtPeriodEnd => 'Mevcut dönem bitince başlar';
 }

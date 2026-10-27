@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:translate_app/core/app_links.dart';
 import 'package:provider/provider.dart';
 import 'package:translate_app/domain/entities/entitlements_entity.dart';
@@ -117,16 +118,18 @@ class _UpgradePageState extends State<UpgradePage> {
   Future<void> _buy() async {
     if (!_requireAccount(context)) return;
     final messenger = ScaffoldMessenger.of(context);
+    // Apple moves Premium down to Standard when the paid period ends.
+    final downgrade = _selected == PlanOption.standard && _onPremium;
     final outcome = await context.read<SubscriptionViewModel>().buy(_selected);
     if (outcome == PurchaseOutcome.cancelled) return;
     if (outcome == PurchaseOutcome.done) HapticFeedback.successNotification();
     messenger.showSnackBar(
       SnackBar(
-        content: Text(
-          outcome == PurchaseOutcome.done
-              ? l10n.purchaseDone
-              : l10n.purchaseFailed,
-        ),
+        content: Text(switch (outcome) {
+          PurchaseOutcome.done when downgrade => l10n.switchScheduled,
+          PurchaseOutcome.done => l10n.purchaseDone,
+          _ => l10n.purchaseFailed,
+        }),
       ),
     );
   }
@@ -149,6 +152,7 @@ class _UpgradePageState extends State<UpgradePage> {
       onPremium: onPremium,
       price: price,
       trialDays: trial ? trialDays : null,
+      standardSwitch: plans.standardSwitch,
     );
 
     return AppBackground(
@@ -302,16 +306,33 @@ class _UpgradePageState extends State<UpgradePage> {
     required bool onPremium,
     required String? price,
     required int? trialDays,
+    required ({DateTime? at})? standardSwitch,
   }) {
     if ((selected == PlanOption.premium && onPremium) ||
         (selected == PlanOption.standard && onStandard)) {
       return (label: l10n.currentPlan, subtitle: null, enabled: false);
     }
-    if (selected == PlanOption.standard && onPremium) {
-      return (label: l10n.includedInPremium, subtitle: null, enabled: false);
-    }
     // Not loaded from the App Store yet (or it failed).
     final enabled = price != null;
+    if (selected == PlanOption.standard && standardSwitch != null) {
+      final at = standardSwitch.at;
+      return (
+        label: l10n.switchPlanned,
+        subtitle: at == null
+            ? l10n.switchAtPeriodEnd
+            : l10n.switchStartsOn(
+                DateFormat.yMMMMd(l10n.localeName).format(at),
+              ),
+        enabled: false,
+      );
+    }
+    if (selected == PlanOption.standard && onPremium) {
+      return (
+        label: l10n.switchToStandard,
+        subtitle: enabled ? l10n.switchStartsLater(price) : null,
+        enabled: enabled,
+      );
+    }
     if (onStandard) {
       return (
         label: l10n.upgradeToPremium,

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:translate_app/data/services/purchases_service.dart';
 import 'package:translate_app/domain/entities/entitlements_entity.dart';
+import 'package:translate_app/l10n/l10n.dart';
 import 'package:translate_app/presentation/pages/upgrade_page.dart';
 import 'package:translate_app/presentation/viewmodels/entitlements_viewmodel.dart';
 import 'package:translate_app/presentation/viewmodels/subscription_viewmodel.dart';
@@ -37,9 +38,10 @@ Package package(String id, String price) => Package(
   const PresentedOfferingContext('default', null, null),
 );
 
-Widget subject(AppTier tier) {
+Widget subject(AppTier tier, {EntitlementsEntity? entitlements}) {
   final vm = MockEntitlementsViewModel();
   when(() => vm.tier).thenReturn(tier);
+  when(() => vm.entitlements).thenReturn(entitlements);
   final purchases = MockPurchasesService();
   when(() => purchases.onCustomerInfoChanged(any())).thenReturn(null);
   when(() => purchases.plans()).thenAnswer(
@@ -56,12 +58,21 @@ Widget subject(AppTier tier) {
         create: (_) => SubscriptionViewModel(purchases, vm),
       ),
     ],
-    child: const MaterialApp(home: UpgradePage()),
+    // As in the app: its delegates also load the date formats.
+    child: const MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: UpgradePage(),
+    ),
   );
 }
 
-Future<void> open(WidgetTester tester, AppTier tier) async {
-  await tester.pumpWidget(subject(tier));
+Future<void> open(
+  WidgetTester tester,
+  AppTier tier, {
+  EntitlementsEntity? entitlements,
+}) async {
+  await tester.pumpWidget(subject(tier, entitlements: entitlements));
   // The App Store plans load after the first frame.
   await tester.pumpAndSettle();
 }
@@ -111,6 +122,31 @@ void main() {
 
     await tester.tap(find.text('Standard'));
     await tester.pumpAndSettle();
-    expect(find.text('Included in Premium'), findsOneWidget);
+    expect(find.text('Switch to Standard'), findsOneWidget);
+    expect(
+      find.text(r'$5.99/month · starts when your current period ends'),
+      findsOneWidget,
+    );
+    expect(cta(tester).onPressed, isNotNull);
+  });
+
+  testWidgets('a switch to Standard already asked for is shown, not offered', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      AppTier.premium,
+      entitlements: EntitlementsEntity.fromJson({
+        'tier': 'premium',
+        'entitlements': <String, dynamic>{},
+        'pendingSwitch': {'plan': 'standard', 'at': '2099-11-27T12:00:00Z'},
+      }),
+    );
+    await tester.tap(find.text('Standard'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Switch to Standard planned'), findsOneWidget);
+    expect(find.text('Starts on November 27, 2099'), findsOneWidget);
+    expect(cta(tester).onPressed, isNull);
   });
 }

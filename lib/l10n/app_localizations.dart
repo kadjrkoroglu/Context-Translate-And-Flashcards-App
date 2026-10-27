@@ -698,12 +698,6 @@ abstract class AppLocalizations {
   /// **'Current plan'**
   String get currentPlan;
 
-  /// No description provided for @includedInPremium.
-  ///
-  /// In en, this message translates to:
-  /// **'Included in Premium'**
-  String get includedInPremium;
-
   /// No description provided for @upgradeToPremium.
   ///
   /// In en, this message translates to:
@@ -2269,6 +2263,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Example sentences'**
   String get exampleSentences;
+
+  /// No description provided for @switchToStandard.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to Standard'**
+  String get switchToStandard;
+
+  /// No description provided for @switchStartsLater.
+  ///
+  /// In en, this message translates to:
+  /// **'{price}/month · starts when your current period ends'**
+  String switchStartsLater(String price);
+
+  /// No description provided for @switchScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ll move to Standard when your current period ends.'**
+  String get switchScheduled;
+
+  /// No description provided for @switchPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to Standard planned'**
+  String get switchPlanned;
+
+  /// No description provided for @switchStartsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts on {date}'**
+  String switchStartsOn(String date);
+
+  /// No description provided for @switchAtPeriodEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts when your current period ends'**
+  String get switchAtPeriodEnd;
 }
 
 class _AppLocalizationsDelegate

@@ -48,8 +48,10 @@ final premium = package(
   r'$9.99',
 );
 
-EntitlementsEntity entitlementsOf(String tier) =>
-    EntitlementsEntity.fromJson({'tier': tier, 'entitlements': <String, dynamic>{}});
+EntitlementsEntity entitlementsOf(String tier) => EntitlementsEntity.fromJson({
+  'tier': tier,
+  'entitlements': <String, dynamic>{},
+});
 
 void main() {
   late MockPurchasesService purchases;
@@ -157,5 +159,38 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     verify(() => repository.refreshEntitlements()).called(1);
+  });
+
+  test('moving Premium down to Standard waits for the period to end', () async {
+    when(
+      () => repository.refreshEntitlements(),
+    ).thenAnswer((_) async => entitlementsOf('premium'));
+    await entitlements.load(fromStore: true);
+    await vm.load();
+    expect(vm.standardSwitch, isNull);
+
+    // Asked for: shown at once, before the server has heard of it.
+    when(() => purchases.buy(standard)).thenAnswer((_) async => true);
+    expect(await vm.buy(PlanOption.standard), PurchaseOutcome.done);
+    expect(vm.standardSwitch, isNotNull);
+    expect(vm.standardSwitch!.at, isNull);
+
+    // Then the server knows the date from RevenueCat.
+    when(() => repository.refreshEntitlements()).thenAnswer(
+      (_) async => EntitlementsEntity.fromJson({
+        'tier': 'premium',
+        'entitlements': <String, dynamic>{},
+        'pendingSwitch': {'plan': 'standard', 'at': '2099-11-27T12:00:00Z'},
+      }),
+    );
+    await entitlements.load(fromStore: true);
+    expect(vm.standardSwitch!.at!.year, 2099);
+
+    // Once on Standard there is nothing left to wait for.
+    when(
+      () => repository.refreshEntitlements(),
+    ).thenAnswer((_) async => entitlementsOf('standard'));
+    await entitlements.load(fromStore: true);
+    expect(vm.standardSwitch, isNull);
   });
 }

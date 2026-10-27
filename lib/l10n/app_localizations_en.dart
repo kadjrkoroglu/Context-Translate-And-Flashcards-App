@@ -354,9 +354,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currentPlan => 'Current plan';
 
   @override
-  String get includedInPremium => 'Included in Premium';
-
-  @override
   String get upgradeToPremium => 'Upgrade to Premium';
 
   @override
@@ -1293,4 +1290,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exampleSentences => 'Example sentences';
+
+  @override
+  String get switchToStandard => 'Switch to Standard';
+
+  @override
+  String switchStartsLater(String price) {
+    return '$price/month · starts when your current period ends';
+  }
+
+  @override
+  String get switchScheduled =>
+      'You\'ll move to Standard when your current period ends.';
+
+  @override
+  String get switchPlanned => 'Switch to Standard planned';
+
+  @override
+  String switchStartsOn(String date) {
+    return 'Starts on $date';
+  }
+
+  @override
+  String get switchAtPeriodEnd => 'Starts when your current period ends';
 }
