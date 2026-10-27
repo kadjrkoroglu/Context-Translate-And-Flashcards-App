@@ -32,12 +32,12 @@ class _Feature {
 }
 
 List<_Feature> get _sharedFeatures => [
-  _Feature(Icons.school_rounded, l10n.studyWithAi, l10n.featStudyDetail),
   _Feature(
     Icons.auto_awesome_rounded,
     l10n.featTranslations,
     l10n.featTranslationsDetail,
   ),
+  _Feature(Icons.school_rounded, l10n.studyWithAi, l10n.featStudyDetail),
   _Feature(Icons.photo_camera_rounded, l10n.featPhoto, l10n.featPhotoDetail),
   _Feature(
     Icons.library_add_rounded,
@@ -97,11 +97,18 @@ class UpgradePage extends StatefulWidget {
 }
 
 class _UpgradePageState extends State<UpgradePage> {
-  PlanOption _selected = PlanOption.premium;
+  late PlanOption _selected;
+
+  bool get _onPremium => switch (context.read<EntitlementsViewModel>().tier) {
+    AppTier.premium || AppTier.trialPremium => true,
+    _ => false,
+  };
 
   @override
   void initState() {
     super.initState();
+    // The plan you're on, else the recommended Standard.
+    _selected = _onPremium ? PlanOption.premium : PlanOption.standard;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) context.read<SubscriptionViewModel>().load();
     });
@@ -183,7 +190,7 @@ class _UpgradePageState extends State<UpgradePage> {
                       child: _PlanTile(
                         plan: _styles[option]!,
                         price: plans.priceOf(option),
-                        badge: option == PlanOption.premium
+                        badge: option == PlanOption.standard
                             ? l10n.recommended
                             : null,
                         selected: _selected == option,
