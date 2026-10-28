@@ -81,23 +81,23 @@ ElevatedButton cta(WidgetTester tester) =>
     tester.widget<ElevatedButton>(find.byType(ElevatedButton));
 
 void main() {
-  testWidgets('Premium offers the trial', (tester) async {
+  testWidgets('Premium is recommended, preselected and offers the trial', (
+    tester,
+  ) async {
     await open(tester, AppTier.free);
-    await tester.tap(find.text('Premium'));
-    await tester.pumpAndSettle();
 
+    expect(find.text('Recommended'), findsOneWidget);
     expect(find.text('AI Live translation'), findsOneWidget);
     expect(find.text('Start 14-day free trial'), findsOneWidget);
     expect(find.text(r'then $9.99/month · cancel anytime'), findsOneWidget);
     expect(cta(tester).onPressed, isNotNull);
   });
 
-  testWidgets('Standard is recommended and preselected, with its own list', (
-    tester,
-  ) async {
+  testWidgets('choosing Standard shows its own list and price', (tester) async {
     await open(tester, AppTier.free);
+    await tester.tap(find.text('Standard'));
+    await tester.pumpAndSettle();
 
-    expect(find.text('Recommended'), findsOneWidget);
     expect(find.text('AI Live translation'), findsNothing);
     expect(find.text('Unlimited AI translations'), findsOneWidget);
     expect(find.text(r'then $5.99/month · cancel anytime'), findsOneWidget);

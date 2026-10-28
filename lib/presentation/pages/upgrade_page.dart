@@ -105,11 +105,16 @@ class _UpgradePageState extends State<UpgradePage> {
     _ => false,
   };
 
+  bool get _onStandard => switch (context.read<EntitlementsViewModel>().tier) {
+    AppTier.standard || AppTier.trialStandard => true,
+    _ => false,
+  };
+
   @override
   void initState() {
     super.initState();
-    // The plan you're on, else the recommended Standard.
-    _selected = _onPremium ? PlanOption.premium : PlanOption.standard;
+    // The plan you're on, else the recommended Premium.
+    _selected = _onStandard ? PlanOption.standard : PlanOption.premium;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) context.read<SubscriptionViewModel>().load();
     });
@@ -194,7 +199,7 @@ class _UpgradePageState extends State<UpgradePage> {
                       child: _PlanTile(
                         plan: _styles[option]!,
                         price: plans.priceOf(option),
-                        badge: option == PlanOption.standard
+                        badge: option == PlanOption.premium
                             ? l10n.recommended
                             : null,
                         selected: _selected == option,
