@@ -8,6 +8,9 @@ import '../../data/services/srs_service.dart';
 import 'package:translate_app/l10n/l10n.dart';
 
 class StudyViewModel extends ChangeNotifier {
+  /// Missed cards due within this still come back before the session ends.
+  static const _learnAhead = Duration(minutes: 20);
+
   final DeckUsecase _deckUsecase;
   DeckEntity _deck;
 
@@ -48,6 +51,7 @@ class StudyViewModel extends ChangeNotifier {
   List<CardEntity> get dueCards => _queue;
   CardEntity? get currentCard => _queue.isNotEmpty ? _queue.first : null;
   int get currentIndex => _completedCount;
+  int get totalCards => _totalSessionCards;
   bool get isAnswerVisible => _isAnswerVisible;
   bool get isFinished => _isFinished;
   bool get isLoading => _isLoading;
@@ -93,52 +97,61 @@ class StudyViewModel extends ChangeNotifier {
     }
   }
 
+  /// Due missed cards first, then reviews mixed with new ones, then the rest.
   void _rebuildQueue() {
     final now = DateTime.now();
-    final allCards = deck.cards.where((c) => !c.isDeleted).toList();
+    final learning = <CardEntity>[];
+    final waiting = <CardEntity>[];
+    final reviews = <CardEntity>[];
+    final newCards = <CardEntity>[];
 
-    List<CardEntity> newCards = [];
-    List<CardEntity> againCards = [];
-    List<CardEntity> reviewCards = [];
-
-    for (var card in allCards) {
-      if (card.nextReviewDate == null) {
-        if (_sessionNewCardIds.length < _allowedNew ||
-            _sessionNewCardIds.contains(card.id)) {
-          newCards.add(card);
-        }
-      } else if (card.nextReviewDate!.isBefore(now) ||
-          card.nextReviewDate!.isAtSameMomentAs(now)) {
-        if (card.repetitions == 0 &&
-            card.lastRatingIndex == 0 &&
-            !card.isNewCard) {
-          againCards.add(card);
-        } else {
-          if (_sessionReviewCardIds.length < _allowedReviews ||
-              _sessionReviewCardIds.contains(card.id)) {
-            reviewCards.add(card);
-          }
-        }
+    for (final card in deck.cards) {
+      if (card.isDeleted) continue;
+      final due = card.nextReviewDate;
+      if (card.isNewCard || due == null) {
+        newCards.add(card);
+      } else if (!card.isLearning) {
+        if (!due.isAfter(now)) reviews.add(card);
+      } else if (!due.isAfter(now)) {
+        learning.add(card);
+      } else if (due.isBefore(now.add(_learnAhead))) {
+        waiting.add(card);
       }
     }
 
-    reviewCards.sort((a, b) => a.nextReviewDate!.compareTo(b.nextReviewDate!));
+    int byDue(CardEntity a, CardEntity b) =>
+        a.nextReviewDate!.compareTo(b.nextReviewDate!);
+    learning.sort(byDue);
+    reviews.sort(byDue);
+    waiting.sort(byDue);
 
-    _queue = [];
-    int newIdx = 0;
-    int againIdx = 0;
+    final newLeft = max(0, _allowedNew - _sessionNewCardIds.length);
+    final reviewsLeft = max(0, _allowedReviews - _sessionReviewCardIds.length);
+    _queue = [
+      ...learning,
+      ..._spread(
+        newCards.take(newLeft).toList(),
+        among: reviews.take(reviewsLeft).toList(),
+      ),
+      ...waiting,
+    ];
+  }
 
-    while (newIdx < newCards.length || againIdx < againCards.length) {
-      for (int i = 0; i < 2 && newIdx < newCards.length; i++, newIdx++) {
-        _queue.add(newCards[newIdx]);
+  static List<CardEntity> _spread(
+    List<CardEntity> newCards, {
+    required List<CardEntity> among,
+  }) {
+    final mixed = <CardEntity>[];
+    var r = 0;
+    for (var i = 0; i < newCards.length; i++) {
+      final until = (i + 1) * among.length ~/ (newCards.length + 1);
+      while (r < until) {
+        mixed.add(among[r++]);
       }
-      if (againIdx < againCards.length) {
-        _queue.add(againCards[againIdx]);
-        againIdx++;
-      }
+      mixed.add(newCards[i]);
     }
-
-    _queue.addAll(reviewCards);
+    mixed.addAll(among.skip(r));
+    return mixed;
   }
 
   void showAnswer() {
@@ -153,7 +166,7 @@ class StudyViewModel extends ChangeNotifier {
 
     if (card.isNewCard || card.nextReviewDate == null) {
       _sessionNewCardIds.add(card.id);
-    } else if (card.repetitions > 0) {
+    } else if (!card.isLearning) {
       _sessionReviewCardIds.add(card.id);
     }
 
@@ -168,7 +181,8 @@ class StudyViewModel extends ChangeNotifier {
 
     _isAnswerVisible = false;
 
-    if (rating != StudyRating.again) {
+    // A card still being learned comes back later in the session.
+    if (!card.isLearning) {
       _completedCount++;
     }
 

@@ -200,7 +200,7 @@ class _StudyPageState extends State<StudyPage> with TickerProviderStateMixin {
             _StudyProgressBar(
               progress: vm.progress,
               index: vm.currentIndex,
-              total: vm.dueCards.length,
+              total: vm.totalCards,
             ),
             Expanded(
               child: Center(
