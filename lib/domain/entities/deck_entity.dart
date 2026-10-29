@@ -57,5 +57,5 @@ class DeckEntity {
   );
 
   static bool _sameDay(DateTime? a, DateTime b) =>
-      a != null && a.year == b.year && a.month == b.month && a.day == b.day;
+      a != null && studyDay(a) == studyDay(b);
 }

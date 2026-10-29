@@ -6,6 +6,14 @@ bool fitsCard(String word, String translation) =>
     word.trim().length <= maxCardWordLength &&
     translation.trim().length <= maxCardTranslationLength;
 
+/// A study day starts at 4 AM, so late-night study counts as that evening.
+const int dayStartHour = 4;
+
+DateTime studyDay(DateTime time) {
+  final t = time.subtract(const Duration(hours: dayStartHour));
+  return DateTime(t.year, t.month, t.day);
+}
+
 class CardEntity {
   final int id;
   final String syncId;
@@ -41,6 +49,9 @@ class CardEntity {
   bool isSynced = false;
   bool isDeleted = false;
   String? deckSyncId;
+
+  /// Missed and not remembered yet: due again within minutes.
+  bool get isLearning => !isNewCard && interval == 0;
 
   CardEntity({
     required this.id,
